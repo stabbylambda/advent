@@ -1,0 +1,3 @@
+#!/usr/bin/env zsh
+cargo generate --path ../adventtemplate --name $1
+sed -i '' "s/^\]/    \"$1\",\n]/" ./Cargo.toml
