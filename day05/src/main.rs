@@ -11,10 +11,7 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-fn hash<F>(md5: &Md5, start: u128, f: F) -> (u128, [u8; 16])
-where
-    F: Fn(&[u8]) -> bool,
-{
+fn hash(md5: &Md5, start: u128) -> (u128, [u8; 16]) {
     for i in start.. {
         let mut hasher = md5.clone();
         hasher.input_str(&i.to_string());
@@ -22,7 +19,8 @@ where
         let mut output = [0; 16]; // An MD5 is 16 bytes
         hasher.result(&mut output);
 
-        if f(&output) {
+        let valid = (output[0] as i32 + output[1] as i32 + (output[2] >> 4) as i32) == 0;
+        if valid {
             return (i + 1, output.clone());
         }
         hasher.reset();
@@ -31,25 +29,23 @@ where
     unreachable!()
 }
 
-fn valid_hash(output: &[u8]) -> bool {
-    (output[0] as i32 + output[1] as i32 + (output[2] >> 4) as i32) == 0
-}
-
 fn problem1(input: &str) -> String {
     let mut md5 = Md5::new();
     md5.input_str(input);
 
-    let (_i, result) = (0..8).fold((0, Vec::with_capacity(8)), |(i, mut result), _idx| {
-        let (i, output) = hash(&md5, i, valid_hash);
+    let mut result = vec![];
+    let mut i: u128 = 0;
 
+    for _n in 0..8 {
+        let (new_i, output) = hash(&md5, i);
+        i = new_i;
+        println!("Checked {new_i} hashes");
         let c = output[2] as u8;
+
         result.push(c);
+    }
 
-        (i, result)
-    });
-
-    let v: Vec<String> = result.iter().map(|c| format!("{c:x?}")).collect();
-    v.join("")
+    result.iter().map(|c| format!("{c:x?}")).collect()
 }
 
 fn problem2(input: &str) -> String {
@@ -60,7 +56,7 @@ fn problem2(input: &str) -> String {
     let mut i: u128 = 0;
 
     loop {
-        let (new_i, output) = hash(&md5, i, valid_hash);
+        let (new_i, output) = hash(&md5, i);
         i = new_i;
         println!("Checked {new_i} hashes");
 
@@ -81,8 +77,7 @@ fn problem2(input: &str) -> String {
         }
     }
 
-    let v: String = result.iter().collect();
-    v
+    result.iter().collect()
 }
 
 #[cfg(test)]
@@ -90,7 +85,6 @@ mod test {
 
     use crate::{problem1, problem2};
     #[test]
-    #[ignore]
     fn first() {
         let input = "abc";
         let result = problem1(&input);
