@@ -49,7 +49,7 @@ fn problem2(input: &Input) -> usize {
             let c = v[2];
             vec![(a.0, b.0, c.0), (a.1, b.1, c.1), (a.2, b.2, c.2)]
         })
-        .filter(|x| is_triangle(x))
+        .filter(is_triangle)
         .count()
 }
 

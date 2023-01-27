@@ -123,8 +123,6 @@ fn problem2(input: &Input) -> i64 {
 
 #[cfg(test)]
 mod test {
-    use common::test::get_raw_input;
-
     use crate::{parse, problem1, problem2};
     #[test]
     fn first() {

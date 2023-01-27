@@ -169,7 +169,7 @@ fn problem2(input: &Input) -> String {
         position = line.iter().fold(position, |position, instruction| {
             position.shift(instruction)
         });
-        code = format!("{code}{}", position.to_string());
+        code = format!("{code}{}", position);
     }
 
     code

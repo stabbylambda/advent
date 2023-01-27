@@ -1,5 +1,5 @@
 use common::get_raw_input;
-use ndarray::{prelude, s, Array2};
+use ndarray::{s, Array2};
 use nom::{
     branch::alt,
     bytes::complete::tag,

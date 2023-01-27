@@ -27,11 +27,9 @@ fn parse(input: &str) -> Input {
         let width = input[0].len();
         // transpose the nested vec so we can examine each char index
         let mut i_t: Vec<Vec<char>> = vec![vec![]; width];
-        for x in 0..width {
-            for y in 0..input.len() {
-                i_t[x].push(input[y].chars().nth(x).unwrap())
-            }
-        }
+        (0..width).for_each(|x| {
+            (0..input.len()).for_each(|y| i_t[x].push(input[y].chars().nth(x).unwrap()));
+        });
 
         i_t
     })(input);
@@ -46,7 +44,7 @@ where
     input
         .iter()
         .map(|p| {
-            p.into_iter()
+            p.iter()
                 .counts_by(|c| c)
                 .into_iter()
                 .sorted_by(|x, y| cmp(x.1, y.1))

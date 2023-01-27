@@ -49,8 +49,8 @@ impl Room {
     }
 
     fn decrypt(&self) -> String {
-        let a = 'a' as u8;
-        let space = ' ' as u8;
+        let a = b'a';
+        let space = b' ';
         let sector_id = (self.sector_id % 26) as u8;
 
         self.name
@@ -111,7 +111,7 @@ fn problem2(input: &Input) -> u32 {
 mod test {
     use common::test::get_raw_input;
 
-    use crate::{parse, problem1, problem2};
+    use crate::{parse, problem1};
     #[test]
     fn first() {
         let input = get_raw_input();

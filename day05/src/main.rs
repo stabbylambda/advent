@@ -13,7 +13,7 @@ fn main() {
 
 fn hash(md5: &Md5, start: u128) -> (u128, [u8; 16]) {
     for i in start.. {
-        let mut hasher = md5.clone();
+        let mut hasher = *md5;
         hasher.input_str(&i.to_string());
 
         let mut output = [0; 16]; // An MD5 is 16 bytes
@@ -21,7 +21,7 @@ fn hash(md5: &Md5, start: u128) -> (u128, [u8; 16]) {
 
         let valid = (output[0] as i32 + output[1] as i32 + (output[2] >> 4) as i32) == 0;
         if valid {
-            return (i + 1, output.clone());
+            return (i + 1, output);
         }
         hasher.reset();
     }
@@ -40,7 +40,7 @@ fn problem1(input: &str) -> String {
         let (new_i, output) = hash(&md5, i);
         i = new_i;
         println!("Checked {new_i} hashes");
-        let c = output[2] as u8;
+        let c = output[2];
 
         result.push(c);
     }
@@ -87,14 +87,14 @@ mod test {
     #[test]
     fn first() {
         let input = "abc";
-        let result = problem1(&input);
+        let result = problem1(input);
         assert_eq!(result, "18f47a30")
     }
 
     #[test]
     fn second() {
         let input = "abc";
-        let result = problem2(&input);
+        let result = problem2(input);
         assert_eq!(result, "05ace8e3")
     }
 }
