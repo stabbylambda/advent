@@ -3,7 +3,7 @@ use ndarray::{s, Array2};
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, newline, u32 as nom_u32},
+    character::complete::{char, newline, u32},
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair},
@@ -35,17 +35,14 @@ fn parse(input: &str) -> Input {
         newline,
         alt((
             map(
-                preceded(tag("rect "), separated_pair(nom_u32, char('x'), nom_u32)),
+                preceded(tag("rect "), separated_pair(u32, char('x'), u32)),
                 |(width, height)| Instruction::Rectangle {
                     width: width as usize,
                     height: height as usize,
                 },
             ),
             map(
-                preceded(
-                    tag("rotate row y="),
-                    separated_pair(nom_u32, tag(" by "), nom_u32),
-                ),
+                preceded(tag("rotate row y="), separated_pair(u32, tag(" by "), u32)),
                 |(index, amount)| Instruction::RotateRow {
                     index: index as usize,
                     amount: amount as usize,
@@ -54,7 +51,7 @@ fn parse(input: &str) -> Input {
             map(
                 preceded(
                     tag("rotate column x="),
-                    separated_pair(nom_u32, tag(" by "), nom_u32),
+                    separated_pair(u32, tag(" by "), u32),
                 ),
                 |(index, amount)| Instruction::RotateColumn {
                     index: index as usize,

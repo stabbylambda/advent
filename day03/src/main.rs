@@ -1,6 +1,6 @@
 use common::get_raw_input;
 use nom::{
-    character::complete::{multispace0, newline, u32 as nom_u32},
+    character::complete::{multispace0, newline, u32},
     multi::separated_list1,
     sequence::{preceded, tuple},
     IResult,
@@ -23,9 +23,9 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         tuple((
-            preceded(multispace0, nom_u32),
-            preceded(multispace0, nom_u32),
-            preceded(multispace0, nom_u32),
+            preceded(multispace0, u32),
+            preceded(multispace0, u32),
+            preceded(multispace0, u32),
         )),
     )(input);
 

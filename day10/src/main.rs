@@ -4,7 +4,7 @@ use common::get_raw_input;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{newline, u32 as nom_u32},
+    character::complete::{newline, u32},
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair, tuple},
@@ -94,21 +94,21 @@ fn parse(input: &str) -> Input {
     let starting_value = map(
         preceded(
             tag("value "),
-            separated_pair(map(nom_u32, Value), tag(" goes to bot "), nom_u32),
+            separated_pair(map(u32, Value), tag(" goes to bot "), u32),
         ),
         |(value, bot)| Setup::Value(value, bot),
     );
 
     let instruction = |input| {
         alt((
-            map(preceded(tag("output "), nom_u32), Instruction::Output),
-            map(preceded(tag("bot "), nom_u32), Instruction::Bot),
+            map(preceded(tag("output "), u32), Instruction::Output),
+            map(preceded(tag("bot "), u32), Instruction::Bot),
         ))(input)
     };
 
     let instructions = map(
         tuple((
-            preceded(tag("bot "), nom_u32),
+            preceded(tag("bot "), u32),
             preceded(tag(" gives low to "), instruction),
             preceded(tag(" and high to "), instruction),
         )),

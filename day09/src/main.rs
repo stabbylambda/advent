@@ -2,7 +2,7 @@ use common::get_raw_input;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{alphanumeric1, anychar, u32 as nom_u32},
+    character::complete::{alphanumeric1, anychar, u32},
     combinator::map,
     multi::{count, many1},
     sequence::{delimited, separated_pair},
@@ -46,11 +46,8 @@ impl Section {
 type Input = Vec<Section>;
 
 fn repeat(input: &str) -> IResult<&str, Section> {
-    let (input, (chars, repeat)) = delimited(
-        tag("("),
-        separated_pair(nom_u32, tag("x"), nom_u32),
-        tag(")"),
-    )(input)?;
+    let (input, (chars, repeat)) =
+        delimited(tag("("), separated_pair(u32, tag("x"), u32), tag(")"))(input)?;
 
     let (input, v) = count(anychar, chars as usize)(input)?;
 

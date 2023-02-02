@@ -2,7 +2,7 @@ use itertools::Itertools;
 
 use common::get_raw_input;
 use nom::{
-    character::complete::{alpha1, anychar, char, newline, u32 as nom_u32},
+    character::complete::{alpha1, anychar, char, newline, u32},
     combinator::map,
     multi::{count, separated_list1},
     sequence::{delimited, preceded, tuple},
@@ -76,7 +76,7 @@ fn name(input: &str) -> IResult<&str, String> {
 }
 
 fn parse(input: &str) -> Input {
-    let sector_id = preceded(char('-'), nom_u32);
+    let sector_id = preceded(char('-'), u32);
 
     let room = map(
         tuple((name, sector_id, checksum)),
