@@ -5,11 +5,10 @@ use crypto::{digest::Digest, md5::Md5};
 fn main() {
     let input = "pxxbnzuo";
 
-    let score = problem1(input);
-    println!("problem 1 score: {score}");
+    let (min_path, max_len) = problem(input);
+    println!("problem 1 score: {min_path}");
 
-    let score = problem2(input);
-    println!("problem 2 score: {score}");
+    println!("problem 2 score: {max_len}");
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -110,32 +109,15 @@ impl Ord for State {
 
 const DIRECTIONS: [char; 4] = ['U', 'D', 'L', 'R'];
 
-fn problem1(input: &str) -> String {
-    let mut best_so_far: Option<State> = None;
-    let mut best_length = usize::MAX;
-
+fn problem(input: &str) -> (String, usize) {
+    let mut paths: Vec<State> = vec![];
     let mut priority_queue: BinaryHeap<State> = BinaryHeap::new();
     priority_queue.push(State::new());
 
     while let Some(state) = priority_queue.pop() {
         // if we're done, then check if this is better than we've ever done
         if state.is_done() {
-            best_so_far = Some(match best_so_far {
-                None => {
-                    best_length = state.len();
-                    state
-                }
-                Some(best) => {
-                    let new_best = best.min(state);
-                    best_length = new_best.len();
-                    new_best
-                }
-            });
-            continue;
-        }
-
-        // have we already gone past the best we've ever done?
-        if state.len() > best_length {
+            paths.push(state);
             continue;
         }
 
@@ -144,24 +126,22 @@ fn problem1(input: &str) -> String {
     }
 
     // get the best path string
-    best_so_far.unwrap().path_string()
-}
+    let min_path = paths.iter().min().unwrap().path_string();
+    let max_path = paths.iter().max().unwrap().len();
 
-fn problem2(_input: &str) -> u32 {
-    todo!()
+    (min_path, max_path)
 }
 
 #[cfg(test)]
 mod test {
-    use crate::problem1;
+    use crate::problem;
     #[test]
     fn first() {
-        assert_eq!(problem1("ihgpwlah"), "DDRRRD");
-        assert_eq!(problem1("kglvqrro"), "DDUDRLRRUDRD");
-        assert_eq!(problem1("ulqzkmiv"), "DRURDRUDDLLDLUURRDULRLDUUDDDRR");
+        assert_eq!(problem("ihgpwlah"), ("DDRRRD".to_string(), 370usize));
+        assert_eq!(problem("kglvqrro"), ("DDUDRLRRUDRD".to_string(), 492usize));
+        assert_eq!(
+            problem("ulqzkmiv"),
+            ("DRURDRUDDLLDLUURRDULRLDUUDDDRR".to_string(), 830usize)
+        );
     }
-
-    #[test]
-    #[ignore = "reason"]
-    fn second() {}
 }
