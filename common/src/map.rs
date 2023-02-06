@@ -47,6 +47,24 @@ impl<T> Map<T> {
         }
         v
     }
+
+    pub fn print<F>(&self, f: F)
+    where
+        F: Fn(MapSquare<T>) -> char,
+    {
+        for (y, row) in self.points.iter().enumerate() {
+            for (x, col) in row.iter().enumerate() {
+                let square = MapSquare {
+                    map: self,
+                    coords: (x, y),
+                    data: col,
+                };
+
+                print!("{}", f(square));
+            }
+            println!();
+        }
+    }
 }
 
 impl<'a, T> IntoIterator for &'a Map<T> {

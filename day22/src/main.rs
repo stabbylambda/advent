@@ -1,4 +1,11 @@
-use common::get_raw_input;
+use itertools::Itertools;
+use std::fmt::Display;
+
+use common::{
+    dijkstra::{shortest_path, Edge},
+    get_raw_input,
+    map::Map,
+};
 use nom::{
     bytes::complete::tag,
     character::complete::{multispace1, newline, u32},
@@ -28,6 +35,25 @@ struct Node {
     size: u32,
     used: u32,
     avail: u32,
+    used_percent: u32,
+}
+
+impl PartialOrd for Node {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Node {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.y.cmp(&other.y).then(self.x.cmp(&other.x))
+    }
+}
+
+impl Display for Node {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})", self.x, self.y)
+    }
 }
 
 impl Node {
@@ -52,12 +78,13 @@ fn parse(input: &str) -> Input {
                 terminated(terminated(u32, tag("T")), multispace1),
                 terminated(u32, tag("%")),
             )),
-            |((x, y), size, used, avail, _used_percent)| Node {
+            |((x, y), size, used, avail, used_percent)| Node {
                 x,
                 y,
                 size,
                 used,
                 avail,
+                used_percent,
             },
         ),
     )(input);
@@ -70,12 +97,89 @@ fn problem1(input: &Input) -> usize {
         .iter()
         .filter(|a| !a.is_empty())
         .flat_map(|a| input.iter().filter_map(move |b| (a != b).then_some((a, b))))
+        // .inspect(|(x, y)| println!("{x} - {y}"))
         .filter(|(a, b)| a.used <= b.avail)
         .count()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn get_edges(maze: &Map<&Node>) -> Vec<Vec<Edge>> {
+    maze.into_iter()
+        .map(|square| {
+            // large nodes are walls and have no edges
+            if square.data.size > 100 {
+                return vec![];
+            }
+
+            square
+                .neighbors()
+                .iter()
+                .filter_map(|n| {
+                    if n.data.size > 100 {
+                        return None;
+                    }
+
+                    Some(Edge {
+                        node: n.get_grid_index(),
+                        cost: 1,
+                    })
+                })
+                .collect()
+        })
+        .collect()
+}
+
+fn problem2(input: &Input) -> usize {
+    let empty = input.iter().find(|n| n.used == 0).unwrap();
+    let goal = input.iter().filter(|n| n.y == 0).max().unwrap();
+
+    let grid = input
+        .iter()
+        .sorted()
+        .group_by(|n| n.y)
+        .into_iter()
+        .map(|(_, v)| v.collect_vec())
+        .collect_vec();
+
+    let map = common::map::Map::new(grid);
+
+    println!("========= Grid Visualization =========");
+    map.print(|s| {
+        let n = *s.data;
+        if n == goal {
+            'G'
+        } else if n == empty {
+            '_'
+        } else if n.size > 100 {
+            '#'
+        } else {
+            '.'
+        }
+    });
+    println!("======================================");
+
+    let empty_index = map
+        .get((empty.x as usize, empty.y as usize))
+        .get_grid_index();
+
+    let next_to_goal_index = map
+        .get((goal.x as usize - 1, goal.y as usize))
+        .get_grid_index();
+
+    let edges = get_edges(&map);
+    // move the empty up next to the left of the goal, with the large nodes as 'walls'
+    let move_empty_next_to_goal = shortest_path(&edges, empty_index, next_to_goal_index).unwrap();
+
+    /* once we do that, it's a matter of doing the sliding puzzle like so:
+    ._G   .G_   .G.   .G.   .G.   _G.
+    ...   ...   .._   ._.   _..   ...
+
+    for each cell between the goal and the origin, which is 5 moves times the number of cells between the goal
+    and the origin
+    */
+    let move_goal_to_origin = 5 * (goal.x as usize - 1);
+
+    // plus one for the extra move
+    move_empty_next_to_goal + move_goal_to_origin + 1
 }
 
 #[cfg(test)]
