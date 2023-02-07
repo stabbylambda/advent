@@ -10,7 +10,7 @@ use nom::{
 };
 fn main() {
     let raw = include_str!("../input.txt");
-    let mut input = Input::parse(&raw);
+    let mut input = Input::parse(raw);
     let mut input2 = input.clone();
 
     let score = problem1(&mut input);
@@ -132,7 +132,7 @@ mod test {
     #[test]
     fn first() {
         let raw = include_str!("../test.txt");
-        let mut input = Input::parse(&raw);
+        let mut input = Input::parse(raw);
         let result = problem1(&mut input);
         assert_eq!(result, "CMZ")
     }
@@ -140,7 +140,7 @@ mod test {
     #[test]
     fn second() {
         let raw = include_str!("../test.txt");
-        let mut input = dbg!(Input::parse(&raw));
+        let mut input = dbg!(Input::parse(raw));
         let result = problem2(&mut input);
         assert_eq!(result, "MCD")
     }

@@ -15,7 +15,7 @@ use petgraph::{
 };
 fn main() {
     let lines = include_str!("../input.txt");
-    let input = Command::parse_all(&lines);
+    let input = Command::parse_all(lines);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -237,7 +237,7 @@ mod test {
     #[test]
     fn first() {
         let lines = include_str!("../test.txt");
-        let input = Command::parse_all(&lines);
+        let input = Command::parse_all(lines);
         let result = problem1(&input);
         assert_eq!(result, 95437)
     }
@@ -245,7 +245,7 @@ mod test {
     #[test]
     fn second() {
         let lines = include_str!("../test.txt");
-        let input = Command::parse_all(&lines);
+        let input = Command::parse_all(lines);
         let result = problem2(&input);
         assert_eq!(result, 24933642)
     }

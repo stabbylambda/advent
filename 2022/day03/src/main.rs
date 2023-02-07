@@ -79,7 +79,7 @@ mod test {
     #[test]
     fn first() {
         let lines = include_str!("../test.txt");
-        let rucksacks = get_rucksacks(&lines);
+        let rucksacks = get_rucksacks(lines);
         let result = problem1(&rucksacks);
         assert_eq!(result, 157);
     }
@@ -87,7 +87,7 @@ mod test {
     #[test]
     fn second() {
         let lines = include_str!("../test.txt");
-        let rucksacks = get_rucksacks(&lines);
+        let rucksacks = get_rucksacks(lines);
         let result = problem2(&rucksacks);
         assert_eq!(result, 70)
     }

@@ -10,7 +10,7 @@ use nom::{
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = Snafu::parse_all(&input);
+    let input = Snafu::parse_all(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -189,7 +189,7 @@ mod test {
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
-        let input = Snafu::parse_all(&input);
+        let input = Snafu::parse_all(input);
         let result = problem1(&input);
         let expected: Snafu = 4890.into();
         assert_eq!(result, expected)

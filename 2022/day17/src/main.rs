@@ -10,7 +10,7 @@ use nom::{character::complete::anychar, combinator::map, multi::many1, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(&input);
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -298,7 +298,7 @@ mod test {
     #[ignore]
     fn first() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem1(&input);
         assert_eq!(result, 3068)
     }
@@ -306,7 +306,7 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem2(&input);
         assert_eq!(result, 1514285714288)
     }
