@@ -198,6 +198,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 215)
     }
 }

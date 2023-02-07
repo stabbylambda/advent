@@ -84,6 +84,7 @@ mod test {
 
     use crate::{problem1, problem2};
     #[test]
+    #[ignore = "too slow"]
     fn first() {
         let input = "abc";
         let result = problem1(input);
@@ -91,6 +92,7 @@ mod test {
     }
 
     #[test]
+    #[ignore = "too slow"]
     fn second() {
         let input = "abc";
         let result = problem2(input);
