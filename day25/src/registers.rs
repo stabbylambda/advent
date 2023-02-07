@@ -1,9 +1,22 @@
 use std::{collections::HashMap, fmt::Display};
 
+use nom::{
+    branch::alt,
+    character::complete::{anychar, i32},
+    combinator::map,
+    IResult,
+};
+
 #[derive(Debug, Clone, Copy)]
 pub enum Value {
     Literal(i32),
     Register(Register),
+}
+
+impl Value {
+    pub fn parse(s: &str) -> IResult<&str, Value> {
+        alt((map(i32, Value::Literal), map(anychar, Value::Register)))(s)
+    }
 }
 
 impl Display for Value {
@@ -20,6 +33,7 @@ pub type Register = char;
 pub struct Registers {
     pub registers: HashMap<char, i32>,
 }
+
 impl Registers {
     pub fn new(a: i32) -> Self {
         let mut registers = HashMap::new();

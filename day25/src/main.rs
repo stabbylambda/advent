@@ -4,8 +4,8 @@ use common::get_raw_input;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{anychar, i32, newline},
-    combinator::map,
+    character::complete::{anychar, newline},
+    combinator::{map, map_res},
     multi::separated_list1,
     sequence::{preceded, separated_pair, terminated, tuple},
     IResult,
@@ -110,92 +110,58 @@ impl Instruction {
 }
 
 fn parse(input: &str) -> Input {
-    let value = |s| {
-        alt((
-            map(i32, Value::Literal),
-            map(anychar, |x| Value::Register(x)),
-        ))(s)
-    };
-
-    let out = |s| {
-        map(preceded(tag("out "), value), |x| {
-            vec![Instruction::Transmit(x)]
-        })(s)
-    };
-    let tgl = |s| {
-        map(preceded(tag("tgl "), value), |x| {
-            vec![Instruction::Toggle(x)]
-        })(s)
-    };
-    let skip = |s| map(tag("skip"), |_| vec![Instruction::Skip])(s);
-    let inc = |s| {
-        map(preceded(tag("inc "), anychar), |x| {
-            vec![Instruction::Increment(x)]
-        })(s)
-    };
-    let dec = |s| {
-        map(preceded(tag("dec "), anychar), |x| {
-            vec![Instruction::Decrement(x)]
-        })(s)
-    };
+    let out = |s| map(preceded(tag("out "), Value::parse), Instruction::Transmit)(s);
+    let tgl = |s| map(preceded(tag("tgl "), Value::parse), Instruction::Toggle)(s);
+    let skip = |s| map(tag("skip"), |_| Instruction::Skip)(s);
+    let inc = |s| map(preceded(tag("inc "), anychar), Instruction::Increment)(s);
+    let dec = |s| map(preceded(tag("dec "), anychar), Instruction::Decrement)(s);
     let cpy = |s| {
         map(
-            preceded(tag("cpy "), separated_pair(value, tag(" "), anychar)),
-            |(v, r)| vec![Instruction::Copy(v, r)],
+            preceded(tag("cpy "), separated_pair(Value::parse, tag(" "), anychar)),
+            |(v, r)| Instruction::Copy(v, r),
         )(s)
     };
     let jnz = |s| {
         map(
-            preceded(tag("jnz "), separated_pair(value, tag(" "), value)),
-            |(r, o)| vec![Instruction::JumpNotZero(r, o)],
+            preceded(
+                tag("jnz "),
+                separated_pair(Value::parse, tag(" "), Value::parse),
+            ),
+            |(r, o)| Instruction::JumpNotZero(r, o),
         )(s)
     };
-    let mul = |s| {
-        map(
+
+    // this parser is able to recognize the pattern that is multiplication, if it fails, we'll just get the deoptimized
+    // code
+    let optimized_mul = |s| {
+        map_res(
             tuple((
-                tag("mul "),
-                terminated(anychar, tag(" ")),
-                terminated(value, tag(" ")),
-                value,
+                terminated(cpy, newline),
+                terminated(inc, newline),
+                terminated(dec, newline),
+                terminated(jnz, newline),
+                terminated(dec, newline),
+                jnz,
             )),
-            |(_, a, b, c)| vec![Instruction::Multiply(a, b, c)],
+            |(x0, x1, x2, x3, x4, x5)| {
+                let Instruction::Copy(op1, temp1_1) = x0 else {panic!()};
+                let Instruction::Increment(store) = x1 else {panic!()};
+                let Instruction::Decrement(temp1_2) = x2 else {panic!()};
+                let Instruction::JumpNotZero(Value::Register(temp1_3), _dec) = x3 else {panic!()};
+                let Instruction::Decrement(op2_1) = x4 else {panic!()};
+                let Instruction::JumpNotZero(Value::Register(op2_2), _dec) = x5 else {panic!()};
+
+                if temp1_1 == temp1_2 && temp1_2 == temp1_3 && op2_1 == op2_2 {
+                    Ok(Instruction::Multiply(store, op1, Value::Register(op2_1)))
+                } else {
+                    Err(nom::Err::Error("Multiply not optimizable"))
+                }
+            },
         )(s)
     };
 
-    // let opt_mul = |s| {
-    //     map(
-    //         tuple((
-    //             terminated(cpy, newline),
-    //             terminated(inc, newline),
-    //             terminated(dec, newline),
-    //             terminated(jnz, newline),
-    //             terminated(dec, newline),
-    //             jnz,
-    //         )),
-    //         |(x0, x1, x2, x3, x4, x5)| {
-    //             let Instruction::Copy(b, c) = x0[0] else {panic!()};
-    //             let Instruction::Increment(a) = x1[0] else {panic!()};
-    //             let Instruction::Decrement(d) = x4[0] else {panic!()};
-
-    //             vec![
-    //                 Instruction::Multiply(a, b, Value::Register(d)),
-    //                 Instruction::Skip,
-    //                 Instruction::Skip,
-    //                 Instruction::Skip,
-    //                 Instruction::Skip,
-    //                 Instruction::Skip,
-    //             ]
-    //         },
-    //     )(s)
-    // };
-
-    let result: IResult<&str, Input> = map(
-        separated_list1(newline, alt((skip, tgl, inc, dec, cpy, jnz, mul, out))),
-        |v| {
-            let v: Vec<Instruction> = v.into_iter().flatten().collect();
-            Program::new(v)
-        },
-    )(input);
+    let ops = alt((skip, optimized_mul, tgl, inc, dec, cpy, jnz, out));
+    let result: IResult<&str, Input> = map(separated_list1(newline, ops), Program::new)(input);
 
     result.unwrap().1
 }
@@ -238,12 +204,16 @@ fn compute(input: &mut Input, registers: &mut Registers) -> Vec<u32> {
                 1
             }
             Instruction::Multiply(a, b, d) => {
-                let b = registers.resolve(b);
-                let d = registers.resolve(d);
+                let bv = registers.resolve(b);
+                let dv = registers.resolve(d);
 
-                registers.add(a, b * d);
-                registers.set('c', 0);
-                registers.set('d', 0);
+                registers.add(a, bv * dv);
+                if let Value::Register(r) = b {
+                    registers.set(r, 0);
+                };
+                if let Value::Register(r) = d {
+                    registers.set(r, 0);
+                };
 
                 1
             }
