@@ -208,10 +208,6 @@ mod test {
 
     use crate::{parse, problem1, problem2, Snailfish};
 
-    fn snailfish(input: &str) -> Snailfish {
-        Snailfish::parse(input).unwrap().1
-    }
-
     #[test]
     fn split() {
         let cases = [
