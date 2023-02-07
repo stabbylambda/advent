@@ -1,6 +1,5 @@
 use std::collections::{BinaryHeap, HashSet};
 
-use common::get_raw_input;
 use itertools::Itertools;
 use nom::{
     branch::alt,
@@ -13,8 +12,8 @@ use nom::{
 };
 
 fn main() {
-    let input = get_raw_input();
-    let input = parse(&input);
+    let input = include_str!("../input.txt");
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -288,13 +287,12 @@ fn problem2(input: &Input) -> u32 {
 
 #[cfg(test)]
 mod test {
-    use common::test::get_raw_input;
 
     use crate::{parse, problem1};
     #[test]
     fn first() {
-        let input = get_raw_input();
-        let input = parse(&input);
+        let input = include_str!("../test.txt");
+        let input = parse(input);
         let result = problem1(&input);
         assert_eq!(result, 11)
     }

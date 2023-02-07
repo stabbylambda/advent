@@ -1,11 +1,10 @@
 use std::collections::HashSet;
 
-use common::get_raw_input;
 use nom::{branch::alt, character::complete::char, combinator::map, multi::many1, IResult};
 
 fn main() {
-    let input = get_raw_input();
-    let input = parse(&input);
+    let input = include_str!("../input.txt");
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");

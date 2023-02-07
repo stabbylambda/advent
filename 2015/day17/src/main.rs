@@ -1,4 +1,3 @@
-use common::get_raw_input;
 use itertools::Itertools;
 use nom::{
     character::complete::{newline, u32 as nom_u32},
@@ -7,8 +6,8 @@ use nom::{
 };
 
 fn main() {
-    let input = get_raw_input();
-    let input = parse(&input);
+    let input = include_str!("../input.txt");
+    let input = parse(input);
 
     let score = problem1(&input, 150);
     println!("problem 1 score: {score}");
@@ -44,21 +43,20 @@ fn problem2(input: &Input, total: u32) -> usize {
 
 #[cfg(test)]
 mod test {
-    use common::test::get_raw_input;
 
     use crate::{parse, problem1, problem2};
     #[test]
     fn first() {
-        let input = get_raw_input();
-        let input = parse(&input);
+        let input = include_str!("../test.txt");
+        let input = parse(input);
         let result = problem1(&input, 25);
         assert_eq!(result, 4)
     }
 
     #[test]
     fn second() {
-        let input = get_raw_input();
-        let input = parse(&input);
+        let input = include_str!("../test.txt");
+        let input = parse(input);
         let result = problem2(&input, 25);
         assert_eq!(result, 3)
     }

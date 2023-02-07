@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use common::get_raw_input;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -12,8 +11,8 @@ use nom::{
 };
 
 fn main() {
-    let input = get_raw_input();
-    let mut input = parse(&input);
+    let input = include_str!("../input.txt");
+    let mut input = parse(input);
 
     let (score1, score2) = problem(&mut input, 17, 61);
     println!("problem 1 score: {score1}");
@@ -190,13 +189,12 @@ fn problem(bots: &mut Input, value1: u32, value2: u32) -> (u32, u32) {
 
 #[cfg(test)]
 mod test {
-    use common::test::get_raw_input;
 
     use crate::{parse, problem};
     #[test]
     fn first() {
-        let input = get_raw_input();
-        let mut input = parse(&input);
+        let input = include_str!("../test.txt");
+        let mut input = parse(input);
         let (bot_id, outputs) = problem(&mut input, 2, 5);
         assert_eq!(bot_id, 2);
         assert_eq!(outputs, 30);

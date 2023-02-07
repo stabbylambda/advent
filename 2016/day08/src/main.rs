@@ -1,4 +1,3 @@
-use common::get_raw_input;
 use ndarray::{s, Array2};
 use nom::{
     branch::alt,
@@ -14,8 +13,8 @@ const WIDTH: usize = 50;
 const HEIGHT: usize = 6;
 
 fn main() {
-    let input = get_raw_input();
-    let input = parse(&input);
+    let input = include_str!("../input.txt");
+    let input = parse(input);
 
     let score = problem1(&input, WIDTH, HEIGHT);
     println!("problem 1 score: {score}");
@@ -124,13 +123,12 @@ fn problem1(input: &Input, width: usize, height: usize) -> u32 {
 
 #[cfg(test)]
 mod test {
-    use common::test::get_raw_input;
 
     use crate::{parse, problem1};
     #[test]
     fn first() {
-        let input = get_raw_input();
-        let input = parse(&input);
+        let input = include_str!("../test.txt");
+        let input = parse(input);
         let result = problem1(&input, 7, 3);
         assert_eq!(result, 6)
     }

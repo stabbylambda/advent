@@ -1,10 +1,8 @@
-use common::get_raw_input;
-
 use serde_json::Value;
 
 fn main() {
-    let input = get_raw_input();
-    let input = parse(&input);
+    let input = include_str!("../input.txt");
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");

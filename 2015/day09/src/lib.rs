@@ -71,14 +71,13 @@ pub fn problem1(input: &Input) -> (u32, u32) {
 
 #[cfg(test)]
 mod test {
-    use common::test::get_raw_input;
 
     use crate::*;
 
     #[test]
     fn problem() {
-        let input = get_raw_input();
-        let input = parse(&input);
+        let input = include_str!("../test.txt");
+        let input = parse(input);
         let (min, max) = problem1(&input);
         assert_eq!(min, 605);
         assert_eq!(max, 982);

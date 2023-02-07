@@ -1,13 +1,12 @@
-use common::get_raw_input;
 use crypto::{digest::Digest, md5::Md5};
 
 fn main() {
-    let input = get_raw_input();
+    let input = include_str!("../input.txt");
 
-    let score = problem1(&input);
+    let score = problem1(input);
     println!("problem 1 score: {score}");
 
-    let score = problem2(&input);
+    let score = problem2(input);
     println!("problem 2 score: {score}");
 }
 
