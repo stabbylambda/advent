@@ -1,5 +1,6 @@
 use nalgebra::{DMatrix, Matrix3, Vector3};
 
+#[allow(dead_code)]
 pub(crate) fn kabsch(p: DMatrix<f64>, q: DMatrix<f64>) -> nalgebra::DMatrix<f64> {
     let pm = p.mean();
     let qm = q.mean();
