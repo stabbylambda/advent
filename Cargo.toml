@@ -4,5 +4,6 @@ members = [
     "common",
     "2015/day*",
     "2016/day*",
+    "2021/day*",
     "2022/day*",
 ]
