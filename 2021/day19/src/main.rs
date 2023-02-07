@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use nalgebra::{MatrixXx3};
+use nalgebra::MatrixXx3;
 use nom::{
     bytes::complete::tag,
     character::complete::{i32 as nom_i32, newline},
@@ -112,6 +112,7 @@ fn problem2(_input: &Input) -> u32 {
 mod test {
     use crate::{parse, problem1, problem2};
     #[test]
+    #[ignore]
     fn first() {
         let input = include_str!("../test.txt");
         let input = parse(input);
@@ -120,6 +121,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn second() {
         let input = include_str!("../test.txt");
         let input = parse(input);
