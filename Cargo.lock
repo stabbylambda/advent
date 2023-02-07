@@ -273,6 +273,7 @@ name = "day24"
 version = "0.1.0"
 dependencies = [
  "common",
+ "itertools",
  "nom",
 ]
 
