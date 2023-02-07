@@ -9,7 +9,7 @@ use nom::{
 
 fn main() {
     let input = include_str!("../input.txt");
-    let mut input = parse(&input);
+    let mut input = parse(input);
 
     let score = problem1(&mut input.clone());
     println!("problem 1 score: {score}");
@@ -203,7 +203,7 @@ mod test {
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
-        let mut input = parse(&input);
+        let mut input = parse(input);
         let result = problem1(&mut input);
         assert_eq!(result, 110)
     }
@@ -211,7 +211,7 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let mut input = parse(&input);
+        let mut input = parse(input);
         let result = problem2(&mut input);
         assert_eq!(result, 20)
     }

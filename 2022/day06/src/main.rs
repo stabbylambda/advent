@@ -3,10 +3,10 @@ use std::collections::BTreeSet;
 fn main() {
     let lines = include_str!("../input.txt");
 
-    let score = problem1(&lines);
+    let score = problem1(lines);
     println!("problem 1 score: {score}");
 
-    let score = problem2(&lines);
+    let score = problem2(lines);
     println!("problem 2 score: {score}");
 }
 

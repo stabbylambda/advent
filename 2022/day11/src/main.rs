@@ -10,12 +10,12 @@ use nom::{
 
 fn main() {
     let input = include_str!("../input.txt");
-    let mut monkeys = parse(&input);
+    let mut monkeys = parse(input);
 
     let score = problem1(&mut monkeys);
     println!("problem 1 score: {score}");
 
-    let mut monkeys = parse(&input);
+    let mut monkeys = parse(input);
     let score = problem2(&mut monkeys);
     println!("problem 2 score: {score}");
 }
@@ -209,7 +209,7 @@ mod test {
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
-        let mut input = parse(&input);
+        let mut input = parse(input);
         let result = problem1(&mut input);
         assert_eq!(result, 10605)
     }
@@ -217,7 +217,7 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let mut input = parse(&input);
+        let mut input = parse(input);
         let result = problem2(&mut input);
         assert_eq!(result, 2713310158)
     }

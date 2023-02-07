@@ -7,7 +7,7 @@ use nom::{multi::separated_list0, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(&input);
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -161,7 +161,7 @@ mod test {
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem1(&input);
         assert_eq!(result, 64)
     }
@@ -169,7 +169,7 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem2(&input);
         assert_eq!(result, 58)
     }

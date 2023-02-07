@@ -49,7 +49,7 @@ mod test {
     #[test]
     fn first() {
         let lines = include_str!("../test.txt");
-        let calories = parse_calorie_groups(&lines);
+        let calories = parse_calorie_groups(lines);
         let max = crate::problem1(&calories);
         assert_eq!(max, 24000)
     }
@@ -57,7 +57,7 @@ mod test {
     #[test]
     fn second() {
         let lines = include_str!("../test.txt");
-        let calories = parse_calorie_groups(&lines);
+        let calories = parse_calorie_groups(lines);
         let max = crate::problem2(&calories);
         assert_eq!(max, 45000)
     }
