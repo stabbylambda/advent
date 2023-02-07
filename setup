@@ -1,3 +1,9 @@
 #!/usr/bin/env zsh
-cargo generate --path ../adventtemplate --name $1
-sed -i '' "s/^\]/    \"$1\",\n]/" ./Cargo.toml
+year=2022
+cd "$year"
+for i in {01..25}
+do
+    name="advent_${year}_${i}"
+    cargo generate --path ../../adventtemplate --name $name
+    mv ${name:gs/_/-} "day$i"
+done
