@@ -33,6 +33,7 @@ enum ExplodeResult {
 }
 
 impl Snailfish {
+    #[allow(dead_code)]
     fn new(input: &str) -> Snailfish {
         Snailfish::parse(input).unwrap().1
     }

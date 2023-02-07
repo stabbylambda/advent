@@ -68,12 +68,12 @@ impl Grid {
     fn fold_x(&mut self, n: usize) {
         let mut result = vec![vec![false; n]; self.height()];
 
-        for y in 0..self.height() {
+        (0..self.height()).for_each(|y| {
             for x in 0..n {
                 let mirror_x = self.width() - x - 1;
                 result[y][x] = self.grid[y][x] || self.grid[y][mirror_x];
             }
-        }
+        });
 
         self.grid = result;
     }
@@ -81,12 +81,12 @@ impl Grid {
     fn fold_y(&mut self, n: usize) {
         let mut result = vec![vec![false; self.width()]; n];
 
-        for y in 0..n {
+        (0..n).for_each(|y| {
             for x in 0..self.width() {
                 let mirror_y = self.height() - y - 2;
                 result[y][x] = self.grid[y][x] || self.grid[mirror_y][x];
             }
-        }
+        });
 
         self.grid = result;
     }
