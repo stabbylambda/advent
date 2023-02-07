@@ -63,9 +63,7 @@ fn step(input: &mut Vec<Vec<u32>>) -> u32 {
             for x in 0..10 {
                 if input[y][x] > 9 && input[y][x] != u32::MAX {
                     for (nx, ny) in get_neighbors(x, y) {
-                        if input[ny][nx] != u32::MAX {
-                            input[ny][nx] += 1;
-                        }
+                        input[ny][nx] = input[ny][nx].saturating_add(1);
                     }
 
                     input[y][x] = u32::MAX;

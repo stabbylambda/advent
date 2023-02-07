@@ -8,7 +8,7 @@ use nom::{
 };
 fn main() {
     let lines = include_str!("../input.txt");
-    let input = parse(&lines);
+    let input = parse(lines);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -90,7 +90,7 @@ fn problem(input: &Input, times: u32) -> u64 {
         map = result;
     }
 
-    let scores: Vec<u64> = letter_count.values().map(|x| *x).collect();
+    let scores: Vec<u64> = letter_count.values().copied().collect();
     let max = scores.iter().max().unwrap();
     let min = scores.iter().min().unwrap();
 
@@ -103,7 +103,7 @@ mod test {
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem1(&input);
         assert_eq!(result, 1588)
     }
@@ -111,7 +111,7 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem2(&input);
         assert_eq!(result, 2188189693529)
     }

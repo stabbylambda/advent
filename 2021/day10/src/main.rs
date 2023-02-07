@@ -19,7 +19,7 @@ enum Result {
 fn problem1(input: &[&str]) -> u32 {
     input
         .iter()
-        .map(|x| match parse_line(&x) {
+        .map(|x| match parse_line(x) {
             Result::Invalid(')') => 3,
             Result::Invalid(']') => 57,
             Result::Invalid('}') => 1197,

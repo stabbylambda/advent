@@ -39,7 +39,7 @@ struct Data {
 
 impl Data {
     fn new(input: Lines) -> Data {
-        let length = input.clone().nth(0).unwrap().len();
+        let length = input.clone().next().unwrap().len();
         let mask = !(i32::MAX << length);
 
         let numbers: Vec<i32> = input.map(|s| i32::from_str_radix(s, 2).unwrap()).collect();
