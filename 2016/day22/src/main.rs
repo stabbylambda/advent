@@ -3,7 +3,6 @@ use std::fmt::Display;
 
 use common::{
     dijkstra::{shortest_path, Edge},
-    get_raw_input,
     map::Map,
 };
 use nom::{
@@ -16,8 +15,8 @@ use nom::{
 };
 
 fn main() {
-    let input = get_raw_input();
-    let input = parse(&input);
+    let input = include_str!("../input.txt");
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -184,21 +183,20 @@ fn problem2(input: &Input) -> usize {
 
 #[cfg(test)]
 mod test {
-    use common::test::get_raw_input;
 
     use crate::{parse, problem1, problem2};
     #[test]
     fn first() {
-        let input = get_raw_input();
-        let input = parse(&input);
+        let input = include_str!("../test.txt");
+        let input = parse(input);
         let result = problem1(&input);
         assert_eq!(result, 903)
     }
 
     #[test]
     fn second() {
-        let input = get_raw_input();
-        let input = parse(&input);
+        let input = include_str!("../test.txt");
+        let input = parse(input);
         let result = problem2(&input);
         assert_eq!(result, 0)
     }

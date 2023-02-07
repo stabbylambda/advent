@@ -1,11 +1,10 @@
 use std::collections::BinaryHeap;
 
 use advent_2015_22::{Boss, Spell};
-use common::get_raw_input;
 
 fn main() {
-    let input = get_raw_input();
-    let input = Boss::parse(&input);
+    let input = include_str!("../input.txt");
+    let input = Boss::parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -203,21 +202,20 @@ fn problem2(boss: &Boss) -> u32 {
 
 #[cfg(test)]
 mod test {
-    use common::test::get_raw_input;
 
     use crate::{problem1, problem2, Boss};
     #[test]
     fn first() {
-        let input = get_raw_input();
-        let input = Boss::parse(&input);
+        let input = include_str!("../test.txt");
+        let input = Boss::parse(input);
         let result = problem1(&input);
         assert_eq!(result, 900)
     }
 
     #[test]
     fn second() {
-        let input = get_raw_input();
-        let input = Boss::parse(&input);
+        let input = include_str!("../test.txt");
+        let input = Boss::parse(input);
         let result = problem2(&input);
         assert_eq!(result, 1216)
     }

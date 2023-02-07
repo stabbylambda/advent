@@ -1,10 +1,9 @@
-use common::get_raw_input;
 use itertools::Itertools;
 
 fn main() {
-    let input = get_raw_input();
+    let input = include_str!("../input.txt");
 
-    let answer1 = problem(&input);
+    let answer1 = problem(input);
     println!("problem 1 answer: {answer1}");
 
     let answer2 = problem(&answer1);

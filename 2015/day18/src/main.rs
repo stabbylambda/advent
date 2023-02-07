@@ -1,4 +1,3 @@
-use common::get_raw_input;
 use ndarray::{Array3, Axis};
 use nom::{
     branch::alt,
@@ -9,8 +8,8 @@ use nom::{
 };
 
 fn main() {
-    let input = get_raw_input();
-    let input = parse(&input, 100);
+    let input = include_str!("../input.txt");
+    let input = parse(input, 100);
 
     let mut lights = input.clone();
     let score = problem1(&mut lights, 100);
@@ -143,21 +142,20 @@ fn problem2(lights: &mut Input, steps: usize) -> usize {
 
 #[cfg(test)]
 mod test {
-    use common::test::get_raw_input;
 
     use crate::{parse, problem1, problem2};
     #[test]
     fn first() {
-        let input = get_raw_input();
-        let mut input = parse(&input, 4);
+        let input = include_str!("../test.txt");
+        let mut input = parse(input, 4);
         let result = problem1(&mut input, 4);
         assert_eq!(result, 4)
     }
 
     #[test]
     fn second() {
-        let input = get_raw_input();
-        let mut input = parse(&input, 5);
+        let input = include_str!("../test.txt");
+        let mut input = parse(input, 5);
         let result = problem2(&mut input, 5);
         assert_eq!(result, 17)
     }

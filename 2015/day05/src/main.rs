@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 
-use common::get_raw_input;
-
 fn main() {
-    let input = get_raw_input();
+    let input = include_str!("../input.txt");
     let input: Vec<&str> = input.lines().collect();
 
     let score = problem1(&input[..]);

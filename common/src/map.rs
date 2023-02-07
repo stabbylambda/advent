@@ -19,6 +19,10 @@ impl<T> Map<T> {
         }
     }
 
+    pub fn set(&mut self, (x, y): Coord, data: T) {
+        self.points[y][x] = data;
+    }
+
     pub fn get(&self, (x, y): Coord) -> MapSquare<T> {
         let data = &self.points[y][x];
         MapSquare {
