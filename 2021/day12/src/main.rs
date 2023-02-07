@@ -40,7 +40,7 @@ impl<'a> GraphData<'a> {
         let edges: Vec<(Cave, Cave)> = input
             .lines()
             .map(|line| {
-                let x: Vec<Cave> = line.split("-").map(Cave::new).collect();
+                let x: Vec<Cave> = line.split('-').map(Cave::new).collect();
                 (x[0], x[1])
             })
             .collect();

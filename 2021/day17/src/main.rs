@@ -1,4 +1,4 @@
-use std::{cmp::max, collections::BTreeSet};
+use std::{collections::BTreeSet};
 
 use nom::{
     bytes::complete::tag,
@@ -9,7 +9,7 @@ use nom::{
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(&input);
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -98,7 +98,7 @@ fn problem2(input: &Input) -> usize {
     let mut results: BTreeSet<(i32, i32)> = BTreeSet::new();
     for xv in -400..400 {
         for yv in -400..400 {
-            if let Some(_) = fire(xv, yv, input) {
+            if fire(xv, yv, input).is_some() {
                 results.insert((xv, yv));
             }
         }
@@ -113,7 +113,7 @@ mod test {
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem1(&input);
         assert_eq!(result, 45)
     }
@@ -121,7 +121,7 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem2(&input);
         assert_eq!(result, 112)
     }

@@ -55,7 +55,7 @@ impl Display {
         let nine_candidates = self.all_digits_of_length(6); // 9, 0, and 6
 
         // 7 is 1 plus a top bar
-        let top_light = seven_digits.difference(&one_digits).next().unwrap().clone();
+        let top_light = *seven_digits.difference(&one_digits).next().unwrap();
 
         // nine is 4 plus the top light
         let mut mask: HashSet<_> = HashSet::from_iter(four_digits.clone());
@@ -63,9 +63,7 @@ impl Display {
 
         // find all the nine candidates and compare them against the mask
         let nine_digits = nine_candidates
-            .iter()
-            .filter(|candidate| candidate.is_superset(&mask))
-            .next()
+            .iter().find(|candidate| candidate.is_superset(&mask))
             .unwrap();
 
         // nine minus the 4 plus the top light mask gives us the bottom light
@@ -75,22 +73,17 @@ impl Display {
         let zero_digits = nine_candidates
             .iter()
             // remove the nine since we know that now
-            .filter(|candidate| *candidate != nine_digits)
-            // only zero has both of the lights in the one
-            .filter(|candidate| candidate.is_superset(&one_digits))
-            .next()
+            .filter(|candidate| *candidate != nine_digits).find(|candidate| candidate.is_superset(&one_digits))
             .unwrap();
 
         let middle_light = eight_digits.difference(zero_digits).next().unwrap();
 
         let six_digits = nine_candidates
-            .iter()
-            .filter(|candidate| *candidate != nine_digits && *candidate != zero_digits)
-            .next()
+            .iter().find(|candidate| *candidate != nine_digits && *candidate != zero_digits)
             .unwrap();
 
         // the six contains the bottom of the one, but not the top
-        let top_right_light = one_digits.difference(six_digits).next().unwrap().clone();
+        let top_right_light = *one_digits.difference(six_digits).next().unwrap();
         let mask: HashSet<char> = HashSet::from_iter(vec![top_right_light]);
 
         let bottom_right_light = one_digits.difference(&mask).next().unwrap();

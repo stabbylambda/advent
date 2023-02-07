@@ -74,7 +74,7 @@ const LITERAL_VERSION: u8 = 4;
 pub fn parse(input: &str) -> Input {
     let b: BVec = decode_hex(input).unwrap().iter().collect();
     let slice = b.as_bitslice();
-    let (packet, _rest) = parse_packet(&slice);
+    let (packet, _rest) = parse_packet(slice);
     packet
 }
 
@@ -98,7 +98,7 @@ pub fn parse_packets(b: &Slice, max: usize) -> (Vec<Packet>, &Slice) {
     let mut packets: Vec<Packet> = Vec::new();
 
     while slice.any() && packets.len() < max {
-        let (packet, rest) = parse_packet(&slice);
+        let (packet, rest) = parse_packet(slice);
         packets.push(packet);
         slice = rest;
     }

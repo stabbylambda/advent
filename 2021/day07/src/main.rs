@@ -1,5 +1,5 @@
 use nom::{
-    bytes::complete::tag, character::complete::i32 as nom_i32, combinator::map,
+    bytes::complete::tag, character::complete::i32 as nom_i32,
     multi::separated_list1, IResult,
 };
 fn main() {

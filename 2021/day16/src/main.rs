@@ -43,7 +43,7 @@ impl Packet {
 
     fn evaluate(&self) -> u64 {
         match self {
-            Packet::Literal(_, v) => *v as u64,
+            Packet::Literal(_, v) => *v,
             Packet::Operator(_, t, sub) => {
                 let mut results = sub.iter().map(|x| x.evaluate());
                 match t {

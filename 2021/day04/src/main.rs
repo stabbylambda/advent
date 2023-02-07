@@ -194,7 +194,7 @@ impl Bingo {
 #[test]
 fn first() {
     let input = include_str!("../test.txt");
-    let mut data = Bingo::new(&input);
+    let mut data = Bingo::new(input);
     let result = data.play();
     assert_eq!(4512, result);
 }
@@ -202,7 +202,7 @@ fn first() {
 #[test]
 fn second() {
     let input = include_str!("../test.txt");
-    let mut data = Bingo::new(&input);
+    let mut data = Bingo::new(input);
     let result = data.determine_last_winner();
     assert_eq!(1924, result);
 }
@@ -217,13 +217,13 @@ fn winner() {
         "0 1 2 3 4",
     ]);
 
-    let mut col = b.clone();
+    let mut col = b;
     for x in 0..5 {
         col.cells[0][x].mark();
     }
     assert!(col.is_a_winner());
 
-    let mut row = b.clone();
+    let mut row = b;
     for x in 0..5 {
         row.cells[x][2].mark();
     }
@@ -232,13 +232,11 @@ fn winner() {
 
 #[test]
 fn score() {
-    let b = Board::new(&vec![
-        "14 21 17 24  4",
+    let b = Board::new(&["14 21 17 24  4",
         "10 16 15  9 19",
         "18  8 23 26 20",
         "22 11 13  6  5",
-        " 2  0 12  3  7",
-    ]);
+        " 2  0 12  3  7"]);
 
     let draws = vec![7, 4, 9, 5, 11, 17, 23, 2, 0, 14, 21, 24];
     let mut bingo = Bingo {

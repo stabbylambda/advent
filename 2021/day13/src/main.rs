@@ -46,7 +46,7 @@ impl Grid {
 
     fn count(&self) -> u32 {
         self.grid.iter().fold(0, |acc, row| {
-            acc + row.iter().filter(|x| **x == true).count() as u32
+            acc + row.iter().filter(|x| **x).count() as u32
         })
     }
 
@@ -168,14 +168,14 @@ mod test {
     #[test]
     fn first() {
         let lines = include_str!("../test.txt");
-        let result = problem1(&lines);
+        let result = problem1(lines);
         assert_eq!(result, 17)
     }
 
     #[test]
     fn second() {
         let lines = include_str!("../test.txt");
-        let result = problem2(&lines);
+        let result = problem2(lines);
         let expected = r#"#####
 #...#
 #...#
