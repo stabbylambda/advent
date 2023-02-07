@@ -7,13 +7,14 @@ use nom::{
     character::complete::{anychar, i32, newline},
     combinator::map,
     multi::separated_list1,
-    sequence::{preceded, separated_pair},
+    sequence::{preceded, separated_pair, terminated, tuple},
     IResult,
 };
 
 fn main() {
     let input = get_raw_input();
     let input = parse(&input);
+    input.print();
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -21,7 +22,6 @@ fn main() {
     let score = problem2(&input);
     println!("problem 2 score: {score}");
 }
-
 type Input = Program;
 #[derive(Clone)]
 struct Program {
@@ -80,6 +80,7 @@ enum Instruction {
     Copy(Value, Register),
     Increment(Register),
     Decrement(Register),
+    Multiply(Register, Value, Value),
     JumpNotZero(Value, Value),
     Toggle(Value),
     Skip,
@@ -91,6 +92,7 @@ impl Display for Instruction {
             Instruction::Copy(a, b) => write!(f, "cpy {} {}", a, b),
             Instruction::Increment(a) => write!(f, "inc {}", a),
             Instruction::Decrement(a) => write!(f, "dec {}", a),
+            Instruction::Multiply(a, b, c) => write!(f, "mul {} {} {}", a, b, c),
             Instruction::JumpNotZero(a, b) => write!(f, "jnz {} {}", a, b),
             Instruction::Toggle(a) => write!(f, "tgl {}", a),
             Instruction::Skip => write!(f, "skip"),
@@ -108,7 +110,9 @@ impl Instruction {
 
             // For two-argument instructions, jnz becomes cpy, and all other two-instructions become jnz.
             Instruction::JumpNotZero(a, Value::Register(r)) => Instruction::Copy(*a, *r),
-            Instruction::Copy(a, b) => Self::JumpNotZero(*a, Value::Register(*b)),
+            Instruction::Copy(a, b) => Instruction::JumpNotZero(*a, Value::Register(*b)),
+
+            Instruction::Multiply(a, b, c) => Instruction::Multiply(*a, *b, *c),
 
             // If toggling produces an invalid instruction (like cpy 1 2) and an attempt is later made to execute that instruction, skip it instead.
             Instruction::Skip => Instruction::Skip,
@@ -121,36 +125,43 @@ impl Instruction {
 fn parse(input: &str) -> Input {
     let value = |s| alt((map(i32, Value::Literal), map(anychar, Value::Register)))(s);
 
-    let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            alt((
-                map(preceded(tag("tgl "), value), Instruction::Toggle),
-                map(preceded(tag("inc "), anychar), Instruction::Increment),
-                map(preceded(tag("dec "), anychar), Instruction::Decrement),
-                map(
-                    preceded(tag("cpy "), separated_pair(value, tag(" "), anychar)),
-                    |(v, r)| Instruction::Copy(v, r),
-                ),
-                map(
-                    preceded(tag("jnz "), separated_pair(value, tag(" "), value)),
-                    |(r, o)| Instruction::JumpNotZero(r, o),
-                ),
+    let tgl = |s| map(preceded(tag("tgl "), value), Instruction::Toggle)(s);
+    let skip = |s| map(tag("skip"), |_| Instruction::Skip)(s);
+    let inc = |s| map(preceded(tag("inc "), anychar), Instruction::Increment)(s);
+    let dec = |s| map(preceded(tag("dec "), anychar), Instruction::Decrement)(s);
+    let cpy = |s| {
+        map(
+            preceded(tag("cpy "), separated_pair(value, tag(" "), anychar)),
+            |(v, r)| Instruction::Copy(v, r),
+        )(s)
+    };
+    let jnz = |s| {
+        map(
+            preceded(tag("jnz "), separated_pair(value, tag(" "), value)),
+            |(r, o)| Instruction::JumpNotZero(r, o),
+        )(s)
+    };
+    let mul = |s| {
+        map(
+            tuple((
+                tag("mul "),
+                terminated(anychar, tag(" ")),
+                terminated(value, tag(" ")),
+                value,
             )),
-        ),
+            |(_, a, b, c)| Instruction::Multiply(a, b, c),
+        )(s)
+    };
+
+    let result: IResult<&str, Input> = map(
+        separated_list1(newline, alt((skip, tgl, inc, dec, cpy, jnz, mul))),
         Program::new,
     )(input);
 
     result.unwrap().1
 }
 
-fn compute(input: &mut Input, a: i32, b: i32, c: i32, d: i32) -> (i32, i32, i32, i32) {
-    let mut registers = HashMap::new();
-    registers.insert('a', a);
-    registers.insert('b', b);
-    registers.insert('c', c);
-    registers.insert('d', d);
-
+fn compute(input: &mut Input, registers: &mut HashMap<char, i32>) {
     while let Some(instruction) = input.current() {
         input.counter += match instruction {
             Instruction::Toggle(v) => {
@@ -183,6 +194,22 @@ fn compute(input: &mut Input, a: i32, b: i32, c: i32, d: i32) -> (i32, i32, i32,
                 registers.entry(*r).and_modify(|x| *x -= 1);
                 1
             }
+            Instruction::Multiply(a, b, d) => {
+                let b = match *b {
+                    Value::Literal(x) => x,
+                    Value::Register(r) => *registers.get(&r).unwrap(),
+                };
+                let d = match *d {
+                    Value::Literal(x) => x,
+                    Value::Register(r) => *registers.get(&r).unwrap(),
+                };
+
+                registers.entry(*a).and_modify(|a| *a += b * d);
+                registers.entry('c').and_modify(|c| *c = 0);
+                registers.entry('d').and_modify(|d| *d = 0);
+
+                1
+            }
             Instruction::JumpNotZero(v, o) => {
                 let v = match *v {
                     Value::Literal(x) => x,
@@ -203,22 +230,28 @@ fn compute(input: &mut Input, a: i32, b: i32, c: i32, d: i32) -> (i32, i32, i32,
             Instruction::Skip => 1,
         };
     }
-
-    (
-        registers[&'a'],
-        registers[&'b'],
-        registers[&'c'],
-        registers[&'d'],
-    )
 }
+
 fn problem1(input: &Input) -> i32 {
-    let (a, _, _, _) = compute(&mut input.clone(), 7, 0, 0, 0);
-    a
+    let mut registers = HashMap::new();
+    registers.insert('a', 7);
+    registers.insert('b', 0);
+    registers.insert('c', 0);
+    registers.insert('d', 0);
+
+    compute(&mut input.clone(), &mut registers);
+    registers[&'a']
 }
 
 fn problem2(input: &Input) -> i32 {
-    let (a, _, _, _) = compute(&mut input.clone(), 12, 0, 0, 0);
-    a
+    let mut registers = HashMap::new();
+    registers.insert('a', 12);
+    registers.insert('b', 0);
+    registers.insert('c', 0);
+    registers.insert('d', 0);
+
+    compute(&mut input.clone(), &mut registers);
+    registers[&'a']
 }
 
 #[cfg(test)]
@@ -231,7 +264,7 @@ mod test {
         let input = get_raw_input();
         let input = parse(&input);
         let result = problem1(&input);
-        assert_eq!(result, 3)
+        assert_eq!(result, 11640)
     }
 
     #[test]
@@ -239,6 +272,6 @@ mod test {
         let input = get_raw_input();
         let input = parse(&input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 479008200)
     }
 }
