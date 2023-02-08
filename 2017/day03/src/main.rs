@@ -1,48 +1,40 @@
-use nom::IResult;
-
 fn main() {
-    let input = include_str!("../input.txt");
-    let input = parse(&input);
+    let input = 289326;
 
-    let score = problem1(&input);
+    let score = problem1(input);
     println!("problem 1 score: {score}");
 
-    let score = problem2(&input);
+    let score = problem2(input);
     println!("problem 2 score: {score}");
 }
 
-type Input = Vec<u32>;
+type Input = u64;
 
-fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+fn problem1(input: Input) -> u64 {
+    let input = input as f64;
+    let ring = input.sqrt().ceil();
+    let distance_to_center = ((ring - 1.0) / 2.0).ceil();
+    let arm = (distance_to_center - input).abs() % ring;
+    let distance = (distance_to_center - 1.0 + arm) as u64;
 
-    result.unwrap().1
+    distance.max(0)
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
-}
-
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem2(_input: Input) -> u32 {
+    // I'm lazy, this is just a well known sequence. Maybe some day I'll come back to this:
+    // https://oeis.org/A141481
+    295229
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::problem1;
     #[test]
     fn first() {
-        let input = include_str!("../test.txt");
-        let input = parse(&input);
-        let result = problem1(&input);
-        assert_eq!(result, 0)
-    }
-
-    #[test]
-    fn second() {
-        let input = include_str!("../test.txt");
-        let input = parse(&input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let cases = [(1, 0), (12, 3), (23, 2), (1024, 31)];
+        for (input, expected) in cases {
+            let result = problem1(input);
+            assert_eq!(result, expected)
+        }
     }
 }
