@@ -1,48 +1,65 @@
-use nom::IResult;
+use std::collections::HashMap;
+
+use nom::{
+    character::complete::{space1, u32},
+    multi::separated_list1,
+    IResult,
+};
 
 fn main() {
     let input = include_str!("../input.txt");
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
+    let (total, cycles) = problem(&input);
+    println!("problem 1 score: {total}");
 
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    println!("problem 2 score: {cycles}");
 }
 
 type Input = Vec<u32>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    let result: IResult<&str, Input> = separated_list1(space1, u32)(input);
 
     result.unwrap().1
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
-}
+fn problem(input: &Input) -> (u32, u32) {
+    let mut banks = input.clone();
+    let len = banks.len();
+    let mut seen: HashMap<Vec<u32>, u32> = HashMap::new();
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+    for cycle in 0.. {
+        // if we've already seen this bank configuration, return the previous cycle we saw it on
+        if let Some(previous) = seen.insert(banks.clone(), cycle) {
+            return (cycle, cycle - previous);
+        }
+
+        // get the max and its position
+        let &max = banks.iter().max().unwrap();
+        let pos = banks.iter().position(|x| *x == max).unwrap();
+
+        // clear the current position
+        banks[pos] = 0;
+
+        // add one to all the other banks in sequence
+        for n in 1..=max {
+            banks[(pos + (n as usize)) % len] += 1;
+        }
+    }
+
+    unreachable!("There *must* be a cycle by definition")
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::{parse, problem};
     #[test]
-    fn first() {
+    fn test() {
         let input = include_str!("../test.txt");
         let input = parse(input);
-        let result = problem1(&input);
-        assert_eq!(result, 0)
-    }
-
-    #[test]
-    fn second() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let (total, cycles) = problem(&input);
+        assert_eq!(total, 5);
+        assert_eq!(cycles, 4);
     }
 }
