@@ -1,48 +1,85 @@
-use nom::IResult;
-
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(input);
 
-    let score = problem1(&input);
+    let (score, trash_chars) = problem(input);
     println!("problem 1 score: {score}");
-
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    println!("problem 2 score: {trash_chars}");
 }
 
-type Input = Vec<u32>;
+fn problem(input: &str) -> (u32, u32) {
+    let mut chars = input.chars();
+    let mut depth = 0;
+    let mut score = 0;
+    let mut trash_chars = 0;
+    let mut in_trash = false;
 
-fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    while let Some(c) = chars.next() {
+        match c {
+            '!' => {
+                // cancel the next character
+                chars.next();
+            }
+            '{' if !in_trash => {
+                depth += 1;
+            }
+            '}' if !in_trash => {
+                score += depth;
+                depth -= 1;
+            }
+            '<' if in_trash => {
+                trash_chars += 1;
+            }
+            '<' => {
+                in_trash = true;
+            }
+            '>' => {
+                in_trash = false;
+            }
+            _ if in_trash => {
+                trash_chars += 1;
+            }
+            _ => {}
+        }
+    }
 
-    result.unwrap().1
-}
-
-fn problem1(_input: &Input) -> u32 {
-    todo!()
-}
-
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+    (score, trash_chars)
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::problem;
     #[test]
     fn first() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem1(&input);
-        assert_eq!(result, 0)
+        let cases = [
+            (r#"{}"#, 1),
+            (r#"{{{}}}"#, 6),
+            (r#"{{},{}}"#, 5),
+            (r#"{{{},{},{{}}}}"#, 16),
+            (r#"{<a>,<a>,<a>,<a>}"#, 1),
+            (r#"{{<ab>},{<ab>},{<ab>},{<ab>}}"#, 9),
+            (r#"{{<!!>},{<!!>},{<!!>},{<!!>}}"#, 9),
+            (r#"{{<a!>},{<a!>},{<a!>},{<ab>}}"#, 3),
+        ];
+        for (input, expected) in cases {
+            let (result, _) = problem(input);
+            assert_eq!(result, expected);
+        }
     }
 
     #[test]
     fn second() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let cases = [
+            (r#"<>"#, 0),
+            (r#"<random characters>"#, 17),
+            (r#"<<<<>"#, 3),
+            (r#"<{!>}>"#, 2),
+            (r#"<!!>"#, 0),
+            (r#"<!!!>>"#, 0),
+            (r#"<{o"i!a,<{i<a>"#, 10),
+        ];
+        for (input, expected) in cases {
+            let (_, result) = problem(input);
+            assert_eq!(result, expected);
+        }
     }
 }
