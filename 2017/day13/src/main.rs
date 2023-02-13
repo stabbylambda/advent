@@ -1,4 +1,10 @@
-use nom::IResult;
+use nom::{
+    bytes::complete::tag,
+    character::complete::{newline, u32},
+    multi::separated_list1,
+    sequence::separated_pair,
+    IResult,
+};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -11,20 +17,33 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Vec<u32>;
+type Input = Vec<(u32, u32)>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    let result: IResult<&str, Input> =
+        separated_list1(newline, separated_pair(u32, tag(": "), u32))(input);
 
     result.unwrap().1
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
+fn sensors_tripped(input: &Input, start: u32) -> Vec<(u32, u32)> {
+    input
+        .iter()
+        .filter_map(|&(t, depth)| {
+            let cycle = 2 * (depth - 1);
+            ((start + t) % cycle == 0).then_some((t, depth))
+        })
+        .collect()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem1(input: &Input) -> u32 {
+    sensors_tripped(input, 0).iter().map(|(x, y)| x * y).sum()
+}
+
+fn problem2(input: &Input) -> u32 {
+    (0u32..)
+        .find(|&n| sensors_tripped(input, n).is_empty())
+        .unwrap()
 }
 
 #[cfg(test)]
@@ -35,7 +54,7 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 24)
     }
 
     #[test]
@@ -43,6 +62,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 10)
     }
 }
