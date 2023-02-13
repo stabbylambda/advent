@@ -16,8 +16,8 @@ fn main() {
     let input = include_str!("../input.txt");
     let input = parse(input);
 
-    let score = problem1(&input, WIDTH, HEIGHT);
-    println!("problem 1 score: {score}");
+    let answer = problem1(&input, WIDTH, HEIGHT);
+    println!("problem 1 answer: {answer}");
 }
 
 type Input = Vec<Instruction>;

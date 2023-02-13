@@ -14,11 +14,11 @@ fn main() {
     let lines = include_str!("../test.txt");
     let input = parse(lines);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
+    let answer = problem1(&input);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&input);
+    println!("problem 2 answer: {answer}");
 }
 
 type Tree = u32;

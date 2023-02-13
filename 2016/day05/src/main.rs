@@ -3,11 +3,11 @@ use crypto::{digest::Digest, md5::Md5};
 fn main() {
     let input = include_str!("../input.txt");
 
-    let score = problem1(input);
-    println!("problem 1 score: {score}");
+    let answer = problem1(input);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(input);
-    println!("problem 2 score: {score}");
+    let answer = problem2(input);
+    println!("problem 2 answer: {answer}");
 }
 
 fn hash(md5: &Md5, start: u128) -> (u128, [u8; 16]) {

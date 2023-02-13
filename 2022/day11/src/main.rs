@@ -12,12 +12,12 @@ fn main() {
     let input = include_str!("../input.txt");
     let mut monkeys = parse(input);
 
-    let score = problem1(&mut monkeys);
-    println!("problem 1 score: {score}");
+    let answer = problem1(&mut monkeys);
+    println!("problem 1 answer: {answer}");
 
     let mut monkeys = parse(input);
-    let score = problem2(&mut monkeys);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&mut monkeys);
+    println!("problem 2 answer: {answer}");
 }
 
 type Input = Vec<Monkey>;

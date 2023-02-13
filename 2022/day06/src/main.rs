@@ -3,11 +3,11 @@ use std::collections::BTreeSet;
 fn main() {
     let lines = include_str!("../input.txt");
 
-    let score = problem1(lines);
-    println!("problem 1 score: {score}");
+    let answer = problem1(lines);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(lines);
-    println!("problem 2 score: {score}");
+    let answer = problem2(lines);
+    println!("problem 2 answer: {answer}");
 }
 
 fn unique_string(count: usize, line: &str) -> u32 {

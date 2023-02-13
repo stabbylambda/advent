@@ -9,11 +9,11 @@ fn main() {
     let input = include_str!("../input.txt");
     let input = parse(input);
 
-    let score = problem1(input.clone());
-    println!("problem 1 score: {score}");
+    let answer = problem1(input.clone());
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(input);
-    println!("problem 2 score: {score}");
+    let answer = problem2(input);
+    println!("problem 2 answer: {answer}");
 }
 fn parse(input: &str) -> Vec<Vec<u32>> {
     let result: IResult<&str, Vec<Vec<u32>>> = separated_list1(newline, many1(single_digit))(input);

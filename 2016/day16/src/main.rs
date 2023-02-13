@@ -4,16 +4,16 @@ fn main() {
         initial: "01000100010010111",
     };
 
-    let score = problem(&input);
-    println!("problem 1 score: {score}");
+    let answer = problem(&input);
+    println!("problem 1 answer: {answer}");
 
     let input = Disc {
         length: 35651584,
         initial: "01000100010010111",
     };
 
-    let score = problem(&input);
-    println!("problem 2 score: {score}");
+    let answer = problem(&input);
+    println!("problem 2 answer: {answer}");
 }
 
 type Input<'a> = Disc<'a>;

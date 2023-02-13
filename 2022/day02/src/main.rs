@@ -8,11 +8,11 @@ use nom::{
 fn main() {
     let lines = include_str!("../input.txt");
 
-    let score = problem1(lines);
-    println!("problem 1 score: {score}");
+    let answer = problem1(lines);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(lines);
-    println!("problem 2 score: {score}");
+    let answer = problem2(lines);
+    println!("problem 2 answer: {answer}");
 }
 
 fn problem1(lines: &str) -> u32 {
@@ -126,14 +126,14 @@ mod test {
     #[test]
     fn first() {
         let lines = include_str!("../test.txt");
-        let score = problem1(lines);
-        assert_eq!(score, 15)
+        let answer = problem1(lines);
+        assert_eq!(answer, 15)
     }
 
     #[test]
     fn second() {
         let lines = include_str!("../test.txt");
-        let score = problem2(lines);
-        assert_eq!(score, 12)
+        let answer = problem2(lines);
+        assert_eq!(answer, 12)
     }
 }

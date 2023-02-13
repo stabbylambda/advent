@@ -1,8 +1,8 @@
 fn main() {
     let row = 2981;
     let column = 3075;
-    let score = problem1(row, column);
-    println!("problem 1 score: {score}");
+    let answer = problem1(row, column);
+    println!("problem 1 answer: {answer}");
 }
 
 fn triangle(row: u64, col: u64) -> u64 {

@@ -11,11 +11,11 @@ fn main() {
     let input = include_str!("../input.txt");
     let mut input = parse(input);
 
-    let score = problem1(&mut input.clone());
-    println!("problem 1 score: {score}");
+    let answer = problem1(&mut input.clone());
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(&mut input);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&mut input);
+    println!("problem 2 answer: {answer}");
 }
 
 type Input = BTreeSet<(i64, i64)>;

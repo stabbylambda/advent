@@ -7,11 +7,11 @@ fn main() {
     let input = include_str!("../input.txt");
     let input = parser::parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
+    let answer = problem1(&input);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&input);
+    println!("problem 2 answer: {answer}");
 }
 
 type Input = Caves;
@@ -128,7 +128,7 @@ fn path_score(caves: &Caves, path: &Path, time_left: u32) -> u32 {
             // get the remaining time to get to this node and then open the valve
             let time_left = time_left - caves.distances[[pos, v.id]] - 1;
             // calculate the new score based off the steam we'll release from this valve
-            let score = score + v.flow_rate * time_left;
+            let answer = score + v.flow_rate * time_left;
 
             (v.id, time_left, score)
         },

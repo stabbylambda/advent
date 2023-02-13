@@ -13,11 +13,11 @@ fn main() {
     let mut input = Input::parse(raw);
     let mut input2 = input.clone();
 
-    let score = problem1(&mut input);
-    println!("problem 1 score: {score}");
+    let answer = problem1(&mut input);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(&mut input2);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&mut input2);
+    println!("problem 2 answer: {answer}");
 }
 
 type Stack<'a> = Vec<&'a str>;

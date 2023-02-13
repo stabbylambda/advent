@@ -15,8 +15,8 @@ fn main() {
     let input = include_str!("../input.txt");
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
+    let answer = problem1(&input);
+    println!("problem 1 answer: {answer}");
 
     let mut input = input;
 
@@ -26,8 +26,8 @@ fn main() {
         input.floors[0].items.extend([chip, generator]);
     }
 
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&input);
+    println!("problem 2 answer: {answer}");
 }
 
 type Input = Elevator;
