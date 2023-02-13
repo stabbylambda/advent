@@ -1,48 +1,73 @@
-use nom::IResult;
+use nom::{branch::alt, bytes::complete::tag, combinator::map, multi::separated_list1, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    let (answer1, answer2) = problem(&input);
+    println!("problem 1 answer: {answer1}");
+    println!("problem 2 answer: {answer2}");
 }
 
-type Input = Vec<u32>;
+type Input = Vec<(i32, i32)>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    let result: IResult<&str, Input> = separated_list1(
+        tag(","),
+        alt((
+            map(tag("ne"), |_| (1, -1)),
+            map(tag("nw"), |_| (0, 1)),
+            map(tag("se"), |_| (0, -1)),
+            map(tag("sw"), |_| (-1, 1)),
+            map(tag("n"), |_| (1, 0)),
+            map(tag("s"), |_| (-1, 0)),
+        )),
+    )(input);
 
     result.unwrap().1
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
-}
+fn problem(input: &Input) -> (i32, i32) {
+    /* This is awesome. The hex movement is obviously vector addition, but once you get that, you're
+    in hex coordinates with weird rows. I bashed my head against a "normal" hex system for a bit and then found
+    https://stackoverflow.com/a/5085274  where the axes are rotated so you can do normal distances between hexes.
+    */
+    let (mut x, mut y) = (0, 0);
+    let mut max_result = 0;
+    let mut result = 0;
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+    for (dx, dy) in input {
+        x += dx;
+        y += dy;
+
+        result = if x.signum() == y.signum() {
+            (x + y).abs()
+        } else {
+            x.abs().max(y.abs())
+        };
+
+        max_result = max_result.max(result);
+    }
+
+    (result, max_result)
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::{parse, problem};
     #[test]
     fn first() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem1(&input);
-        assert_eq!(result, 0)
-    }
-
-    #[test]
-    fn second() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let cases = [
+            ("ne,ne,ne", 3, 3),
+            ("ne,ne,sw,sw", 0, 2),
+            ("ne,ne,s,s", 2, 2),
+            ("se,sw,se,sw,sw", 3, 3),
+        ];
+        for (input, expected_distance, expected_max) in cases {
+            let input = parse(input);
+            let (distance, max) = problem(&input);
+            assert_eq!(distance, expected_distance);
+            assert_eq!(max, expected_max);
+        }
     }
 }
