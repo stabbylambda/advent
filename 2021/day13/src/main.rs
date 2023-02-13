@@ -14,11 +14,11 @@ use nom::{
 fn main() {
     let lines = include_str!("../input.txt");
 
-    let score = problem1(lines);
-    println!("problem 1 score: {score}");
+    let answer = problem1(lines);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(lines);
-    println!("problem 2 score:\n{score}");
+    let answer = problem2(lines);
+    println!("problem 2 score:\n{answer}");
 }
 
 #[derive(Debug)]

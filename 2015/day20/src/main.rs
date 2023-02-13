@@ -1,11 +1,11 @@
 use std::ops::Div;
 
 fn main() {
-    let score = problem1(HOUSES);
-    println!("problem 1 score: {score}");
+    let answer = problem1(HOUSES);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(HOUSES);
-    println!("problem 2 score: {score}");
+    let answer = problem2(HOUSES);
+    println!("problem 2 answer: {answer}");
 }
 
 const HOUSES: u64 = 33_100_000;

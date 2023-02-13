@@ -8,11 +8,11 @@ use nom::{
 fn main() {
     let input = include_str!("../input.txt");
 
-    let score = problem1(input, 256);
-    println!("problem 1 score: {score}");
+    let answer = problem1(input, 256);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(input, 256);
-    println!("problem 2 score: {score}");
+    let answer = problem2(input, 256);
+    println!("problem 2 answer: {answer}");
 }
 
 fn parse(input: &str) -> Vec<usize> {

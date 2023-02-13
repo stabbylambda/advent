@@ -5,11 +5,11 @@ fn main() {
     let input = include_str!("../input.txt");
     let graph = GraphData::parse(input);
 
-    let score = problem1(&graph);
-    println!("problem 1 score: {score}");
+    let answer = problem1(&graph);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(&graph);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&graph);
+    println!("problem 2 answer: {answer}");
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Default, Clone, Copy)]

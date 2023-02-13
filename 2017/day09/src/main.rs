@@ -1,8 +1,8 @@
 fn main() {
     let input = include_str!("../input.txt");
 
-    let (score, trash_chars) = problem(input);
-    println!("problem 1 score: {score}");
+    let (answer, trash_chars) = problem(input);
+    println!("problem 1 answer: {answer}");
     println!("problem 2 score: {trash_chars}");
 }
 

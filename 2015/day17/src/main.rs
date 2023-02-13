@@ -9,11 +9,11 @@ fn main() {
     let input = include_str!("../input.txt");
     let input = parse(input);
 
-    let score = problem1(&input, 150);
-    println!("problem 1 score: {score}");
+    let answer = problem1(&input, 150);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(&input, 150);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&input, 150);
+    println!("problem 2 answer: {answer}");
 }
 
 type Input = Vec<u32>;

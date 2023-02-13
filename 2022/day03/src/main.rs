@@ -4,11 +4,11 @@ fn main() {
     let lines = include_str!("../input.txt");
     let rucksacks = get_rucksacks(lines);
 
-    let score = problem1(&rucksacks);
-    println!("problem 1 score: {score}");
+    let answer = problem1(&rucksacks);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(&rucksacks);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&rucksacks);
+    println!("problem 2 answer: {answer}");
 }
 
 #[derive(Debug)]

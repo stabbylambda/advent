@@ -12,12 +12,12 @@ fn main() {
     let input = parse(input, 100);
 
     let mut lights = input.clone();
-    let score = problem1(&mut lights, 100);
-    println!("problem 1 score: {score}");
+    let answer = problem1(&mut lights, 100);
+    println!("problem 1 answer: {answer}");
 
     let mut lights = input;
-    let score = problem2(&mut lights, 100);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&mut lights, 100);
+    println!("problem 2 answer: {answer}");
 }
 
 type Input = Array3<bool>;

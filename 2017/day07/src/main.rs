@@ -19,8 +19,8 @@ fn main() {
     let root = problem1(&input);
     println!("problem 1 score: {root}");
 
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&input);
+    println!("problem 2 answer: {answer}");
 }
 
 type Input<'a> = Program<'a>;

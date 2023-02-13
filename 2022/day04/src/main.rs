@@ -9,11 +9,11 @@ fn main() {
     let lines = include_str!("../input.txt");
     let assignments = parse_assignments(lines);
 
-    let score = problem1(&assignments);
-    println!("problem 1 score: {score}");
+    let answer = problem1(&assignments);
+    println!("problem 1 answer: {answer}");
 
-    let score = problem2(&assignments);
-    println!("problem 2 score: {score}");
+    let answer = problem2(&assignments);
+    println!("problem 2 answer: {answer}");
 }
 
 #[derive(Debug)]
