@@ -78,10 +78,7 @@ fn get_edges(maze: &Map<bool>) -> Vec<Vec<Edge>> {
                         return None;
                     }
 
-                    Some(Edge {
-                        node: n.get_grid_index(),
-                        cost: 1,
-                    })
+                    Some(Edge::from_map_square(n))
                 })
                 .collect()
         })
