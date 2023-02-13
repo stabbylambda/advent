@@ -1,10 +1,26 @@
 use std::{cmp::Ordering, collections::BinaryHeap};
 
+use crate::map::MapSquare;
+
 #[derive(Debug)]
 pub struct Edge {
     pub node: usize,
     pub cost: usize,
 }
+
+impl Edge {
+    pub fn new(node: usize) -> Edge {
+        Edge { node, cost: 1 }
+    }
+
+    pub fn from_map_square<T>(square: &MapSquare<T>) -> Edge {
+        Edge {
+            node: square.get_grid_index(),
+            cost: 1,
+        }
+    }
+}
+
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct State {
     pub cost: usize,
