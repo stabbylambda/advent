@@ -23,6 +23,13 @@ impl<T> Map<T> {
         self.points[y][x] = data;
     }
 
+    pub fn get_from_grid_index(&self, grid_index: usize) -> MapSquare<T> {
+        let y = grid_index / self.width;
+        let x = grid_index % self.width;
+
+        self.get((x, y))
+    }
+
     pub fn get(&self, (x, y): Coord) -> MapSquare<T> {
         let data = &self.points[y][x];
         MapSquare {

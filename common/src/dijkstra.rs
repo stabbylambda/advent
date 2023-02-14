@@ -1,4 +1,7 @@
-use std::{cmp::Ordering, collections::BinaryHeap};
+use std::{
+    cmp::Ordering,
+    collections::{BinaryHeap, HashMap},
+};
 
 use crate::map::MapSquare;
 
@@ -82,4 +85,34 @@ pub fn shortest_path(
     }
 
     None
+}
+
+pub fn connected_components(input: &Vec<Vec<Edge>>) -> HashMap<usize, Vec<usize>> {
+    let mut visited = vec![false; input.len()];
+    let mut groups = HashMap::new();
+
+    for v in 0..input.len() {
+        if !visited[v] {
+            let mut group = vec![];
+            let mut queue = BinaryHeap::new();
+            queue.push(v);
+            visited[v] = true;
+
+            // bfs through the adjacency list and find all the components connected to v
+            while let Some(v1) = queue.pop() {
+                group.push(v1);
+                for e in &input[v1] {
+                    let v2 = e.node;
+                    if !visited[v2] {
+                        visited[v2] = true;
+                        queue.push(v2);
+                    }
+                }
+            }
+
+            groups.insert(v, group);
+        }
+    }
+
+    groups
 }
