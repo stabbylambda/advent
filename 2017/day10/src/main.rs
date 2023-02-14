@@ -1,9 +1,5 @@
-use std::collections::VecDeque;
-
-use nom::{
-    bytes::complete::tag, character::complete::u32, combinator::map, multi::separated_list1,
-    IResult,
-};
+use advent_2017_10::{hash, SparseHash};
+use nom::{bytes::complete::tag, character::complete::u8, multi::separated_list1, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -15,64 +11,20 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-fn parse(input: &str) -> Vec<usize> {
-    let result: IResult<&str, Vec<usize>> =
-        separated_list1(tag(","), map(u32, |x| x as usize))(input);
+fn parse(input: &str) -> Vec<u8> {
+    let result: IResult<&str, Vec<u8>> = separated_list1(tag(","), u8)(input);
 
     result.unwrap().1
 }
 
-fn hash(input: Vec<usize>, max: usize, rounds: usize) -> impl SparseHash {
-    let mut rope: VecDeque<usize> = (0..max).collect();
-    let mut current = 0;
-    let mut skip = 0;
-
-    for _round in 0..rounds {
-        for length in &input {
-            /* Rotate to make the current at 0, reverse up to the length,
-            then rotate back so we're in the right spot again */
-            rope.rotate_left(current);
-            rope.make_contiguous()[0..*length].reverse();
-            rope.rotate_right(current);
-
-            // Move the current position forward by that length plus the skip size.
-            current = (current + length + skip) % max;
-            skip += 1;
-        }
-    }
-
-    rope.iter().cloned().collect::<Vec<usize>>()
-}
-
-trait SparseHash {
-    fn check(&self) -> usize;
-    fn to_dense(&self) -> String;
-}
-
-impl SparseHash for Vec<usize> {
-    fn check(&self) -> usize {
-        self[0] * self[1]
-    }
-
-    fn to_dense(&self) -> String {
-        let dense: String = self
-            .chunks(16)
-            .map(|x| x.iter().fold(0, |a, b| a ^ b))
-            .map(|c| format!("{:02x}", c))
-            .collect();
-
-        dense
-    }
-}
-
-fn problem1(input: &str, max: usize) -> usize {
+fn problem1(input: &str, max: usize) -> u8 {
     let input = parse(input);
     let rope = hash(input, max, 1);
     rope.check()
 }
 
 fn problem2(input: &str, max: usize) -> String {
-    let mut input: Vec<usize> = input.bytes().into_iter().map(|x| x as usize).collect();
+    let mut input: Vec<u8> = input.bytes().into_iter().collect();
     input.extend_from_slice(&[17, 31, 73, 47, 23]);
     let sparse = hash(input, max, 64);
 

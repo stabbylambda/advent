@@ -110,6 +110,7 @@ dependencies = [
 name = "advent_2017_14"
 version = "0.1.0"
 dependencies = [
+ "advent_2017_10",
  "common",
  "nom",
 ]
