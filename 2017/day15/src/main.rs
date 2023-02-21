@@ -1,48 +1,89 @@
-use nom::IResult;
-
 fn main() {
-    let input = include_str!("../input.txt");
-    let input = parse(input);
+    let generator_a = Generator::basic(873, FACTOR_A);
+    let generator_b = Generator::basic(583, FACTOR_B);
 
-    let answer = problem1(&input);
+    let answer = problem1(generator_a, generator_b);
     println!("problem 1 answer: {answer}");
 
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    let answer = problem2(generator_a, generator_b);
+    println!("problem 1 answer: {answer}");
 }
 
-type Input = Vec<u32>;
+const FACTOR_A: u64 = 16807;
+const FACTOR_B: u64 = 48271;
 
-fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
-
-    result.unwrap().1
+#[derive(Clone, Copy)]
+struct Generator {
+    current: u64,
+    factor: u64,
+    filter: Option<u64>,
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
+impl Generator {
+    fn basic(start: u64, factor: u64) -> Generator {
+        Generator {
+            current: start,
+            factor,
+            filter: None,
+        }
+    }
+
+    fn filtered(&self, filter: u64) -> Generator {
+        Generator {
+            current: self.current,
+            factor: self.factor,
+            filter: Some(filter),
+        }
+    }
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+const DIVISOR: u64 = 2147483647;
+impl Iterator for Generator {
+    type Item = u64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = (self.current * self.factor) % DIVISOR;
+        self.current = next;
+
+        // yield only the last 16 bits
+        let masked = next & 0xFFFF;
+
+        match self.filter {
+            None => Some(masked),
+            Some(x) if next % x == 0 => Some(masked),
+            // the next doesn't match the filter, so keep calculating
+            _ => self.next(),
+        }
+    }
+}
+
+fn problem1(a: Generator, b: Generator) -> usize {
+    a.zip(b).take(40_000_000).filter(|(a, b)| a == b).count()
+}
+
+fn problem2(a: Generator, b: Generator) -> usize {
+    let a = a.filtered(4);
+    let b = b.filtered(8);
+
+    a.zip(b).take(5_000_000).filter(|(a, b)| a == b).count()
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::{problem1, problem2, Generator, FACTOR_A, FACTOR_B};
     #[test]
     fn first() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem1(&input);
-        assert_eq!(result, 0)
+        let a = Generator::basic(65, FACTOR_A);
+        let b = Generator::basic(8921, FACTOR_B);
+        let result = problem1(a, b);
+        assert_eq!(result, 588)
     }
 
     #[test]
     fn second() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let a = Generator::basic(65, FACTOR_A);
+        let b = Generator::basic(8921, FACTOR_B);
+        let result = problem2(a, b);
+        assert_eq!(result, 309)
     }
 }
