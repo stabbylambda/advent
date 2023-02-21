@@ -1,48 +1,52 @@
-use nom::IResult;
-
 fn main() {
-    let input = include_str!("../input.txt");
-    let input = parse(input);
-
-    let answer = problem1(&input);
+    let input = 324;
+    let answer = problem1(input);
     println!("problem 1 answer: {answer}");
 
-    let answer = problem2(&input);
+    let answer = problem2(input);
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Vec<u32>;
+fn problem1(input: usize) -> u32 {
+    let mut v: Vec<u32> = vec![0];
+    let mut current = 0;
+    let times = 2017;
 
-fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    for n in 1..=times {
+        current = ((current + input) % v.len()) + 1;
+        v.insert(current, n);
+    }
 
-    result.unwrap().1
+    let pos = v.iter().position(|x| *x == 2017).unwrap();
+    v[pos + 1]
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
-}
+fn problem2(input: usize) -> usize {
+    let mut current = 0;
+    let mut value_after_zero = 0;
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+    for n in 1..=50_000_000 {
+        current = ((current + input) % n) + 1;
+        if current == 1 {
+            value_after_zero = n;
+        }
+    }
+
+    value_after_zero
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::{problem1, problem2};
     #[test]
     fn first() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem1(&input);
-        assert_eq!(result, 0)
+        let result = problem1(3);
+        assert_eq!(result, 638)
     }
 
     #[test]
     fn second() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let result = problem2(3);
+        assert_eq!(result, 1222153)
     }
 }
