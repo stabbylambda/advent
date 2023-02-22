@@ -1,9 +1,9 @@
 use std::{collections::VecDeque, fmt::Display};
 
-use common::{
-    instructions::{instruction1, instruction2},
-    program::Program,
-    registers::{register, value, Register, Value},
+use common::program::{
+    parsing::{instruction1, instruction2, register, value},
+    registers::{Register, Value},
+    Program,
 };
 use nom::{branch::alt, character::complete::newline, multi::separated_list1, IResult};
 

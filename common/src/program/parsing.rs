@@ -1,10 +1,21 @@
 use nom::{
+    branch::alt,
     bytes::complete::tag,
-    character::complete::char,
+    character::complete::{anychar, char, i64},
     combinator::map,
     sequence::{preceded, separated_pair, terminated, tuple},
     IResult,
 };
+
+use super::registers::{Register, Value};
+pub fn value(s: &str) -> IResult<&str, Value> {
+    alt((map(i64, Value::Literal), map(anychar, Value::Register)))(s)
+}
+
+pub fn register(s: &str) -> IResult<&str, Register> {
+    anychar(s)
+}
+
 pub fn instruction0<'a, R>(name: &'a str, r: R) -> impl Fn(&'a str) -> IResult<&'a str, R>
 where
     R: Copy,
