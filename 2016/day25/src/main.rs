@@ -1,17 +1,18 @@
 use std::fmt::Display;
 
+use common::{
+    instructions::{instruction0, instruction1, instruction2},
+    program::Program,
+    registers::{register, value, Register, Registers, Value},
+};
 use nom::{
     branch::alt,
-    bytes::complete::tag,
-    character::complete::{anychar, newline},
+    character::complete::newline,
     combinator::{map, map_res},
     multi::separated_list1,
-    sequence::{preceded, separated_pair, terminated, tuple},
+    sequence::{terminated, tuple},
     IResult,
 };
-use registers::{Register, Registers, Value};
-
-pub mod registers;
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -21,42 +22,7 @@ fn main() {
     println!("problem 1 answer: {answer}");
 }
 
-type Input = Program;
-#[derive(Clone)]
-struct Program {
-    instructions: Vec<Instruction>,
-    counter: i32,
-}
-impl Program {
-    fn new(instructions: Vec<Instruction>) -> Program {
-        Program {
-            instructions,
-            counter: 0,
-        }
-    }
-
-    #[allow(dead_code)]
-    fn print(&self) {
-        println!();
-        for (i, x) in self.instructions.iter().enumerate() {
-            let pointer = if i == self.counter as usize { ">" } else { " " };
-            println!("{}{x}", pointer)
-        }
-        println!();
-    }
-
-    fn get(&self, idx: i32) -> Option<&Instruction> {
-        self.instructions.get(idx as usize)
-    }
-
-    fn get_mut(&mut self, idx: i32) -> Option<&mut Instruction> {
-        self.instructions.get_mut(idx as usize)
-    }
-
-    fn current(&self) -> Option<&Instruction> {
-        self.get(self.counter)
-    }
-}
+type Input = Program<Instruction>;
 
 #[derive(Debug, Clone, Copy)]
 enum Instruction {
@@ -110,26 +76,13 @@ impl Instruction {
 }
 
 fn parse(input: &str) -> Input {
-    let out = |s| map(preceded(tag("out "), Value::parse), Instruction::Transmit)(s);
-    let tgl = |s| map(preceded(tag("tgl "), Value::parse), Instruction::Toggle)(s);
-    let skip = |s| map(tag("skip"), |_| Instruction::Skip)(s);
-    let inc = |s| map(preceded(tag("inc "), anychar), Instruction::Increment)(s);
-    let dec = |s| map(preceded(tag("dec "), anychar), Instruction::Decrement)(s);
-    let cpy = |s| {
-        map(
-            preceded(tag("cpy "), separated_pair(Value::parse, tag(" "), anychar)),
-            |(v, r)| Instruction::Copy(v, r),
-        )(s)
-    };
-    let jnz = |s| {
-        map(
-            preceded(
-                tag("jnz "),
-                separated_pair(Value::parse, tag(" "), Value::parse),
-            ),
-            |(r, o)| Instruction::JumpNotZero(r, o),
-        )(s)
-    };
+    let out = |s| instruction1("out", value, Instruction::Transmit)(s);
+    let tgl = |s| instruction1("tgl", value, Instruction::Toggle)(s);
+    let skip = |s| instruction0("skip", Instruction::Skip)(s);
+    let inc = |s| instruction1("inc", register, Instruction::Increment)(s);
+    let dec = |s| instruction1("dec", register, Instruction::Decrement)(s);
+    let cpy = |s| instruction2("cpy", value, register, Instruction::Copy)(s);
+    let jnz = |s| instruction2("jnz", value, value, Instruction::JumpNotZero)(s);
 
     // this parser is able to recognize the pattern that is multiplication, if it fails, we'll just get the deoptimized
     // code
@@ -161,7 +114,7 @@ fn parse(input: &str) -> Input {
     };
 
     let ops = alt((skip, optimized_mul, tgl, inc, dec, cpy, jnz, out));
-    let result: IResult<&str, Input> = map(separated_list1(newline, ops), Program::new)(input);
+    let result: IResult<&str, Input> = map(separated_list1(newline, ops), Input::new)(input);
 
     result.unwrap().1
 }
@@ -234,7 +187,7 @@ fn compute(input: &mut Input, registers: &mut Registers) -> Vec<u32> {
     transmission
 }
 
-fn problem1(input: &Input) -> i32 {
+fn problem1(input: &Input) -> i64 {
     for a in 0.. {
         let mut registers = Registers::new(a);
         let transmission = compute(&mut input.clone(), &mut registers);
