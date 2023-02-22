@@ -42,6 +42,7 @@ fn get_edges(map: &Map<usize>) -> Vec<Vec<Edge>> {
         .map(|square| {
             square
                 .neighbors()
+                .to_vec()
                 .iter()
                 .map(|n| Edge {
                     node: n.get_grid_index(),

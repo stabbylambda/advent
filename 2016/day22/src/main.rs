@@ -111,6 +111,7 @@ fn get_edges(maze: &Map<&Node>) -> Vec<Vec<Edge>> {
 
             square
                 .neighbors()
+                .to_vec()
                 .iter()
                 .filter_map(|n| {
                     if n.data.size > 100 {

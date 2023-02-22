@@ -61,6 +61,7 @@ fn get_edges(maze: &Map<Tile>) -> Vec<Vec<Edge>> {
 
             square
                 .neighbors()
+                .to_vec()
                 .iter()
                 .filter_map(|n| {
                     if n.data == &Tile::Wall {
