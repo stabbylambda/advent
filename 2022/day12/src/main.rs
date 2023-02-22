@@ -21,7 +21,7 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 enum Position {
     Start,
     End,
@@ -74,6 +74,7 @@ fn get_edges(map: &Map<Position>) -> Vec<Vec<Edge>> {
         .map(|square| {
             square
                 .neighbors()
+                .to_vec()
                 .iter()
                 .filter_map(|neighbor| {
                     // Create an edge with weight 1 for anything that is actually a

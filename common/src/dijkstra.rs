@@ -16,7 +16,7 @@ impl Edge {
         Edge { node, cost: 1 }
     }
 
-    pub fn from_map_square<T>(square: &MapSquare<T>) -> Edge {
+    pub fn from_map_square<T: Copy>(square: &MapSquare<T>) -> Edge {
         Edge {
             node: square.get_grid_index(),
             cost: 1,

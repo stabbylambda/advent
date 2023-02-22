@@ -8,7 +8,22 @@ pub struct Map<T> {
 }
 pub type Coord = (usize, usize);
 
-impl<T> Map<T> {
+pub struct Neighbors<'a, T: Copy> {
+    pub north: Option<MapSquare<'a, T>>,
+    pub south: Option<MapSquare<'a, T>>,
+    pub east: Option<MapSquare<'a, T>>,
+    pub west: Option<MapSquare<'a, T>>,
+}
+
+impl<'a, T: Copy> Neighbors<'a, T> {
+    pub fn to_vec(&self) -> Vec<MapSquare<T>> {
+        let v = vec![self.north, self.west, self.east, self.south];
+
+        v.into_iter().flatten().collect()
+    }
+}
+
+impl<T: Copy> Map<T> {
     pub fn new(points: Vec<Vec<T>>) -> Map<T> {
         let height = points.len();
         let width = points[0].len();
@@ -39,24 +54,18 @@ impl<T> Map<T> {
         }
     }
 
-    pub fn neighbors(&self, (x, y): Coord) -> Vec<MapSquare<T>> {
-        let mut v = Vec::new();
-        if y != 0 {
-            v.push(self.get((x, y - 1)));
-        }
+    pub fn neighbors(&self, (x, y): Coord) -> Neighbors<T> {
+        let north = (y != 0).then(|| self.get((x, y - 1)));
+        let south = (y != self.height - 1).then(|| self.get((x, y + 1)));
+        let west = (x != 0).then(|| self.get((x - 1, y)));
+        let east = (x != self.width - 1).then(|| self.get((x + 1, y)));
 
-        if x != 0 {
-            v.push(self.get((x - 1, y)));
+        Neighbors {
+            north,
+            south,
+            east,
+            west,
         }
-
-        if y != self.height - 1 {
-            v.push(self.get((x, y + 1)));
-        }
-
-        if x != self.width - 1 {
-            v.push(self.get((x + 1, y)));
-        }
-        v
     }
 
     pub fn print<F>(&self, f: F)
@@ -78,7 +87,7 @@ impl<T> Map<T> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a Map<T> {
+impl<'a, T: Copy> IntoIterator for &'a Map<T> {
     type Item = MapSquare<'a, T>;
 
     type IntoIter = std::vec::IntoIter<Self::Item>;
@@ -95,15 +104,15 @@ impl<'a, T> IntoIterator for &'a Map<T> {
     }
 }
 
-#[derive(Debug)]
-pub struct MapSquare<'a, T> {
+#[derive(Clone, Copy, Debug)]
+pub struct MapSquare<'a, T: Copy> {
     map: &'a Map<T>,
     pub coords: Coord,
     pub data: &'a T,
 }
 
-impl<'a, T> MapSquare<'a, T> {
-    pub fn neighbors(&self) -> Vec<MapSquare<'a, T>> {
+impl<'a, T: Copy> MapSquare<'a, T> {
+    pub fn neighbors(&self) -> Neighbors<'a, T> {
         self.map.neighbors(self.coords)
     }
 

@@ -1,18 +1,18 @@
 use crate::map::{Map, MapSquare};
 
 #[derive(Debug)]
-pub struct OrthogonalNeighbors<'a, T> {
+pub struct OrthogonalNeighbors<'a, T: Copy> {
     pub north: Vec<MapSquare<'a, T>>,
     pub south: Vec<MapSquare<'a, T>>,
     pub east: Vec<MapSquare<'a, T>>,
     pub west: Vec<MapSquare<'a, T>>,
 }
 
-pub trait Orthogonal<'a, T> {
+pub trait Orthogonal<'a, T: Copy> {
     fn orthogonal_neighbors(&'a self, square: &MapSquare<T>) -> OrthogonalNeighbors<'a, T>;
 }
 
-impl<'a, T> Orthogonal<'a, T> for Map<T> {
+impl<'a, T: Copy> Orthogonal<'a, T> for Map<T> {
     fn orthogonal_neighbors(&'a self, square: &MapSquare<T>) -> OrthogonalNeighbors<'a, T> {
         let (x, y) = square.coords;
 
