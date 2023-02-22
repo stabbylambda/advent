@@ -1,13 +1,12 @@
 use std::{collections::HashMap, fmt::Display};
 
+use common::{
+    instructions::{instruction0, instruction1, instruction2, instruction3},
+    program::Program,
+    registers::{register, value, Register, Value},
+};
 use nom::{
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{anychar, i32, newline},
-    combinator::map,
-    multi::separated_list1,
-    sequence::{preceded, separated_pair, terminated, tuple},
-    IResult,
+    branch::alt, character::complete::newline, combinator::map, multi::separated_list1, IResult,
 };
 
 fn main() {
@@ -21,58 +20,7 @@ fn main() {
     let answer = problem2(&input);
     println!("problem 2 answer: {answer}");
 }
-type Input = Program;
-#[derive(Clone)]
-struct Program {
-    instructions: Vec<Instruction>,
-    counter: i32,
-}
-impl Program {
-    fn new(instructions: Vec<Instruction>) -> Program {
-        Program {
-            instructions,
-            counter: 0,
-        }
-    }
-
-    fn print(&self) {
-        println!();
-        for (i, x) in self.instructions.iter().enumerate() {
-            let pointer = if i == self.counter as usize { ">" } else { " " };
-            println!("{}{x}", pointer)
-        }
-        println!();
-    }
-
-    fn get(&self, idx: i32) -> Option<&Instruction> {
-        self.instructions.get(idx as usize)
-    }
-
-    fn get_mut(&mut self, idx: i32) -> Option<&mut Instruction> {
-        self.instructions.get_mut(idx as usize)
-    }
-
-    fn current(&self) -> Option<&Instruction> {
-        self.get(self.counter)
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-enum Value {
-    Literal(i32),
-    Register(Register),
-}
-
-impl Display for Value {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Value::Literal(x) => write!(f, "{x}"),
-            Value::Register(x) => write!(f, "{x}"),
-        }
-    }
-}
-
-type Register = char;
+type Input = Program<Instruction>;
 
 #[derive(Debug, Clone, Copy)]
 enum Instruction {
@@ -122,45 +70,23 @@ impl Instruction {
 }
 
 fn parse(input: &str) -> Input {
-    let value = |s| alt((map(i32, Value::Literal), map(anychar, Value::Register)))(s);
-
-    let tgl = |s| map(preceded(tag("tgl "), value), Instruction::Toggle)(s);
-    let skip = |s| map(tag("skip"), |_| Instruction::Skip)(s);
-    let inc = |s| map(preceded(tag("inc "), anychar), Instruction::Increment)(s);
-    let dec = |s| map(preceded(tag("dec "), anychar), Instruction::Decrement)(s);
-    let cpy = |s| {
-        map(
-            preceded(tag("cpy "), separated_pair(value, tag(" "), anychar)),
-            |(v, r)| Instruction::Copy(v, r),
-        )(s)
-    };
-    let jnz = |s| {
-        map(
-            preceded(tag("jnz "), separated_pair(value, tag(" "), value)),
-            |(r, o)| Instruction::JumpNotZero(r, o),
-        )(s)
-    };
-    let mul = |s| {
-        map(
-            tuple((
-                tag("mul "),
-                terminated(anychar, tag(" ")),
-                terminated(value, tag(" ")),
-                value,
-            )),
-            |(_, a, b, c)| Instruction::Multiply(a, b, c),
-        )(s)
-    };
+    let tgl = instruction1("tgl", value, Instruction::Toggle);
+    let skip = instruction0("skip", Instruction::Skip);
+    let inc = instruction1("inc", register, Instruction::Increment);
+    let dec = instruction1("dec", register, Instruction::Decrement);
+    let cpy = instruction2("cpy", value, register, Instruction::Copy);
+    let jnz = instruction2("jnz", value, value, Instruction::JumpNotZero);
+    let mul = instruction3("mul", register, value, value, Instruction::Multiply);
 
     let result: IResult<&str, Input> = map(
         separated_list1(newline, alt((skip, tgl, inc, dec, cpy, jnz, mul))),
-        Program::new,
+        Input::new,
     )(input);
 
     result.unwrap().1
 }
 
-fn compute(input: &mut Input, registers: &mut HashMap<char, i32>) {
+fn compute(input: &mut Input, registers: &mut HashMap<char, i64>) {
     while let Some(instruction) = input.current() {
         input.counter += match instruction {
             Instruction::Toggle(v) => {
@@ -231,7 +157,7 @@ fn compute(input: &mut Input, registers: &mut HashMap<char, i32>) {
     }
 }
 
-fn problem1(input: &Input) -> i32 {
+fn problem1(input: &Input) -> i64 {
     let mut registers = HashMap::new();
     registers.insert('a', 7);
     registers.insert('b', 0);
@@ -242,7 +168,7 @@ fn problem1(input: &Input) -> i32 {
     registers[&'a']
 }
 
-fn problem2(input: &Input) -> i32 {
+fn problem2(input: &Input) -> i64 {
     let mut registers = HashMap::new();
     registers.insert('a', 12);
     registers.insert('b', 0);
