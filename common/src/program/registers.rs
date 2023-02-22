@@ -1,30 +1,9 @@
 use std::{collections::HashMap, fmt::Display};
 
-use nom::{
-    branch::alt,
-    character::complete::{anychar, i64},
-    combinator::map,
-    IResult,
-};
-
 #[derive(Debug, Clone, Copy)]
 pub enum Value {
     Literal(i64),
     Register(Register),
-}
-
-impl Value {
-    pub fn parse(s: &str) -> IResult<&str, Value> {
-        alt((map(i64, Value::Literal), map(anychar, Value::Register)))(s)
-    }
-}
-
-pub fn value(s: &str) -> IResult<&str, Value> {
-    Value::parse(s)
-}
-
-pub fn register(s: &str) -> IResult<&str, Register> {
-    anychar(s)
 }
 
 impl Display for Value {
@@ -72,6 +51,10 @@ impl Registers {
 
     pub fn set(&mut self, c: char, i: i64) {
         self.registers.entry(c).and_modify(|c| *c = i);
+    }
+
+    pub fn clear(&mut self, c: char) {
+        self.registers.entry(c).and_modify(|c| *c = 0);
     }
 
     pub fn entry(&mut self, c: char) -> std::collections::hash_map::Entry<char, i64> {

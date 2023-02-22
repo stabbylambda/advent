@@ -1,6 +1,9 @@
-use std::fmt::Display;
+pub mod parsing;
+pub mod registers;
 
-use crate::registers::Registers;
+use std::{fmt::Display, ops::Add};
+
+use crate::program::registers::Registers;
 
 #[derive(Clone)]
 pub struct Program<I: Display, D = ()> {
@@ -30,10 +33,6 @@ where
             registers: Registers::all_zero(),
             data,
         }
-    }
-
-    pub fn print(&self) {
-        println!("{self}");
     }
 
     pub fn get(&self, idx: i64) -> Option<&I> {

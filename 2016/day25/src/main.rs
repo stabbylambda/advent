@@ -1,9 +1,9 @@
 use std::fmt::Display;
 
-use common::{
-    instructions::{instruction0, instruction1, instruction2},
-    program::Program,
-    registers::{register, value, Register, Registers, Value},
+use common::program::{
+    parsing::{instruction0, instruction1, instruction2, register, value},
+    registers::{Register, Registers, Value},
+    Program,
 };
 use nom::{
     branch::alt,
