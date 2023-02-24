@@ -1,48 +1,106 @@
-use nom::IResult;
+use std::collections::VecDeque;
 
 fn main() {
-    let input = include_str!("../input.txt");
-    let input = parse(input);
-
-    let answer = problem1(&input);
+    let answer = problem1();
     println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
 }
 
-type Input = Vec<u32>;
-
-fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
-
-    result.unwrap().1
+#[derive(PartialEq, Eq)]
+enum State {
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
-}
+fn problem1() -> usize {
+    /* This wasn't worth parsing. I just decided to code up the states manually. */
+    let steps = 12_994_925;
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+    let mut state = State::A;
+    /* trial and error got me to this number for the tape. I started with an equivalent number of steps,
+    got the right answer, then backed it down until it started failing. The actual number of tape cells
+    used is 5692...but that's neither here nor there. */
+    let tape_size = 6000;
+    let mut tape: VecDeque<bool> = VecDeque::from_iter((0..tape_size).map(|_| false));
+
+    for _step in 0..steps {
+        let current = tape.front_mut().unwrap();
+        state = match (state, *current) {
+            (State::A, false) => {
+                *current = true;
+                tape.rotate_right(1);
+                State::B
+            }
+            (State::A, true) => {
+                *current = false;
+                tape.rotate_left(1);
+                State::F
+            }
+            (State::B, false) => {
+                *current = false;
+                tape.rotate_right(1);
+                State::C
+            }
+            (State::B, true) => {
+                *current = false;
+                tape.rotate_right(1);
+                State::D
+            }
+            (State::C, false) => {
+                *current = true;
+                tape.rotate_left(1);
+                State::D
+            }
+            (State::C, true) => {
+                *current = true;
+                tape.rotate_right(1);
+                State::E
+            }
+            (State::D, false) => {
+                *current = false;
+                tape.rotate_left(1);
+                State::E
+            }
+            (State::D, true) => {
+                *current = false;
+                tape.rotate_left(1);
+                State::D
+            }
+            (State::E, false) => {
+                *current = false;
+                tape.rotate_right(1);
+                State::A
+            }
+            (State::E, true) => {
+                *current = true;
+                tape.rotate_right(1);
+                State::C
+            }
+            (State::F, false) => {
+                *current = true;
+                tape.rotate_left(1);
+                State::A
+            }
+            (State::F, true) => {
+                *current = true;
+                tape.rotate_right(1);
+                State::A
+            }
+        }
+    }
+
+    tape.iter().filter(|x| **x).count()
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::problem1;
     #[test]
     fn first() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem1(&input);
-        assert_eq!(result, 0)
-    }
-
-    #[test]
-    fn second() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let result = problem1();
+        assert_eq!(result, 2846)
     }
 }
