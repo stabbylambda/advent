@@ -1,7 +1,4 @@
-use std::{
-    collections::{BinaryHeap, HashSet},
-    fmt::Display,
-};
+use std::{collections::BinaryHeap, fmt::Display};
 
 use nom::{
     character::complete::{char, newline, u32},
