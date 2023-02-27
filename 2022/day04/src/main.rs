@@ -1,3 +1,6 @@
+use common::extensions::RangeExt;
+use std::ops::RangeInclusive;
+
 use nom::{
     character::complete::{char, u32 as nom_u32},
     combinator::map,
@@ -16,31 +19,16 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-#[derive(Debug)]
-struct Range(u32, u32);
-impl Range {
-    fn fully_contains(&self, other: &Range) -> bool {
-        self.0 <= other.0 && other.1 <= self.1
-    }
-
-    fn partially_contains(&self, other: &Range) -> bool {
-        let other_start_in_range = self.0 <= other.0 && other.0 <= self.1;
-        let other_end_in_range = self.0 <= other.1 && other.1 <= self.1;
-
-        other_start_in_range || other_end_in_range
-    }
-
-    fn parse(s: &str) -> IResult<&str, Range> {
-        map(
-            separated_pair(nom_u32, char('-'), nom_u32),
-            |(start, end)| Range(start, end),
-        )(s)
-    }
+fn parse_range(s: &str) -> IResult<&str, RangeInclusive<u32>> {
+    map(
+        separated_pair(nom_u32, char('-'), nom_u32),
+        |(start, end)| (start..=end),
+    )(s)
 }
 #[derive(Debug)]
 struct Assignment {
-    first: Range,
-    second: Range,
+    first: RangeInclusive<u32>,
+    second: RangeInclusive<u32>,
 }
 impl Assignment {
     fn is_full_overlap(&self) -> bool {
@@ -53,7 +41,7 @@ impl Assignment {
 
     fn parse(s: &str) -> IResult<&str, Assignment> {
         map(
-            separated_pair(Range::parse, char(','), Range::parse),
+            separated_pair(parse_range, char(','), parse_range),
             |(first, second)| Assignment { first, second },
         )(s)
     }
