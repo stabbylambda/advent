@@ -1,4 +1,4 @@
-use common::nom::coord;
+use std::ops::Range;
 
 fn main() {
     let input = 8979;
@@ -23,66 +23,62 @@ fn power_level(serial_number: i32, (x, y): (usize, usize)) -> i32 {
     hundreds - 5
 }
 
-fn create_grid(serial_number: i32) -> Vec<Vec<i32>> {
+// This is a https://en.wikipedia.org/wiki/Summed-area_table
+fn create_summed_area_table(serial_number: i32) -> Vec<Vec<i32>> {
     let mut cells = vec![vec![0; 300]; 300];
-    for (y, row) in cells.iter_mut().enumerate() {
-        for (x, cell) in row.iter_mut().enumerate() {
-            *cell = power_level(serial_number, (x + 1, y + 1));
+    for y in 0..300 {
+        for x in 0..300 {
+            let p = power_level(serial_number, (x + 1, y + 1));
+            let prev_y = (y > 0).then(|| cells[y - 1][x]).unwrap_or_default();
+            let prev_x = (x > 0).then(|| cells[y][x - 1]).unwrap_or_default();
+            let prev_xy = (x > 0 && y > 0)
+                .then(|| cells[y - 1][x - 1])
+                .unwrap_or_default();
+
+            cells[y][x] = p + prev_y + prev_x - prev_xy;
         }
     }
 
     cells
 }
 
-fn max_subgrid(grid: &[&[i32]], size: usize) -> ((usize, usize), i32) {
-    let mut max = i32::MIN;
-    let mut coords = (0, 0);
-    let mut windows = 0;
+fn find_best_subgrid(serial_number: i32, size: Range<usize>) -> (usize, usize, usize) {
+    let grid = create_summed_area_table(serial_number);
 
-    for y in 0..300 - size {
-        for x in 0..300 - size {
-            let mut sum = 0;
-            windows += 1;
-            for dy in 0..size {
-                for dx in 0..size {
-                    sum += grid[y + dy][x + dx];
-                }
-            }
-
-            if sum > max {
-                max = sum;
-                coords = (x + 1, y + 1);
-            }
-        }
-    }
-    dbg!(size, windows);
-
-    (coords, max)
-}
-
-fn problem1(serial_number: i32) -> (usize, usize) {
-    let grid = create_grid(serial_number);
-    let slice: Vec<&[i32]> = grid.iter().map(|x| x.as_slice()).collect();
-    let ((x, y), _power) = max_subgrid(&slice, 3);
-
-    (x, y)
-}
-
-fn problem2(serial_number: i32) -> (usize, usize, usize) {
-    let grid = create_grid(serial_number);
-    let slice: Vec<&[i32]> = grid.iter().map(|x| x.as_slice()).collect();
     let mut max = i32::MIN;
     let mut coords = (0, 0, 0);
 
-    for size in (1..300).rev() {
-        let ((x, y), power) = max_subgrid(&slice, size);
-        if power > max {
-            max = power;
-            coords = (x, y, size);
+    // this is a sum of intensities over a rectangular area on the grid
+    for s in size {
+        for y in s..300 {
+            for x in s..300 {
+                let d = grid[y][x];
+                let b = grid[y - s][x];
+                let c = grid[y][x - s];
+                let a = grid[y - s][x - s];
+
+                let total = d - b - c + a;
+
+                if total > max {
+                    max = total;
+                    // need to adjust for stupid off-by-one because the coords are 1 based
+                    // and we're subtracting sizes
+                    coords = (x - s + 2, y - s + 2, s);
+                }
+            }
         }
     }
 
     coords
+}
+
+fn problem1(serial_number: i32) -> (usize, usize) {
+    let (x, y, _) = find_best_subgrid(serial_number, 3..4);
+    (x, y)
+}
+
+fn problem2(serial_number: i32) -> (usize, usize, usize) {
+    find_best_subgrid(serial_number, 1..300)
 }
 
 #[cfg(test)]
@@ -110,7 +106,6 @@ mod test {
         assert_eq!(result, (21, 61));
     }
 
-    #[ignore = "basically infinite runtime...gotta get better"]
     #[test]
     fn second() {
         let result = problem2(18);
