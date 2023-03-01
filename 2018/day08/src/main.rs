@@ -93,7 +93,7 @@ fn problem2(input: &Input) -> u32 {
 
 #[cfg(test)]
 mod test {
-    use crate::{make_node, parse, problem1, problem2};
+    use crate::{parse, problem1, problem2};
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
