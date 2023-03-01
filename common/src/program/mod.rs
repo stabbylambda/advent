@@ -1,7 +1,7 @@
 pub mod parsing;
 pub mod registers;
 
-use std::{fmt::Display, ops::Add};
+use std::fmt::Display;
 
 use crate::program::registers::Registers;
 
