@@ -1,48 +1,121 @@
-use nom::IResult;
-
 fn main() {
-    let input = include_str!("../input.txt");
-    let input = parse(input);
+    let input = 440231;
 
-    let answer = problem1(&input);
+    let answer = problem1(input);
     println!("problem 1 answer: {answer}");
 
-    let answer = problem2(&input);
+    let answer = problem2(input);
     println!("problem 2 answer: {answer}");
 }
+fn digits(input: usize) -> Vec<u8> {
+    let mut input = input;
+    let mut v = vec![];
 
-type Input = Vec<u32>;
+    if input == 0 {
+        return vec![0];
+    }
 
-fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    while input != 0 {
+        let digit = input % 10;
+        input /= 10;
 
-    result.unwrap().1
+        v.push(digit as u8);
+    }
+
+    v.reverse();
+    v
+}
+fn problem1(input: usize) -> u64 {
+    let mut recipes: Vec<u8> = vec![3, 7];
+
+    let mut elf1 = 0;
+    let mut elf2 = 1;
+
+    while recipes.len() < input + 10 {
+        let recipe1 = recipes[elf1];
+        let recipe2 = recipes[elf2];
+
+        let score = recipe1 + recipe2;
+        if score >= 10 {
+            recipes.push(score / 10);
+            recipes.push(score % 10);
+        } else {
+            recipes.push(score)
+        }
+
+        elf1 = (elf1 + 1 + recipe1 as usize) % recipes.len();
+        elf2 = (elf2 + 1 + recipe2 as usize) % recipes.len();
+    }
+
+    let s: String = recipes[input..input + 10]
+        .iter()
+        .map(|x| x.to_string())
+        .collect();
+
+    s.parse::<u64>().unwrap()
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
-}
+fn problem2(input: usize) -> usize {
+    let check = digits(input);
+    let check_len = check.len();
+    let check = &check[..];
+    let mut recipes: Vec<u8> = vec![3, 7];
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+    let mut elf1 = 0;
+    let mut elf2 = 1;
+
+    loop {
+        let recipe1 = recipes[elf1];
+        let recipe2 = recipes[elf2];
+
+        let score = recipe1 + recipe2;
+        if score >= 10 {
+            recipes.push(score / 10);
+            recipes.push(score % 10);
+        } else {
+            recipes.push(score)
+        }
+
+        elf1 = (elf1 + 1 + recipe1 as usize) % recipes.len();
+        elf2 = (elf2 + 1 + recipe2 as usize) % recipes.len();
+
+        let recipe_count = recipes.len();
+
+        if recipe_count > check_len && &recipes[recipe_count - check_len..recipe_count] == check {
+            return recipe_count - check_len;
+        } else if score >= 10 {
+            let recipe_count = recipe_count - 1;
+            if recipe_count > check_len && &recipes[recipe_count - check_len..recipe_count] == check
+            {
+                return recipe_count - check_len;
+            }
+        }
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::{problem1, problem2};
     #[test]
     fn first() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem1(&input);
-        assert_eq!(result, 0)
+        let cases = [
+            (9, 5158916779),
+            (5, 124515891),
+            (18, 9251071085),
+            (2018, 5941429882),
+        ];
+        for (input, expected) in cases {
+            let result = problem1(input);
+            assert_eq!(result, expected);
+        }
     }
 
     #[test]
     fn second() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let cases = [(51589, 9), (92510, 18), (59414, 2018)];
+        for (input, expected) in cases {
+            let result = problem2(input);
+            assert_eq!(result, expected);
+        }
     }
 }
