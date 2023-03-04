@@ -1,3 +1,4 @@
+use common::extensions::PointExt;
 use nom::{
     bytes::complete::tag,
     character::complete::{i64 as nom_i64, newline},
@@ -67,15 +68,6 @@ fn parse(input: &str) -> Input {
 }
 
 type Point = (i64, i64);
-trait PointExt {
-    fn manhattan(&self, p: &Point) -> i64;
-}
-impl PointExt for Point {
-    fn manhattan(&self, (x2, y2): &Point) -> i64 {
-        let (x1, y1) = self;
-        (x1.abs_diff(*x2) + y1.abs_diff(*y2)) as i64
-    }
-}
 
 #[derive(Debug)]
 struct Sensor {

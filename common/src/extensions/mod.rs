@@ -30,3 +30,21 @@ impl<T: PartialOrd> RangeExt<T> for RangeInclusive<T> {
         self.end()
     }
 }
+
+pub trait PointExt<T> {
+    fn manhattan(&self, p: &(T, T)) -> T;
+}
+
+impl PointExt<i64> for (i64, i64) {
+    fn manhattan(&self, (x2, y2): &(i64, i64)) -> i64 {
+        let (x1, y1) = self;
+        (x1.abs_diff(*x2) + y1.abs_diff(*y2)) as i64
+    }
+}
+
+impl PointExt<usize> for (usize, usize) {
+    fn manhattan(&self, (x2, y2): &(usize, usize)) -> usize {
+        let (x1, y1) = self;
+        x1.abs_diff(*x2) + y1.abs_diff(*y2)
+    }
+}

@@ -1,3 +1,4 @@
+use common::extensions::PointExt;
 use std::collections::HashSet;
 
 use nom::{
@@ -22,15 +23,6 @@ fn main() {
 }
 
 type Point = (i64, i64);
-trait PointExt {
-    fn manhattan(&self, p: &Point) -> i64;
-}
-impl PointExt for Point {
-    fn manhattan(&self, (x2, y2): &Point) -> i64 {
-        let (x1, y1) = self;
-        (x1.abs_diff(*x2) + y1.abs_diff(*y2)) as i64
-    }
-}
 
 #[derive(Debug)]
 enum Instruction {

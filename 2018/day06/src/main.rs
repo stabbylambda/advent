@@ -1,3 +1,4 @@
+use common::extensions::PointExt;
 use itertools::Itertools;
 use nom::{
     bytes::complete::tag,
@@ -28,15 +29,6 @@ fn parse(input: &str) -> Input {
 }
 
 type Point = (i64, i64);
-trait PointExt {
-    fn manhattan(&self, p: &Point) -> u64;
-}
-impl PointExt for Point {
-    fn manhattan(&self, (x2, y2): &Point) -> u64 {
-        let (x1, y1) = self;
-        x1.abs_diff(*x2) + y1.abs_diff(*y2)
-    }
-}
 
 #[derive(Debug)]
 enum Area {
@@ -58,7 +50,7 @@ fn problem1(input: &Input) -> u64 {
             // get the single closest coordinate, ties are an error
             input
                 .iter()
-                .min_set_by_key(|coord| coord.manhattan(&p))
+                .min_set_by_key(|&coord| coord.manhattan(&p))
                 .into_iter()
                 .at_most_one()
                 .unwrap_or_default()
@@ -101,7 +93,12 @@ fn problem2(input: &Input, limit: u64) -> usize {
 
     (min_y..=max_y)
         .cartesian_product(min_x..=max_x)
-        .map(|p| input.iter().map(|coord| coord.manhattan(&p)).sum::<u64>())
+        .map(|p| {
+            input
+                .iter()
+                .map(|&coord| coord.manhattan(&p) as u64)
+                .sum::<u64>()
+        })
         .filter(|size| *size < limit)
         .count()
 }
