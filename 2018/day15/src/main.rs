@@ -3,6 +3,8 @@ use std::{
     fmt::Display,
 };
 
+use advent_2018_15::{reading_neighbors, Point, Unit, UnitType};
+
 fn main() {
     let input = include_str!("../input.txt");
     let input = parse(input);
@@ -20,60 +22,60 @@ fn parse(input: &str) -> Input {
     input.lines().map(|x| x.chars().collect()).collect()
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum UnitType {
-    Elf,
-    Goblin,
-}
-
-#[derive(Clone, Copy, Debug)]
-struct Unit {
-    health: u32,
-    power: u32,
-    side: UnitType,
-}
-
-impl Unit {
-    fn new(side: UnitType) -> Self {
-        Unit {
-            health: 200,
-            power: 3,
-            side,
-        }
-    }
-
-    fn take_damage(&mut self, damage: u32) {
-        self.health = self.health.saturating_sub(damage)
-    }
-
-    fn is_dead(&self) -> bool {
-        self.health == 0
-    }
-}
-
-type Point = (usize, usize);
-
 struct Game {
     // btrees keep everything in order...so we'll always get "reading order" for free
     spaces: BTreeSet<Point>,
-    units: BTreeMap<Point, Unit>,
+    units: BTreeMap<usize, Unit>,
     rounds: u32,
     height: usize,
     width: usize,
 }
 
+impl Display for Game {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for y in 0..self.height {
+            for x in 0..self.width {
+                if let Some(side) = self.get_unit_at_location((y, x)).map(|x| x.side) {
+                    match side {
+                        UnitType::Elf => write!(f, "E")?,
+                        _ => write!(f, "G")?,
+                    };
+                } else if self.spaces.contains(&(y, x)) {
+                    write!(f, ".")?;
+                } else {
+                    write!(f, "#")?;
+                }
+            }
+
+            let units = self
+                .units
+                .values()
+                .filter_map(|unit| (unit.location.0 == y).then_some(unit))
+                .map(|x| x.to_string())
+                .collect::<Vec<_>>()
+                .join(", ");
+            write!(f, " {units}")?;
+
+            writeln!(f)?;
+        }
+        Ok(())
+    }
+}
+
 impl Game {
     fn new(grid: Vec<Vec<char>>) -> Self {
-        let units: BTreeMap<Point, Unit> = grid
+        let units: BTreeMap<usize, Unit> = grid
             .iter()
             .enumerate()
             .flat_map(|(y, r)| {
                 r.iter().enumerate().filter_map(move |(x, t)| match t {
-                    'E' => Some(((y, x), Unit::new(UnitType::Elf))),
-                    'G' => Some(((y, x), Unit::new(UnitType::Goblin))),
+                    'E' => Some(((y, x), UnitType::Elf)),
+                    'G' => Some(((y, x), UnitType::Goblin)),
                     _ => None,
                 })
             })
+            .enumerate()
+            .map(|(id, (loc, side))| (id, Unit::new(id, loc, side)))
             .collect();
 
         let spaces: BTreeSet<(usize, usize)> = grid
@@ -96,21 +98,18 @@ impl Game {
         }
     }
 
-    fn neighbors(&self, (y, x): (usize, usize)) -> Vec<Point> {
-        let north = (y != 0).then_some((y - 1, x));
-        let east = Some((y, x + 1));
-        let west = (x != 0).then_some((y, x - 1));
-        let south = Some((y + 1, x));
-
+    fn neighbors(&self, point: Point) -> Vec<Point> {
         // only return valid spaces in "reading" order
-        vec![north, west, east, south]
+        reading_neighbors(point)
             .iter()
             .filter_map(|x| x.filter(|p| self.spaces.contains(p)))
             .collect()
     }
 
-    fn unit_locations(&self) -> Vec<Point> {
-        self.units.keys().cloned().collect()
+    fn unit_ids_in_reading_order(&self) -> Vec<usize> {
+        let mut units: Vec<&Unit> = self.units.values().collect();
+        units.sort_unstable_by_key(|x| x.location);
+        units.iter().map(|x| x.id).collect()
     }
 
     fn remaining_hp(&self) -> u32 {
@@ -129,37 +128,40 @@ impl Game {
         goblins != elves
     }
 
-    fn unit_has_enemies(&self, unit: Point) -> bool {
-        let side = self.units.get(&unit).unwrap().side;
+    fn unit_has_enemies(&self, id: usize) -> bool {
+        let side = self.get_unit_by_id(id).map(|x| x.side).unwrap();
         self.units.values().any(|u| u.side != side)
     }
 
-    fn remove_unit(&mut self, location: Point) {
-        self.units.remove(&location);
+    fn get_unit_by_id(&self, id: usize) -> Option<&Unit> {
+        self.units.get(&id)
     }
 
-    fn get_unit(&self, location: Point) -> Option<&Unit> {
-        self.units.get(&location)
+    fn get_unit_at_location(&self, point: Point) -> Option<&Unit> {
+        self.units.values().find(|u| u.location == point)
     }
 
-    fn get_potential_locations(&self, location: Point) -> Vec<Point> {
-        let side = self.get_unit(location).map(|x| x.side).unwrap();
+    fn get_potential_locations(&self, id: usize) -> Vec<Point> {
+        let unit = self.get_unit_by_id(id).unwrap();
+        let location = unit.location;
+
         let mut potential_locations: Vec<Point> = self
             .units
-            .iter()
-            .filter_map(|(l, u)| (*l != location && u.side != side).then_some(l))
-            .flat_map(|l| self.neighbors(*l))
+            .values()
+            .filter_map(|u| (u.location != location && u.side != unit.side).then_some(u.location))
+            .flat_map(|l| self.neighbors(l))
             .collect();
         potential_locations.sort();
         potential_locations
     }
 
     fn is_open(&self, location: Point) -> bool {
-        !self.units.contains_key(&location) && self.spaces.contains(&location)
+        self.get_unit_at_location(location).is_none() && self.spaces.contains(&location)
     }
 
-    fn get_next_step(&self, location: Point) -> Option<Point> {
-        let enemy_adjacent = self.get_potential_locations(location);
+    fn get_next_step(&self, id: usize) -> Option<Point> {
+        let location = self.get_unit_by_id(id).unwrap().location;
+        let enemy_adjacent = self.get_potential_locations(id);
         let mut visited: BTreeSet<Point> = BTreeSet::new();
         let mut paths: VecDeque<Vec<Point>> = VecDeque::new();
         let start: Vec<Vec<Point>> = self
@@ -201,102 +203,75 @@ impl Game {
         None
     }
 
-    fn get_adjacent_enemy(&self, location: Point) -> Option<Point> {
-        let unit = self.units[&location];
-        self.neighbors(location)
+    fn get_adjacent_enemy(&self, id: usize) -> Option<&Unit> {
+        let unit = self.get_unit_by_id(id)?;
+
+        self.neighbors(unit.location)
             .into_iter()
-            .filter_map(|n| self.get_unit(n).map(|u| (n, u)))
-            .filter(|(_l, u)| u.side != unit.side)
-            .min_by_key(|(loc, u)| (u.health, *loc))
-            .map(|(l, _u)| l)
+            .filter_map(|n| self.get_unit_at_location(n))
+            .filter(|u| u.side != unit.side)
+            .min_by_key(|u| (u.health, u.location))
     }
 
-    fn attack(&mut self, attacker_location: Point, victim_location: Point) {
+    fn attack(&mut self, attacker_id: usize, enemy_id: usize) {
         let damage = self
-            .units
-            .get(&attacker_location)
+            .get_unit_by_id(attacker_id)
             .map(|x| x.power)
             .unwrap_or_default();
 
-        if let Some(victim) = self.units.get_mut(&victim_location) {
+        if let Some(victim) = self.units.get_mut(&enemy_id) {
             victim.take_damage(damage);
             if victim.is_dead() {
-                self.remove_unit(victim_location);
+                self.units.remove(&enemy_id);
             }
         };
     }
 
-    fn move_unit(&mut self, location: (usize, usize), next: (usize, usize)) {
-        let unit = self.units.remove(&location).unwrap();
-        self.units.insert(next, unit);
+    fn move_unit(&mut self, id: usize, next: (usize, usize)) {
+        if let Some(unit) = self.units.get_mut(&id) {
+            // println!("Moving {unit} from {location:?} -> {next:?}");
+            unit.location = next;
+        }
+    }
+
+    fn run(&mut self) -> u32 {
+        while !self.is_over() {
+            // println!("=========== Round {} ===========", self.rounds);
+            for id in self.unit_ids_in_reading_order() {
+                // if this unit already died in a previous attack this round, we're done
+                if self.get_unit_by_id(id).is_none() {
+                    continue;
+                };
+
+                // if we don't have any enemies, we're done
+                if !self.unit_has_enemies(id) {
+                    return self.outcome();
+                }
+
+                // if we're not standing next to an enemy, move
+                if self.get_adjacent_enemy(id).is_none() {
+                    // can we move?
+                    if let Some(next) = self.get_next_step(id) {
+                        self.move_unit(id, next);
+                    }
+                }
+
+                // attack an enemy if we're standing next to them
+                if let Some(enemy_id) = self.get_adjacent_enemy(id).map(|x| x.id) {
+                    self.attack(id, enemy_id);
+                }
+            }
+
+            self.rounds += 1;
+            // println!("{self}");
+        }
+        self.outcome()
     }
 }
 
 fn problem1(input: &Input) -> u32 {
     let mut game = Game::new(input.clone());
-
-    while !game.is_over() {
-        println!("=========== Round {} ===========", game.rounds);
-
-        // the basic sketch of what this loop looks like:
-        for location in game.unit_locations() {
-            let mut location = location;
-
-            // if this unit already died in a previous attack this round, we're done
-            if game.get_unit(location).is_none() {
-                continue;
-            };
-
-            // if we don't have any enemies, we're done
-            if !game.unit_has_enemies(location) {
-                return game.outcome();
-            }
-
-            // if we're not standing next to an enemy, move
-            if game.get_adjacent_enemy(location).is_none() {
-                if let Some(next) = game.get_next_step(location) {
-                    game.move_unit(location, next);
-                    location = next;
-                }
-            }
-
-            // attack an enemy if we're standing next to them
-            if let Some(enemy_location) = game.get_adjacent_enemy(location) {
-                game.attack(location, enemy_location);
-            }
-        }
-
-        game.rounds += 1;
-        println!("{game}");
-    }
-
-    game.outcome()
-}
-
-impl Display for Game {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for y in 0..self.height {
-            for x in 0..self.width {
-                if let Some(unit) = self.get_unit((y, x)) {
-                    match unit.side {
-                        UnitType::Elf => write!(f, "E")?,
-                        _ => write!(f, "G")?,
-                    };
-                } else if self.spaces.contains(&(y, x)) {
-                    write!(f, ".")?;
-                } else {
-                    write!(f, "#")?;
-                }
-            }
-
-            for unit in self.units.iter().filter(|(loc, unit)| loc.0 == y) {
-                write!(f, " {:?}({}) ", unit.1.side, unit.1.health)?;
-            }
-
-            writeln!(f)?;
-        }
-        Ok(())
-    }
+    game.run()
 }
 
 fn problem2(_input: &Input) -> u32 {
@@ -311,7 +286,15 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, 27730)
+        assert_eq!(result, 27730);
+    }
+
+    #[test]
+    fn actual_input() {
+        let input = include_str!("../input.txt");
+        let input = parse(input);
+        let result = problem1(&input);
+        assert_eq!(result, 201856);
     }
 
     #[test]
