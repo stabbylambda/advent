@@ -22,8 +22,6 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Point = (i64, i64);
-
 #[derive(Debug)]
 enum Instruction {
     Left,
