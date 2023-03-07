@@ -22,12 +22,12 @@ impl Display for Unit {
 }
 
 impl Unit {
-    pub fn new(id: usize, location: Point, side: UnitType) -> Self {
+    pub fn new(id: usize, location: Point, side: UnitType, power: u32) -> Self {
         Unit {
             id,
             location,
             health: 200,
-            power: 3,
+            power,
             side,
         }
     }

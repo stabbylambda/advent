@@ -23,12 +23,30 @@ fn parse(input: &str) -> Input {
 }
 
 struct Game {
-    // btrees keep everything in order...so we'll always get "reading order" for free
     spaces: BTreeSet<Point>,
     units: BTreeMap<usize, Unit>,
     rounds: u32,
     height: usize,
     width: usize,
+}
+
+struct GameOutcome {
+    rounds: u32,
+    units: Vec<Unit>,
+}
+
+impl GameOutcome {
+    fn score(&self) -> u32 {
+        self.rounds * self.remaining_hp()
+    }
+
+    fn remaining_hp(&self) -> u32 {
+        self.units.iter().map(|u| u.health).sum()
+    }
+
+    fn count_units(&self, side: UnitType) -> usize {
+        self.units.iter().filter(|u| u.side == side).count()
+    }
 }
 
 impl Display for Game {
@@ -63,19 +81,19 @@ impl Display for Game {
 }
 
 impl Game {
-    fn new(grid: Vec<Vec<char>>) -> Self {
+    fn new(grid: Vec<Vec<char>>, elf_power: u32) -> Self {
         let units: BTreeMap<usize, Unit> = grid
             .iter()
             .enumerate()
             .flat_map(|(y, r)| {
                 r.iter().enumerate().filter_map(move |(x, t)| match t {
-                    'E' => Some(((y, x), UnitType::Elf)),
-                    'G' => Some(((y, x), UnitType::Goblin)),
+                    'E' => Some(((y, x), UnitType::Elf, elf_power)),
+                    'G' => Some(((y, x), UnitType::Goblin, 3)),
                     _ => None,
                 })
             })
             .enumerate()
-            .map(|(id, (loc, side))| (id, Unit::new(id, loc, side)))
+            .map(|(id, (loc, side, power))| (id, Unit::new(id, loc, side, power)))
             .collect();
 
         let spaces: BTreeSet<(usize, usize)> = grid
@@ -112,13 +130,11 @@ impl Game {
         units.iter().map(|x| x.id).collect()
     }
 
-    fn remaining_hp(&self) -> u32 {
-        self.units.values().map(|u| u.health).sum()
-    }
-
-    fn outcome(&self) -> u32 {
-        println!("Done at round {} with {}", self.rounds, self.remaining_hp());
-        self.rounds * self.remaining_hp()
+    fn outcome(&self) -> GameOutcome {
+        GameOutcome {
+            rounds: self.rounds,
+            units: self.units.values().cloned().collect(),
+        }
     }
 
     fn is_over(&self) -> bool {
@@ -141,56 +157,61 @@ impl Game {
         self.units.values().find(|u| u.location == point)
     }
 
-    fn get_potential_locations(&self, id: usize) -> Vec<Point> {
-        let unit = self.get_unit_by_id(id).unwrap();
-        let location = unit.location;
-
-        let mut potential_locations: Vec<Point> = self
-            .units
-            .values()
-            .filter_map(|u| (u.location != location && u.side != unit.side).then_some(u.location))
-            .flat_map(|l| self.neighbors(l))
-            .collect();
-        potential_locations.sort();
-        potential_locations
-    }
-
     fn is_open(&self, location: Point) -> bool {
         self.get_unit_at_location(location).is_none() && self.spaces.contains(&location)
     }
 
     fn get_next_step(&self, id: usize) -> Option<Point> {
-        let location = self.get_unit_by_id(id).unwrap().location;
-        let enemy_adjacent = self.get_potential_locations(id);
-        let mut visited: BTreeSet<Point> = BTreeSet::new();
+        let unit = self.get_unit_by_id(id).unwrap();
+        // find all the potential targets (locations next to enemy units that are open)
+        let targets: Vec<(usize, usize)> = self
+            .units
+            .values()
+            .filter(|u| u.location != unit.location && u.side != unit.side)
+            .flat_map(|u| self.neighbors(u.location))
+            .filter(|l| self.is_open(*l))
+            .collect();
+
+        // Seed the queue with paths that include the start point of each of our valid neighbors
         let mut paths: VecDeque<Vec<Point>> = VecDeque::new();
         let start: Vec<Vec<Point>> = self
-            .neighbors(location)
+            .neighbors(unit.location)
             .iter()
             .filter(|x| self.is_open(**x))
             .map(|p| vec![*p])
             .collect();
         paths.extend(start);
 
+        // Keep track of all the places we've been, paths we've seen, plus the length of
+        // the shortest path we've found so far
+        let mut visited: BTreeSet<Point> = BTreeSet::new();
+        let mut min_path = usize::MAX;
+        let mut all_paths = vec![];
+
+        // bfs
         while let Some(path) = paths.pop_front() {
             // get the last point in this path
             let furthest = path.last().unwrap();
 
             // we found it! return the first step we need to take
-            if enemy_adjacent.contains(furthest) {
-                return path.first().cloned();
+            if targets.contains(furthest) {
+                min_path = path.len();
+                all_paths.push(path.clone());
+                continue;
+            }
+
+            // is this longer than the shortest full path we've found? if so, bail
+            if path.len() > min_path {
+                continue;
             }
 
             // if we haven't been here before, we need to find new paths from here
-            if !visited.contains(furthest) {
-                visited.insert(*furthest);
+            if visited.insert(*furthest) {
                 for neighbor in self
                     .neighbors(*furthest)
                     .into_iter()
-                    // we haven't already seen this
-                    .filter(|x| !visited.contains(x))
-                    // there isn't someone currently there
-                    .filter(|x| self.is_open(*x))
+                    // we haven't already seen this and someone isn't there already
+                    .filter(|x| !visited.contains(x) && self.is_open(*x))
                 {
                     let mut new_path = path.clone();
                     new_path.push(neighbor);
@@ -200,7 +221,13 @@ impl Game {
             }
         }
 
-        None
+        all_paths
+            .iter()
+            // pick the shortest, most reading-order endpoint
+            .min_by_key(|p| (p.len(), p.last().unwrap()))
+            // then get the first step on that path
+            .and_then(|x| x.first())
+            .cloned()
     }
 
     fn get_adjacent_enemy(&self, id: usize) -> Option<&Unit> {
@@ -210,10 +237,11 @@ impl Game {
             .into_iter()
             .filter_map(|n| self.get_unit_at_location(n))
             .filter(|u| u.side != unit.side)
+            // sort by health and then reading order
             .min_by_key(|u| (u.health, u.location))
     }
 
-    fn attack(&mut self, attacker_id: usize, enemy_id: usize) {
+    fn attack(&mut self, attacker_id: usize, enemy_id: usize) -> Option<UnitType> {
         let damage = self
             .get_unit_by_id(attacker_id)
             .map(|x| x.power)
@@ -222,21 +250,23 @@ impl Game {
         if let Some(victim) = self.units.get_mut(&enemy_id) {
             victim.take_damage(damage);
             if victim.is_dead() {
+                let side = victim.side;
                 self.units.remove(&enemy_id);
+                return Some(side);
             }
         };
+
+        None
     }
 
     fn move_unit(&mut self, id: usize, next: (usize, usize)) {
         if let Some(unit) = self.units.get_mut(&id) {
-            // println!("Moving {unit} from {location:?} -> {next:?}");
             unit.location = next;
         }
     }
 
-    fn run(&mut self) -> u32 {
+    fn run(&mut self, terminate_on_elf_death: bool) -> Option<GameOutcome> {
         while !self.is_over() {
-            // println!("=========== Round {} ===========", self.rounds);
             for id in self.unit_ids_in_reading_order() {
                 // if this unit already died in a previous attack this round, we're done
                 if self.get_unit_by_id(id).is_none() {
@@ -245,7 +275,7 @@ impl Game {
 
                 // if we don't have any enemies, we're done
                 if !self.unit_has_enemies(id) {
-                    return self.outcome();
+                    return Some(self.outcome());
                 }
 
                 // if we're not standing next to an enemy, move
@@ -258,24 +288,42 @@ impl Game {
 
                 // attack an enemy if we're standing next to them
                 if let Some(enemy_id) = self.get_adjacent_enemy(id).map(|x| x.id) {
-                    self.attack(id, enemy_id);
+                    if let Some(dead_unit_type) = self.attack(id, enemy_id) {
+                        // early terminate if we just killed an elf
+                        if dead_unit_type == UnitType::Elf && terminate_on_elf_death {
+                            return None;
+                        }
+                    }
                 }
             }
 
             self.rounds += 1;
-            // println!("{self}");
         }
-        self.outcome()
+        Some(self.outcome())
     }
 }
 
 fn problem1(input: &Input) -> u32 {
-    let mut game = Game::new(input.clone());
-    game.run()
+    let mut game = Game::new(input.clone(), 3);
+    game.run(false).unwrap().score()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem2(input: &Input) -> u32 {
+    // figure out how many elves there are in the input
+    let elf_count = input.iter().flatten().filter(|c| **c == 'E').count();
+
+    for power in 4.. {
+        // create a new game with the given elf power
+        let mut game = Game::new(input.clone(), power);
+        if let Some(outcome) = game.run(true) {
+            let elves_left = outcome.count_units(UnitType::Elf);
+
+            if elves_left == elf_count {
+                return outcome.score();
+            }
+        }
+    }
+    unreachable!()
 }
 
 #[cfg(test)]
@@ -290,15 +338,7 @@ mod test {
     }
 
     #[test]
-    fn actual_input() {
-        let input = include_str!("../input.txt");
-        let input = parse(input);
-        let result = problem1(&input);
-        assert_eq!(result, 201856);
-    }
-
-    #[test]
-    fn examples() {
+    fn examples_part1() {
         let cases = [
             (include_str!("../examples/36334.txt"), 36334),
             (include_str!("../examples/39514.txt"), 39514),
@@ -314,10 +354,34 @@ mod test {
     }
 
     #[test]
+    fn examples_part2() {
+        let cases = [
+            (include_str!("../examples/36334.txt"), 29064),
+            (include_str!("../examples/39514.txt"), 31284),
+            (include_str!("../examples/27755.txt"), 3478),
+            (include_str!("../examples/28944.txt"), 6474),
+            (include_str!("../examples/18740.txt"), 1140),
+        ];
+        for (input, expected) in cases {
+            let input = parse(input);
+            let result = problem2(&input);
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
     fn second() {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 4988);
+    }
+
+    #[test]
+    fn actual_input() {
+        let input = include_str!("../input.txt");
+        let input = parse(input);
+        let result = problem2(&input);
+        assert_eq!(result, 48034);
     }
 }
