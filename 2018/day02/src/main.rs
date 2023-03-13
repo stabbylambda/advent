@@ -26,9 +26,9 @@ fn problem1(input: &str) -> usize {
 fn problem2(input: &str) -> String {
     for x in input.lines() {
         for y in input.lines() {
-            let xc: HashSet<(usize, char)> = x.chars().into_iter().enumerate().collect();
-            let yc: HashSet<(usize, char)> = y.chars().into_iter().enumerate().collect();
-            let diff: Vec<_> = xc.difference(&yc).into_iter().collect();
+            let xc: HashSet<(usize, char)> = x.chars().enumerate().collect();
+            let yc: HashSet<(usize, char)> = y.chars().enumerate().collect();
+            let diff: Vec<_> = xc.difference(&yc).collect();
 
             if diff.len() == 1 {
                 let index_to_remove = diff[0].0;

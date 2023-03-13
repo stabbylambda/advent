@@ -48,7 +48,7 @@ fn hash(md5: &Md5, start: u128, stretch: bool) -> HashResult {
             }
         }
 
-        let v: Vec<char> = s.chars().into_iter().collect();
+        let v: Vec<char> = s.chars().collect();
 
         let first_triple = v
             .windows(3)

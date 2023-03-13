@@ -50,11 +50,7 @@ fn group_digits(input: &[u32]) -> Vec<Digit> {
 }
 
 fn parse(input: &str) -> Input {
-    input
-        .chars()
-        .into_iter()
-        .filter_map(|c| c.to_digit(10))
-        .collect_vec()
+    input.chars().filter_map(|c| c.to_digit(10)).collect_vec()
 }
 
 fn problem1(input: &Input) -> Vec<u32> {

@@ -24,7 +24,7 @@ fn problem1(input: &str, max: usize) -> u8 {
 }
 
 fn problem2(input: &str, max: usize) -> String {
-    let mut input: Vec<u8> = input.bytes().into_iter().collect();
+    let mut input: Vec<u8> = input.bytes().collect();
     input.extend_from_slice(&[17, 31, 73, 47, 23]);
     let sparse = hash(input, max, 64);
 

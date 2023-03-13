@@ -34,11 +34,11 @@ fn all_unique(phrase: &&Vec<&str>) -> bool {
 
 fn no_anagrams(phrase: &&Vec<&str>) -> bool {
     !phrase.iter().any(|word1| {
-        let mut chars1: Vec<char> = word1.chars().into_iter().collect();
+        let mut chars1: Vec<char> = word1.chars().collect();
         chars1.sort();
 
         phrase.iter().filter(|&word2| word1 != word2).any(|word2| {
-            let mut chars2: Vec<char> = word2.chars().into_iter().collect();
+            let mut chars2: Vec<char> = word2.chars().collect();
             chars2.sort();
 
             chars1 == chars2
