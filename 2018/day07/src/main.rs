@@ -50,7 +50,7 @@ impl Graph {
         let from_set: HashSet<char> = input.iter().map(|(from, _to)| *from).collect();
         let to_set: HashSet<char> = input.iter().map(|(_from, to)| *to).collect();
         let roots = Graph::get_roots(&from_set, &to_set);
-        let nodes = from_set.union(&to_set).into_iter().cloned().collect();
+        let nodes = from_set.union(&to_set).cloned().collect();
 
         Graph {
             incoming,
@@ -75,11 +75,7 @@ impl Graph {
     }
 
     fn get_roots(from_set: &HashSet<char>, to_set: &HashSet<char>) -> BinaryHeap<Reverse<char>> {
-        from_set
-            .difference(to_set)
-            .into_iter()
-            .map(|x| Reverse(*x))
-            .collect()
+        from_set.difference(to_set).map(|x| Reverse(*x)).collect()
     }
 }
 

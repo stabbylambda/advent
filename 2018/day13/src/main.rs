@@ -19,10 +19,8 @@ fn main() {
 type Input = Vec<Vec<char>>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(
-        newline,
-        map(not_line_ending, |x: &str| x.chars().into_iter().collect()),
-    )(input);
+    let result: IResult<&str, Input> =
+        separated_list1(newline, map(not_line_ending, |x: &str| x.chars().collect()))(input);
 
     result.unwrap().1
 }

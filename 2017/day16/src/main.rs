@@ -51,7 +51,7 @@ fn parse(input: &str) -> Input {
 }
 
 fn problem1(programs: &str, input: &Input) -> String {
-    let mut v: Vec<char> = programs.chars().into_iter().collect();
+    let mut v: Vec<char> = programs.chars().collect();
     for i in input {
         match i {
             Instruction::Spin(num) => v.rotate_right(*num as usize),
