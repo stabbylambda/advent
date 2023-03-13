@@ -1,5 +1,5 @@
-use common::map::{Coord, Map};
-use std::{collections::BTreeSet, fmt::Debug};
+use common::map::{Coord, Map, Path};
+use std::fmt::Debug;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Tile {
@@ -19,52 +19,6 @@ impl Debug for Tile {
         }
     }
 }
-
-#[derive(Debug)]
-pub struct Path {
-    pub segments: Vec<Coord>,
-}
-
-impl Path {
-    pub fn new(segments: Vec<Coord>) -> Self {
-        Self { segments }
-    }
-    pub fn get_min_x(&self) -> usize {
-        self.segments.iter().map(|&(x, _)| x).min().unwrap()
-    }
-
-    pub fn get_max_x(&self) -> usize {
-        self.segments.iter().map(|&(x, _)| x).max().unwrap()
-    }
-
-    pub fn get_max_y(&self) -> usize {
-        self.segments.iter().map(|&(_, y)| y).max().unwrap()
-    }
-
-    pub fn all_points(&self) -> BTreeSet<Coord> {
-        let mut points = BTreeSet::new();
-        for pair in self.segments.windows(2) {
-            let &[(x1, y1), (x2, y2)] = pair else {
-                panic!()
-            };
-
-            let start_x = x1.min(x2);
-            let end_x = x1.max(x2);
-
-            let start_y = y1.min(y2);
-            let end_y = y1.max(y2);
-
-            for x in start_x..=end_x {
-                for y in start_y..=end_y {
-                    points.insert((x, y));
-                }
-            }
-        }
-
-        points
-    }
-}
-
 trait CaveCoord {
     fn translate(&self, min_x: usize) -> Coord;
 }
