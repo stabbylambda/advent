@@ -151,6 +151,7 @@ dependencies = [
 name = "advent_2018_19"
 version = "0.1.0"
 dependencies = [
+ "advent_2018_16",
  "common",
  "nom",
 ]

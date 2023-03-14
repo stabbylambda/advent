@@ -65,7 +65,7 @@ where
     X: Copy + Fn(&'a str) -> IResult<&'a str, X1>,
     Y: Copy + Fn(&'a str) -> IResult<&'a str, Y1>,
     Z: Copy + Fn(&'a str) -> IResult<&'a str, Z1>,
-    F: Copy + Fn(X1, Y1, Z1) -> R,
+    F: Fn(X1, Y1, Z1) -> R,
 {
     move |s: &'a str| {
         preceded(
