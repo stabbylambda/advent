@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use advent_2018_16::{Instruction, Opcode};
+use common::nom::usize;
 use nom::{
     bytes::complete::tag,
     character::complete::{newline, u32},
@@ -76,13 +77,13 @@ fn parse(input: &str) -> Input {
                 tuple((
                     delimited(
                         tag("Before: ["),
-                        separated_list1(tag(", "), map(u32, |x| x as usize)),
+                        separated_list1(tag(", "), usize),
                         tag("]\n"),
                     ),
                     terminated(instruction, tag("\n")),
                     (delimited(
                         tag("After:  ["),
-                        separated_list1(tag(", "), map(u32, |x| x as usize)),
+                        separated_list1(tag(", "), usize),
                         tag("]\n"),
                     )),
                 )),

@@ -1,9 +1,13 @@
+use common::nom::usize;
 use ndarray::{prelude::*, OwnedRepr};
-use nom::bytes::complete::tag;
-use nom::character::complete::{newline, u32 as nom_u32};
-use nom::combinator::map;
-use nom::sequence::{terminated, tuple};
-use nom::{multi::separated_list0, IResult};
+use nom::{
+    bytes::complete::tag,
+    character::complete::{newline, u32 as nom_u32},
+    combinator::map,
+    multi::separated_list0,
+    sequence::{terminated, tuple},
+    IResult,
+};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -22,9 +26,9 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Vec<(usize, usize, usize)>> = separated_list0(
         newline,
         tuple((
-            terminated(map(nom_u32, |x| x as usize), tag(",")),
-            terminated(map(nom_u32, |x| x as usize), tag(",")),
-            map(nom_u32, |x| x as usize),
+            terminated(usize, tag(",")),
+            terminated(usize, tag(",")),
+            usize,
         )),
     )(input);
 

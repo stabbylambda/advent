@@ -1,7 +1,5 @@
-use nom::{
-    bytes::complete::tag, character::complete::u32 as nom_u32, combinator::map,
-    multi::separated_list1, IResult,
-};
+use common::nom::usize;
+use nom::{bytes::complete::tag, multi::separated_list1, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -19,8 +17,7 @@ fn main() {
 }
 
 fn parse(input: &str) -> Vec<usize> {
-    let result: IResult<&str, Vec<usize>> =
-        separated_list1(tag(","), map(nom_u32, |x| x as usize))(input);
+    let result: IResult<&str, Vec<usize>> = separated_list1(tag(","), usize)(input);
 
     result.unwrap().1
 }
