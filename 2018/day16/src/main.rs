@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use advent_2018_16::{Instruction, Opcode};
 use nom::{
     bytes::complete::tag,
     character::complete::{newline, u32},
@@ -20,33 +21,13 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Input = (Vec<InstructionSample>, Vec<Instruction>);
+type Input = (Vec<InstructionSample>, Vec<Instruction<usize>>);
 
 #[derive(Debug)]
 struct InstructionSample {
     before: Vec<usize>,
-    instruction: Instruction,
+    instruction: Instruction<usize>,
     after: Vec<usize>,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-enum Opcode {
-    Addr,
-    Addi,
-    Mulr,
-    Muli,
-    Banr,
-    Bani,
-    Borr,
-    Bori,
-    Setr,
-    Seti,
-    Gtir,
-    Gtri,
-    Gtrr,
-    Eqir,
-    Eqri,
-    Eqrr,
 }
 
 impl InstructionSample {
@@ -75,180 +56,6 @@ impl InstructionSample {
     }
     fn test(&self) -> usize {
         self.matching().values().filter(|x| **x).count()
-    }
-}
-#[derive(Debug)]
-struct Instruction {
-    opcode: usize,
-    input_a: usize,
-    input_b: usize,
-    output: usize,
-}
-
-impl Instruction {
-    fn execute(&self, mapping: &HashMap<usize, Opcode>, registers: &[usize]) -> Vec<usize> {
-        let Some(opcode) = mapping.get(&self.opcode) else {
-            panic!("Couldn't find opcode {}", self.opcode);
-        };
-        match opcode {
-            Opcode::Addr => self.addr(registers),
-            Opcode::Addi => self.addi(registers),
-            Opcode::Mulr => self.mulr(registers),
-            Opcode::Muli => self.muli(registers),
-            Opcode::Banr => self.banr(registers),
-            Opcode::Bani => self.bani(registers),
-            Opcode::Borr => self.borr(registers),
-            Opcode::Bori => self.bori(registers),
-            Opcode::Setr => self.setr(registers),
-            Opcode::Seti => self.seti(registers),
-            Opcode::Gtir => self.gtir(registers),
-            Opcode::Gtri => self.gtri(registers),
-            Opcode::Gtrr => self.gtrr(registers),
-            Opcode::Eqir => self.eqir(registers),
-            Opcode::Eqri => self.eqri(registers),
-            Opcode::Eqrr => self.eqrr(registers),
-        }
-    }
-    fn addr(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = registers[self.input_b];
-        registers[self.output] = a + b;
-
-        registers
-    }
-
-    fn addi(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = self.input_b;
-        registers[self.output] = a + b;
-
-        registers
-    }
-
-    fn mulr(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = registers[self.input_b];
-        registers[self.output] = a * b;
-
-        registers
-    }
-
-    fn muli(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = self.input_b;
-        registers[self.output] = a * b;
-
-        registers
-    }
-
-    fn banr(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = registers[self.input_b];
-        registers[self.output] = a & b;
-
-        registers
-    }
-
-    fn bani(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = self.input_b;
-        registers[self.output] = a & b;
-
-        registers
-    }
-
-    fn borr(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = registers[self.input_b];
-        registers[self.output] = a | b;
-
-        registers
-    }
-
-    fn bori(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = self.input_b;
-        registers[self.output] = a | b;
-
-        registers
-    }
-
-    fn setr(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        registers[self.output] = a;
-
-        registers
-    }
-
-    fn seti(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = self.input_a;
-        registers[self.output] = a;
-
-        registers
-    }
-
-    fn gtir(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = self.input_a;
-        let b = registers[self.input_b];
-        registers[self.output] = usize::from(a > b);
-
-        registers
-    }
-
-    fn gtri(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = self.input_b;
-        registers[self.output] = usize::from(a > b);
-
-        registers
-    }
-
-    fn gtrr(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = registers[self.input_b];
-        registers[self.output] = usize::from(a > b);
-
-        registers
-    }
-
-    fn eqir(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = self.input_a;
-        let b = registers[self.input_b];
-        registers[self.output] = usize::from(a == b);
-
-        registers
-    }
-
-    fn eqri(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = self.input_b;
-        registers[self.output] = usize::from(a == b);
-
-        registers
-    }
-
-    fn eqrr(&self, registers: &[usize]) -> Vec<usize> {
-        let mut registers = registers.to_vec();
-        let a = registers[self.input_a];
-        let b = registers[self.input_b];
-        registers[self.output] = usize::from(a == b);
-
-        registers
     }
 }
 

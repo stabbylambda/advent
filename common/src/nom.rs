@@ -17,3 +17,7 @@ pub fn coord(s: &str) -> IResult<&str, Coord> {
         (x as usize, y as usize)
     })(s)
 }
+
+pub fn usize(s: &str) -> IResult<&str, usize> {
+    map(u32, |x| x as usize)(s)
+}
