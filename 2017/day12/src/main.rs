@@ -1,4 +1,5 @@
 use common::dijkstra::{connected_components, Edge};
+use common::nom::usize;
 use nom::{
     bytes::complete::tag,
     character::complete::{newline, u32},
@@ -24,7 +25,7 @@ fn parse(input: &str) -> Input {
         newline,
         preceded(
             terminated(u32, tag(" <-> ")),
-            separated_list1(tag(", "), map(u32, |x| Edge::new(x as usize))),
+            separated_list1(tag(", "), map(usize, Edge::new)),
         ),
     )(input);
 
