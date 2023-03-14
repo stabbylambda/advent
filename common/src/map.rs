@@ -50,6 +50,7 @@ impl Path {
 }
 
 // This is my Map from last year
+#[derive(Clone)]
 pub struct Map<T> {
     pub points: Vec<Vec<T>>,
     pub height: usize,
@@ -67,6 +68,35 @@ pub struct Neighbors<'a, T: Copy> {
 impl<'a, T: Copy> Neighbors<'a, T> {
     pub fn to_vec(&self) -> Vec<MapSquare<T>> {
         let v = vec![self.north, self.west, self.east, self.south];
+
+        v.into_iter().flatten().collect()
+    }
+}
+
+pub struct AllNeighbors<'a, T: Copy> {
+    pub north: Option<MapSquare<'a, T>>,
+    pub south: Option<MapSquare<'a, T>>,
+    pub east: Option<MapSquare<'a, T>>,
+    pub west: Option<MapSquare<'a, T>>,
+
+    pub north_east: Option<MapSquare<'a, T>>,
+    pub south_east: Option<MapSquare<'a, T>>,
+    pub north_west: Option<MapSquare<'a, T>>,
+    pub south_west: Option<MapSquare<'a, T>>,
+}
+
+impl<'a, T: Copy> AllNeighbors<'a, T> {
+    pub fn to_vec(&self) -> Vec<MapSquare<T>> {
+        let v = vec![
+            self.north_west,
+            self.north,
+            self.north_east,
+            self.west,
+            self.east,
+            self.south_west,
+            self.south,
+            self.south_east,
+        ];
 
         v.into_iter().flatten().collect()
     }
@@ -112,6 +142,31 @@ impl<T: Copy> Map<T> {
         Neighbors {
             north,
             south,
+            east,
+            west,
+        }
+    }
+
+    pub fn all_neighbors(&self, (x, y): Coord) -> AllNeighbors<T> {
+        let north = (y > 0).then(|| self.get((x, y - 1)));
+        let south = (y < self.height - 1).then(|| self.get((x, y + 1)));
+        let west = (x > 0).then(|| self.get((x - 1, y)));
+        let east = (x < self.width - 1).then(|| self.get((x + 1, y)));
+
+        let north_west = (y > 0 && x > 0).then(|| self.get((x - 1, y - 1)));
+        let north_east = (y > 0 && x < self.width - 1).then(|| self.get((x + 1, y - 1)));
+
+        let south_west = (y < self.height - 1 && x > 0).then(|| self.get((x - 1, y + 1)));
+        let south_east =
+            (y < self.height - 1 && x < self.width - 1).then(|| self.get((x + 1, y + 1)));
+
+        AllNeighbors {
+            north,
+            north_east,
+            north_west,
+            south,
+            south_east,
+            south_west,
             east,
             west,
         }
