@@ -1,4 +1,4 @@
-use advent_2018_16::{Instruction, Opcode};
+pub use advent_2018_16::{Instruction, Opcode};
 use common::nom::usize;
 use common::program::parsing::instruction3;
 use nom::{
