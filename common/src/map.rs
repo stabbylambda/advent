@@ -1,4 +1,7 @@
-use std::{collections::BTreeSet, fmt::Debug};
+use std::{
+    collections::BTreeSet,
+    fmt::{Debug, Display},
+};
 
 #[derive(Debug)]
 pub struct Path {
@@ -235,6 +238,22 @@ where
         for row in &self.points[..] {
             for col in &row[..] {
                 write!(f, "{col:?}")?;
+            }
+            writeln!(f)?;
+        }
+        writeln!(f)
+    }
+}
+
+impl<T> Display for Map<T>
+where
+    T: Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f)?;
+        for row in &self.points[..] {
+            for col in &row[..] {
+                write!(f, "{col}")?;
             }
             writeln!(f)?;
         }
