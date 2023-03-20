@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 common = { path = "../../common" }
 nom = "7"
+z3 = {version="0.11.2", features = ["static-link-z3"]}
+

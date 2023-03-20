@@ -6,6 +6,7 @@ use nom::{
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
+use z3::{ast::Int, Config, Context, Optimize, SatResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -67,8 +68,73 @@ fn problem1(input: &Input) -> usize {
         .count()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+/* This is kind of amazing. I did a binary search that wasn't really working at first, then resorted
+ * to cheating with Reddit. A lot of solutions use the Z3 solver to turn this into a SAT problem and then
+ * crunch through the problem space. This ran in about 3 min on the input set, which is ...slow...but it works
+ *
+ * https://cprimozic.net/blog/a-rusty-aoc/#day-23-using-the-z3-smt-solver
+ *
+ * An alternative would have been an Octree, which looks like what I was initially trying to do with my stupid
+ * binary search space algorithm, but I wasn't particularly smart about it.
+ *
+ * https://www.forrestthewoods.com/blog/solving-advent-of-code-in-under-a-second/
+*/
+fn problem2(input: &Input) -> u64 {
+    let cfg = Config::new();
+    let ctx = Context::new(&cfg);
+    let o = Optimize::new(&ctx);
+
+    let zx = Int::new_const(&ctx, "x");
+    let zy = Int::new_const(&ctx, "y");
+    let zz = Int::new_const(&ctx, "z");
+
+    let mut in_range = Int::from_i64(&ctx, 0);
+
+    for bot in input {
+        let (x, y, z) = bot.position;
+        println!("Adding constraint for bot at {:?}", bot.position);
+        let dist_x = abs_diff(&ctx, &Int::from_i64(&ctx, x), &zx);
+        let dist_y = abs_diff(&ctx, &Int::from_i64(&ctx, y), &zy);
+        let dist_z = abs_diff(&ctx, &Int::from_i64(&ctx, z), &zz);
+
+        let distance_to_bot = dist_x + dist_y + dist_z;
+
+        let is_in_range_of_bot = distance_to_bot.lt(&Int::from_u64(&ctx, bot.radius + 1));
+        in_range += is_in_range_of_bot.ite(&Int::from_u64(&ctx, 1), &Int::from_u64(&ctx, 0));
+    }
+
+    let distance_to_origin = &zx + &zy + &zz;
+
+    o.maximize(&in_range);
+    o.minimize(&distance_to_origin);
+
+    println!("Optimizing with Z3");
+    if SatResult::Sat == o.check(&[]) {
+        let model = o.get_model().unwrap();
+        let x = model.eval(&zx, true).unwrap().as_i64().unwrap();
+        let y = model.eval(&zy, true).unwrap().as_i64().unwrap();
+        let z = model.eval(&zz, true).unwrap().as_i64().unwrap();
+        let distance = model
+            .eval(&distance_to_origin, true)
+            .unwrap()
+            .as_u64()
+            .unwrap();
+        println!("The best coordinate is ({x},{y},{z}) at distance {distance}");
+        distance
+    } else {
+        unreachable!("The model was not satisfied!")
+    }
+}
+
+fn abs_diff<'ctx>(ctx: &'ctx Context, a: &Int<'ctx>, b: &Int<'ctx>) -> Int<'ctx> {
+    abs(ctx, &(a - b))
+}
+
+fn abs<'ctx>(ctx: &'ctx Context, i: &Int<'ctx>) -> Int<'ctx> {
+    let zero = Int::from_i64(ctx, 0);
+    let negative_one = Int::from_i64(ctx, -1);
+
+    i.gt(&zero).ite(i, &(i * &negative_one))
 }
 
 #[cfg(test)]
@@ -84,9 +150,9 @@ mod test {
 
     #[test]
     fn second() {
-        let input = include_str!("../test.txt");
+        let input = include_str!("../test2.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 36);
     }
 }
