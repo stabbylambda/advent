@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{HashMap, HashSet};
 
 use nom::{
     bytes::complete::tag,
@@ -18,7 +18,7 @@ fn main() {
 
 type Input = Vec<Point>;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct Point((i32, i32, i32, i32));
 
 impl Point {
@@ -41,63 +41,50 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-struct Constellation {
-    points: BTreeSet<Point>,
-}
+pub struct UnionFind(Vec<usize>);
 
-impl Constellation {
-    fn new(point: Point) -> Constellation {
-        let mut points = BTreeSet::new();
-        points.insert(point);
-
-        Constellation { points }
+impl UnionFind {
+    pub fn new(size: usize) -> Self {
+        UnionFind((0..size).collect())
     }
 
-    fn distance_from(&self, other: &Constellation) -> u32 {
-        let mut min_dist = u32::MAX;
-
-        for point in &self.points {
-            for other in &other.points {
-                min_dist = point.manhattan(other).min(min_dist);
-            }
+    pub fn find(&mut self, x: usize) -> usize {
+        let mut y = self.0[x];
+        if y != x {
+            y = self.find(y);
         }
-
-        min_dist
+        y
     }
 
-    fn merge(&mut self, other: &Constellation) {
-        self.points.extend(other.points.clone())
+    pub fn union(&mut self, idx: usize, idy: usize) {
+        let x = self.find(idx);
+        let y = self.find(idy);
+        self.0[y] = x;
+    }
+
+    pub fn sets(&mut self) -> usize {
+        let mut s: HashSet<usize> = HashSet::new();
+        for i in 0..self.0.len() {
+            s.insert(self.find(i));
+        }
+        s.len()
     }
 }
 
 fn problem1(input: &Input) -> usize {
-    let mut constellations: Vec<Constellation> =
-        input.iter().map(|x| Constellation::new(*x)).collect();
+    let map: HashMap<&Point, usize> = input.iter().enumerate().map(|(i, p)| (p, i)).collect();
 
-    loop {
-        let merged: Vec<Constellation> = constellations.iter().fold(vec![], |mut result, c1| {
-            let can_merge = result
-                .iter_mut()
-                .find(|constellation| constellation.distance_from(c1) <= 3);
+    let mut uf = UnionFind::new(input.len());
 
-            if let Some(constellation) = can_merge {
-                constellation.merge(c1);
-            } else {
-                result.push(c1.clone())
+    for (p1, &i1) in &map {
+        for (p2, &i2) in &map {
+            if p1.manhattan(p2) <= 3 {
+                uf.union(i1, i2);
             }
-
-            result
-        });
-
-        if merged.len() == constellations.len() {
-            break;
         }
-
-        constellations = merged;
     }
 
-    constellations.len()
+    uf.sets()
 }
 
 #[cfg(test)]
