@@ -1,5 +1,4 @@
-use std::collections::{HashMap, HashSet};
-
+use common::union_find::UnionFind;
 use nom::{
     bytes::complete::tag,
     character::complete::{i32, newline},
@@ -41,50 +40,18 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-pub struct UnionFind(Vec<usize>);
-
-impl UnionFind {
-    pub fn new(size: usize) -> Self {
-        UnionFind((0..size).collect())
-    }
-
-    pub fn find(&mut self, x: usize) -> usize {
-        let mut y = self.0[x];
-        if y != x {
-            y = self.find(y);
-        }
-        y
-    }
-
-    pub fn union(&mut self, idx: usize, idy: usize) {
-        let x = self.find(idx);
-        let y = self.find(idy);
-        self.0[y] = x;
-    }
-
-    pub fn sets(&mut self) -> usize {
-        let mut s: HashSet<usize> = HashSet::new();
-        for i in 0..self.0.len() {
-            s.insert(self.find(i));
-        }
-        s.len()
-    }
-}
-
 fn problem1(input: &Input) -> usize {
-    let map: HashMap<&Point, usize> = input.iter().enumerate().map(|(i, p)| (p, i)).collect();
-
     let mut uf = UnionFind::new(input.len());
 
-    for (p1, &i1) in &map {
-        for (p2, &i2) in &map {
-            if p1.manhattan(p2) <= 3 {
+    for i1 in 0..input.len() {
+        for i2 in (i1 + 1)..input.len() {
+            if input[i1].manhattan(&input[i2]) <= 3 {
                 uf.union(i1, i2);
             }
         }
     }
 
-    uf.sets()
+    uf.len()
 }
 
 #[cfg(test)]
