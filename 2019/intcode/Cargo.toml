@@ -1,5 +1,5 @@
 [package]
-name = "advent_2019_02"
+name = "intcode"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,5 +7,4 @@ edition = "2021"
 
 [dependencies]
 common = { path = "../../common" }
-intcode = { path = "../intcode" }
 nom = "7"

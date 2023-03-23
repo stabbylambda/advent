@@ -1,10 +1,8 @@
-use advent_2019_02::Intcode;
-use common::nom::usize;
-use nom::{bytes::complete::tag, multi::separated_list1, IResult};
+use intcode::Intcode;
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(input);
+    let input = Intcode::parse(input);
 
     let answer = problem1(&input);
     println!("problem 1 answer: {answer}");
@@ -13,28 +11,21 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Vec<usize>;
+type Input = Intcode;
 
-fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(tag(","), usize)(input);
-
-    result.unwrap().1
+fn problem1(input: &Input) -> i64 {
+    let mut program = input.clone();
+    program.set_noun_verb(12, 2);
+    program.execute(&[]).register0
 }
 
-fn problem1(input: &Input) -> usize {
-    let mut program = Intcode::new(input);
-    program.set_inputs(12, 2);
-    program.execute()
-}
-
-fn problem2(input: &Input) -> usize {
+fn problem2(input: &Input) -> i64 {
     let expected = 19_690_720;
-    let program = Intcode::new(input);
     for noun in 0..100 {
         for verb in 0..100 {
-            let mut program = program.clone();
-            program.set_inputs(noun, verb);
-            if program.execute() == expected {
+            let mut program = input.clone();
+            program.set_noun_verb(noun, verb);
+            if program.execute(&[]).register0 == expected {
                 return 100 * noun + verb;
             }
         }
@@ -45,13 +36,12 @@ fn problem2(input: &Input) -> usize {
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, Intcode};
+    use crate::Intcode;
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
-        let input = parse(input);
-        let mut program = Intcode::new(&input);
-        let result = program.execute();
-        assert_eq!(result, 3500);
+        let mut program = Intcode::parse(input);
+        let result = program.execute(&[]);
+        assert_eq!(result.register0, 3500);
     }
 }

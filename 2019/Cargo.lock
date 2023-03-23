@@ -15,6 +15,7 @@ name = "advent_2019_02"
 version = "0.1.0"
 dependencies = [
  "common",
+ "intcode",
  "nom",
 ]
 
@@ -39,6 +40,7 @@ name = "advent_2019_05"
 version = "0.1.0"
 dependencies = [
  "common",
+ "intcode",
  "nom",
 ]
 
@@ -206,6 +208,14 @@ dependencies = [
 name = "common"
 version = "0.1.0"
 dependencies = [
+ "nom",
+]
+
+[[package]]
+name = "intcode"
+version = "0.1.0"
+dependencies = [
+ "common",
  "nom",
 ]
 
