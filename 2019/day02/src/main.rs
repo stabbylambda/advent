@@ -1,4 +1,6 @@
-use nom::IResult;
+use advent_2019_02::Intcode;
+use common::nom::usize;
+use nom::{bytes::complete::tag, multi::separated_list1, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -11,38 +13,45 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Vec<u32>;
+type Input = Vec<usize>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    let result: IResult<&str, Input> = separated_list1(tag(","), usize)(input);
 
     result.unwrap().1
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
+fn problem1(input: &Input) -> usize {
+    let mut program = Intcode::new(input);
+    program.set_inputs(12, 2);
+    program.execute()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem2(input: &Input) -> usize {
+    let expected = 19_690_720;
+    let program = Intcode::new(input);
+    for noun in 0..100 {
+        for verb in 0..100 {
+            let mut program = program.clone();
+            program.set_inputs(noun, verb);
+            if program.execute() == expected {
+                return 100 * noun + verb;
+            }
+        }
+    }
+
+    unreachable!()
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::{parse, Intcode};
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
         let input = parse(input);
-        let result = problem1(&input);
-        assert_eq!(result, 0)
-    }
-
-    #[test]
-    fn second() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let mut program = Intcode::new(&input);
+        let result = program.execute();
+        assert_eq!(result, 3500);
     }
 }
