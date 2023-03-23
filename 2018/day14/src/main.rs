@@ -1,3 +1,5 @@
+use common::digits;
+
 fn main() {
     let input = 440231;
 
@@ -7,24 +9,7 @@ fn main() {
     let answer = problem2(input);
     println!("problem 2 answer: {answer}");
 }
-fn digits(input: usize) -> Vec<u8> {
-    let mut input = input;
-    let mut v = vec![];
 
-    if input == 0 {
-        return vec![0];
-    }
-
-    while input != 0 {
-        let digit = input % 10;
-        input /= 10;
-
-        v.push(digit as u8);
-    }
-
-    v.reverse();
-    v
-}
 fn problem1(input: usize) -> u64 {
     let mut recipes: Vec<u8> = vec![3, 7];
 
