@@ -2,12 +2,12 @@ cpy a b
 dec b
 cpy a d
 cpy 0 a
-mul a b d
-skip
-skip
-skip
-skip
-skip
+cpy b c
+inc a
+dec c
+jnz c -2
+dec d
+jnz d -5
 dec b
 cpy b c
 cpy c d

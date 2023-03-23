@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use std::{cmp::Reverse, collections::HashSet, fmt::Display};
+use std::{cmp::Reverse, collections::HashSet};
 
 use nom::{
     branch::alt,
@@ -78,15 +78,13 @@ fn parse(input: &str) -> Input {
         move |s| {
             map(
                 tuple((
-                    delimited(tag("Group "), u32, tag(" ")), // get rid of this later
                     terminated(u32, tag(" units each with ")),
                     terminated(u32, tag(" hit points ")),
                     opt(damage_modifiers),
                     delimited(tag("with an attack that does "), attack, tag(" damage")),
                     preceded(tag(" at initiative "), u32),
                 )),
-                |(group_id, units, hit_points, modifiers, attack, initiative)| Group {
-                    group_id,
+                |(units, hit_points, modifiers, attack, initiative)| Group {
                     side,
                     units,
                     hit_points,
@@ -182,7 +180,6 @@ enum Side {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 struct Group {
-    group_id: u32,
     side: Side,
     units: u32,
     hit_points: u32,
@@ -219,16 +216,6 @@ impl Group {
         self.units = self.units.saturating_sub(dead);
 
         dead
-    }
-}
-
-impl Display for Group {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let side = match self.side {
-            Side::Infection => "Infection",
-            Side::ImmuneSystem => "Immune",
-        };
-        write!(f, "{} {}", side, self.group_id)
     }
 }
 
@@ -371,7 +358,6 @@ mod test {
     #[test]
     fn damage() {
         let mut group = Group {
-            group_id: 1,
             units: 10,
             hit_points: 10,
             modifiers: vec![],
