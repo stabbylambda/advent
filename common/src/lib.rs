@@ -4,3 +4,4 @@ pub mod map;
 pub mod nom;
 pub mod orthogonal;
 pub mod program;
+pub mod union_find;
