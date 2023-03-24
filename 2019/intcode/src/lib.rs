@@ -3,26 +3,20 @@ use nom::{
     IResult,
 };
 
-#[derive(Clone, Debug)]
-pub struct Intcode {
-    pub program: Vec<i64>,
-    pub input: Vec<i64>,
-    pub output: Vec<i64>,
-    pc: usize,
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum ParameterMode {
     Position,
     Immediate,
+    Relative,
 }
 
-impl ParameterMode {
-    fn from(x: i64) -> Self {
-        match x {
+impl From<i64> for ParameterMode {
+    fn from(value: i64) -> Self {
+        match value {
             0 => ParameterMode::Position,
             1 => ParameterMode::Immediate,
-            _ => unreachable!("Encountered an unimplemented parameter mode: {x}"),
+            2 => ParameterMode::Relative,
+            _ => unreachable!("Encountered an unimplemented parameter mode: {value}"),
         }
     }
 }
@@ -37,12 +31,13 @@ enum Opcode {
     JumpIfFalse,
     LessThan,
     Equals,
+    AdjustRelativeBase,
     Halt,
 }
 
-impl Opcode {
-    fn new(x: i64) -> Self {
-        match x {
+impl From<i64> for Opcode {
+    fn from(value: i64) -> Self {
+        match value {
             1 => Self::Add,
             2 => Self::Multiply,
             3 => Self::Input,
@@ -51,8 +46,9 @@ impl Opcode {
             6 => Self::JumpIfFalse,
             7 => Self::LessThan,
             8 => Self::Equals,
+            9 => Self::AdjustRelativeBase,
             99 => Self::Halt,
-            _ => unimplemented!("{x} isn't a valid opcode"),
+            _ => unimplemented!("{value} isn't a valid opcode"),
         }
     }
 }
@@ -66,34 +62,15 @@ struct Instruction {
     c_mode: ParameterMode,
 }
 
-impl Instruction {
-    fn new(x: i64) -> Self {
-        let opcode = Opcode::new(x % 100);
-        let a_mode = ParameterMode::from((x / 100) % 10);
-        let b_mode = ParameterMode::from((x / 1000) % 10);
-        let c_mode = ParameterMode::from((x / 10000) % 10);
-
+impl From<i64> for Instruction {
+    fn from(value: i64) -> Self {
         Instruction {
-            opcode,
-            a_mode,
-            b_mode,
-            c_mode,
+            opcode: (value % 100).into(),
+            a_mode: ((value / 100) % 10).into(),
+            b_mode: ((value / 1000) % 10).into(),
+            c_mode: ((value / 10000) % 10).into(),
         }
     }
-}
-
-#[test]
-fn instruction_test() {
-    let i = Instruction::new(1002);
-
-    assert_eq!(i.opcode, Opcode::Multiply);
-    assert_eq!(i.c_mode, ParameterMode::Position);
-    assert_eq!(i.b_mode, ParameterMode::Immediate);
-    assert_eq!(i.a_mode, ParameterMode::Position);
-
-    let mut p = Intcode::new(&[1002, 4, 3, 4, 33]);
-    p.execute();
-    assert_eq!(p.program[4], 99);
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -102,13 +79,32 @@ pub enum ExecutionResult {
     WaitingForInput,
 }
 
+#[derive(Clone, Debug)]
+pub struct Intcode {
+    pub program: Vec<i64>,
+    pub input: Vec<i64>,
+    pub output: Vec<i64>,
+    original_len: usize,
+    pc: usize,
+    relative_base: i64,
+}
+
 impl Intcode {
     pub fn new(input: &[i64]) -> Self {
+        // keep track of the original length because we need to terminate off the end of the list
+        let original_len = input.len();
+
+        // make sure we have plenty of writeable memory
+        let mut program = input.to_vec();
+        program.extend(vec![0; 10_000_000]);
+
         Intcode {
-            program: input.to_vec(),
+            program,
+            original_len,
             input: vec![],
             output: vec![],
             pc: 0,
+            relative_base: 0,
         }
     }
 
@@ -120,39 +116,61 @@ impl Intcode {
         *self.output.last().unwrap()
     }
 
-    fn get_write_location(&mut self, location: usize) -> Option<&mut i64> {
+    fn get_location(&self, location: usize, instruction: &Instruction) -> (i64, ParameterMode) {
+        let mode = match location {
+            1 => instruction.a_mode,
+            2 => instruction.b_mode,
+            3 => instruction.c_mode,
+            _ => unreachable!("Asked for a parameter that was outside the range"),
+        };
+
+        let location = self.pc + location;
         let x = self.program[location];
-        self.program.get_mut(x as usize)
+
+        let x = match mode {
+            ParameterMode::Position => x,
+            ParameterMode::Relative => self.relative_base + x,
+            ParameterMode::Immediate => x,
+        };
+
+        (x, mode)
     }
 
-    fn get_parameter(&self, location: usize, mode: ParameterMode) -> i64 {
-        let x = self.program[location];
+    fn get_parameter_mut(
+        &mut self,
+        location: usize,
+        instruction: &Instruction,
+    ) -> Option<&mut i64> {
+        match self.get_location(location, instruction) {
+            (_, ParameterMode::Immediate) => {
+                unreachable!("Writeable parameters will never be in immediate mode")
+            }
+            (x, _) => self.program.get_mut(x as usize),
+        }
+    }
 
-        match mode {
-            ParameterMode::Position => self.program[x as usize],
-            ParameterMode::Immediate => x,
+    fn get_parameter(&self, location: usize, instruction: &Instruction) -> i64 {
+        match self.get_location(location, instruction) {
+            (x, ParameterMode::Immediate) => x,
+            (x, _) => self.program[x as usize],
         }
     }
 
     fn get_instruction(&self) -> Option<Instruction> {
-        self.program
-            .get(self.pc)
-            .map(|raw_opcode| Instruction::new(*raw_opcode))
-    }
-
-    fn get_a(&self, instruction: &Instruction) -> i64 {
-        self.get_parameter(self.pc + 1, instruction.a_mode)
-    }
-
-    fn get_ab(&self, instruction: &Instruction) -> (i64, i64) {
-        let a = self.get_a(instruction);
-        let b = self.get_parameter(self.pc + 2, instruction.b_mode);
-        (a, b)
+        // check that we're not off the end of the original program, just in case we somehow didn't halt yet
+        (self.pc < self.original_len)
+            .then_some(self.pc)
+            .and_then(|pc| {
+                self.program
+                    .get(pc)
+                    .map(|raw_opcode| Instruction::from(*raw_opcode))
+            })
     }
 
     fn get_abc(&mut self, instruction: &Instruction) -> Option<(i64, i64, &mut i64)> {
-        let (a, b) = self.get_ab(instruction);
-        let c = self.get_write_location(self.pc + 3);
+        let a = self.get_parameter(1, instruction);
+        let b = self.get_parameter(2, instruction);
+        let c = self.get_parameter_mut(3, instruction);
 
         c.map(|c| (a, b, c))
     }
@@ -181,25 +199,26 @@ impl Intcode {
 
                     4
                 }
-                Opcode::Input => match self.input.pop() {
-                    Some(input) => {
-                        if let Some(result) = self.get_write_location(self.pc + 1) {
+                Opcode::Input => {
+                    if let Some(input) = self.input.pop() {
+                        if let Some(result) = self.get_parameter_mut(1, &instruction) {
                             *result = input;
                         }
 
                         2
+                    } else {
+                        return ExecutionResult::WaitingForInput;
                     }
-                    // if we didn't have any input waiting, we need to terminate here
-                    None => return ExecutionResult::WaitingForInput,
-                },
+                }
                 Opcode::Output => {
-                    let a = self.get_a(&instruction);
+                    let a = self.get_parameter(1, &instruction);
                     self.output.push(a);
 
                     2
                 }
                 Opcode::JumpIfTrue => {
-                    let (a, b) = self.get_ab(&instruction);
+                    let a = self.get_parameter(1, &instruction);
+                    let b = self.get_parameter(2, &instruction);
 
                     if a != 0 {
                         self.jump_to(b)
@@ -208,7 +227,8 @@ impl Intcode {
                     }
                 }
                 Opcode::JumpIfFalse => {
-                    let (a, b) = self.get_ab(&instruction);
+                    let a = self.get_parameter(1, &instruction);
+                    let b = self.get_parameter(2, &instruction);
 
                     if a == 0 {
                         self.jump_to(b)
@@ -229,6 +249,13 @@ impl Intcode {
                     }
 
                     4
+                }
+                Opcode::AdjustRelativeBase => {
+                    let a = self.get_parameter(1, &instruction);
+
+                    self.relative_base += a;
+
+                    2
                 }
             };
 
@@ -252,14 +279,33 @@ impl Intcode {
             map(separated_list1(tag(","), i64), |x| Intcode::new(&x))(s);
         result.unwrap().1
     }
+
+    /// Useful for just executing a program that takes one input and yields one output
+    pub fn execute_simple(&mut self, input: i64) -> i64 {
+        self.input.push(input);
+        self.execute();
+        self.get_last_output()
+    }
 }
 
 #[allow(dead_code)]
 fn run_simple_program(program: &[i64], input: i64) -> i64 {
     let mut p = Intcode::new(program);
-    p.input.push(input);
+    p.execute_simple(input)
+}
+
+#[test]
+fn instruction_test() {
+    let i = Instruction::from(1002);
+
+    assert_eq!(i.opcode, Opcode::Multiply);
+    assert_eq!(i.c_mode, ParameterMode::Position);
+    assert_eq!(i.b_mode, ParameterMode::Immediate);
+    assert_eq!(i.a_mode, ParameterMode::Position);
+
+    let mut p = Intcode::new(&[1002, 4, 3, 4, 33]);
     p.execute();
-    p.get_last_output()
+    assert_eq!(p.program[4], 99);
 }
 
 #[test]
@@ -311,4 +357,32 @@ fn larger() {
     assert_eq!(run_simple_program(program, 7), 999);
     assert_eq!(run_simple_program(program, 8), 1000);
     assert_eq!(run_simple_program(program, 9), 1001);
+}
+
+#[test]
+fn relative_base() {
+    let program = &[109, 19, 204, -34, 99];
+    let mut p = Intcode::new(program);
+    p.relative_base = 2000;
+    p.program[1985] = 100;
+    p.execute();
+    assert_eq!(p.get_last_output(), 100);
+}
+
+#[test]
+fn big_number_support() {
+    let program = &[104, 1125899906842624i64, 99];
+    let mut p = Intcode::new(program);
+    p.execute();
+    assert_eq!(p.get_last_output(), 1125899906842624i64);
+}
+
+#[test]
+fn quine() {
+    let program = &[
+        109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99,
+    ];
+    let mut p = Intcode::new(program);
+    p.execute();
+    assert_eq!(p.output, program);
 }

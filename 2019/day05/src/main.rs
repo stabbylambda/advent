@@ -15,16 +15,12 @@ type Input = Intcode;
 
 fn problem1(input: &Input) -> i64 {
     let mut program = input.clone();
-    program.input.push(1);
-    program.execute();
-    program.get_last_output()
+    program.execute_simple(1)
 }
 
 fn problem2(input: &Input) -> i64 {
     let mut program = input.clone();
-    program.input.push(5);
-    program.execute();
-    program.get_last_output()
+    program.execute_simple(5)
 }
 
 #[cfg(test)]
