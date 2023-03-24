@@ -27,7 +27,7 @@ fn problem2(input: &Input) -> i64 {
 mod test {
     use intcode::Intcode;
 
-    use crate::{problem1, problem2};
+    use crate::problem1;
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
