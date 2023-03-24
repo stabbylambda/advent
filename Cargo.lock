@@ -924,6 +924,7 @@ name = "advent_2019_11"
 version = "0.1.0"
 dependencies = [
  "common",
+ "intcode",
  "nom 7.1.3",
 ]
 
@@ -940,6 +941,7 @@ name = "advent_2019_13"
 version = "0.1.0"
 dependencies = [
  "common",
+ "intcode",
  "nom 7.1.3",
 ]
 
@@ -956,6 +958,7 @@ name = "advent_2019_15"
 version = "0.1.0"
 dependencies = [
  "common",
+ "intcode",
  "nom 7.1.3",
 ]
 
@@ -972,6 +975,7 @@ name = "advent_2019_17"
 version = "0.1.0"
 dependencies = [
  "common",
+ "intcode",
  "nom 7.1.3",
 ]
 
@@ -988,6 +992,7 @@ name = "advent_2019_19"
 version = "0.1.0"
 dependencies = [
  "common",
+ "intcode",
  "nom 7.1.3",
 ]
 
@@ -1004,6 +1009,7 @@ name = "advent_2019_21"
 version = "0.1.0"
 dependencies = [
  "common",
+ "intcode",
  "nom 7.1.3",
 ]
 
@@ -1020,6 +1026,7 @@ name = "advent_2019_23"
 version = "0.1.0"
 dependencies = [
  "common",
+ "intcode",
  "nom 7.1.3",
 ]
 
@@ -1036,6 +1043,7 @@ name = "advent_2019_25"
 version = "0.1.0"
 dependencies = [
  "common",
+ "intcode",
  "nom 7.1.3",
 ]
 
