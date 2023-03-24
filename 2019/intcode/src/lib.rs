@@ -6,9 +6,12 @@ use nom::{
 #[derive(Clone, Debug)]
 pub struct Intcode {
     pub program: Vec<i64>,
+    pub input: Vec<i64>,
+    pub output: Vec<i64>,
+    pc: usize,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum ParameterMode {
     Position,
     Immediate,
@@ -24,7 +27,7 @@ impl ParameterMode {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum Opcode {
     Add,
     Multiply,
@@ -55,7 +58,7 @@ impl Opcode {
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 struct Instruction {
     opcode: Opcode,
     a_mode: ParameterMode,
@@ -89,21 +92,32 @@ fn instruction_test() {
     assert_eq!(i.a_mode, ParameterMode::Position);
 
     let mut p = Intcode::new(&[1002, 4, 3, 4, 33]);
-    p.execute(&[]);
+    p.execute();
     assert_eq!(p.program[4], 99);
 }
 
-#[derive(Debug)]
-pub struct ExecutionResult {
-    pub register0: i64,
-    pub output: Vec<i64>,
+#[derive(Debug, PartialEq, Eq)]
+pub enum ExecutionResult {
+    Halted,
+    WaitingForInput,
 }
 
 impl Intcode {
     pub fn new(input: &[i64]) -> Self {
         Intcode {
             program: input.to_vec(),
+            input: vec![],
+            output: vec![],
+            pc: 0,
         }
+    }
+
+    pub fn get_location0(&self) -> i64 {
+        self.program[0]
+    }
+
+    pub fn get_last_output(&self) -> i64 {
+        *self.output.last().unwrap()
     }
 
     fn get_write_location(&mut self, location: usize) -> Option<&mut i64> {
@@ -120,107 +134,108 @@ impl Intcode {
         }
     }
 
-    pub fn execute(&mut self, input: &[i64]) -> ExecutionResult {
-        let mut pc = 0;
-        let mut input = input.to_vec();
-        let mut output = vec![];
+    fn get_instruction(&self) -> Option<Instruction> {
+        self.program
+            .get(self.pc)
+            .map(|raw_opcode| Instruction::new(*raw_opcode))
+    }
 
-        while pc < self.program.len() {
-            let raw_opcode = self.program[pc];
-            let instruction = Instruction::new(raw_opcode);
+    fn get_a(&self, instruction: &Instruction) -> i64 {
+        self.get_parameter(self.pc + 1, instruction.a_mode)
+    }
 
+    fn get_ab(&self, instruction: &Instruction) -> (i64, i64) {
+        let a = self.get_a(instruction);
+        let b = self.get_parameter(self.pc + 2, instruction.b_mode);
+        (a, b)
+    }
+
+    fn get_abc(&mut self, instruction: &Instruction) -> Option<(i64, i64, &mut i64)> {
+        let (a, b) = self.get_ab(instruction);
+        let c = self.get_write_location(self.pc + 3);
+
+        c.map(|c| (a, b, c))
+    }
+
+    fn jump_to(&mut self, location: i64) -> usize {
+        self.pc = location as usize;
+        // jump never increments the program counter afterward
+        0
+    }
+
+    pub fn execute(&mut self) -> ExecutionResult {
+        while let Some(instruction) = self.get_instruction() {
             let next = match instruction.opcode {
-                Opcode::Halt => {
-                    break;
-                }
+                Opcode::Halt => return ExecutionResult::Halted,
                 Opcode::Add => {
-                    // get the values at a and b
-                    let a = self.get_parameter(pc + 1, instruction.a_mode);
-                    let b = self.get_parameter(pc + 2, instruction.b_mode);
-
-                    if let Some(result) = self.get_write_location(pc + 3) {
-                        *result = a + b;
+                    if let Some((a, b, c)) = self.get_abc(&instruction) {
+                        *c = a + b;
                     }
 
                     4
                 }
                 Opcode::Multiply => {
-                    let a = self.get_parameter(pc + 1, instruction.a_mode);
-                    let b = self.get_parameter(pc + 2, instruction.b_mode);
-
-                    if let Some(result) = self.get_write_location(pc + 3) {
-                        *result = a * b;
+                    if let Some((a, b, c)) = self.get_abc(&instruction) {
+                        *c = a * b;
                     }
 
                     4
                 }
-                Opcode::Input => {
-                    let input = input.pop().unwrap();
+                Opcode::Input => match self.input.pop() {
+                    Some(input) => {
+                        if let Some(result) = self.get_write_location(self.pc + 1) {
+                            *result = input;
+                        }
 
-                    if let Some(result) = self.get_write_location(pc + 1) {
-                        *result = input;
+                        2
                     }
-
-                    2
-                }
+                    // if we didn't have any input waiting, we need to terminate here
+                    None => return ExecutionResult::WaitingForInput,
+                },
                 Opcode::Output => {
-                    let a = self.get_parameter(pc + 1, instruction.a_mode);
-
-                    output.push(a);
+                    let a = self.get_a(&instruction);
+                    self.output.push(a);
 
                     2
                 }
                 Opcode::JumpIfTrue => {
-                    let a = self.get_parameter(pc + 1, instruction.a_mode);
-                    let b = self.get_parameter(pc + 2, instruction.b_mode);
+                    let (a, b) = self.get_ab(&instruction);
 
                     if a != 0 {
-                        pc = b as usize;
-                        0
+                        self.jump_to(b)
                     } else {
                         3
                     }
                 }
                 Opcode::JumpIfFalse => {
-                    let a = self.get_parameter(pc + 1, instruction.a_mode);
-                    let b = self.get_parameter(pc + 2, instruction.b_mode);
+                    let (a, b) = self.get_ab(&instruction);
 
                     if a == 0 {
-                        pc = b as usize;
-                        0
+                        self.jump_to(b)
                     } else {
                         3
                     }
                 }
                 Opcode::LessThan => {
-                    let a = self.get_parameter(pc + 1, instruction.a_mode);
-                    let b = self.get_parameter(pc + 2, instruction.b_mode);
-
-                    if let Some(result) = self.get_write_location(pc + 3) {
-                        *result = if a < b { 1 } else { 0 };
+                    if let Some((a, b, c)) = self.get_abc(&instruction) {
+                        *c = (a < b).into();
                     }
 
                     4
                 }
                 Opcode::Equals => {
-                    let a = self.get_parameter(pc + 1, instruction.a_mode);
-                    let b = self.get_parameter(pc + 2, instruction.b_mode);
-
-                    if let Some(result) = self.get_write_location(pc + 3) {
-                        *result = if a == b { 1 } else { 0 };
+                    if let Some((a, b, c)) = self.get_abc(&instruction) {
+                        *c = (a == b).into();
                     }
 
                     4
                 }
             };
 
-            pc += next;
+            self.pc += next;
         }
 
-        ExecutionResult {
-            register0: self.program[0],
-            output,
-        }
+        ExecutionResult::Halted
     }
 
     pub fn set_noun_verb(&mut self, noun: i64, verb: i64) {
@@ -242,7 +257,9 @@ impl Intcode {
 #[allow(dead_code)]
 fn run_simple_program(program: &[i64], input: i64) -> i64 {
     let mut p = Intcode::new(program);
-    *p.execute(&[input]).output.last().unwrap()
+    p.input.push(input);
+    p.execute();
+    *p.output.last().unwrap()
 }
 
 #[test]

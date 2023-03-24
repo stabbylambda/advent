@@ -16,7 +16,8 @@ type Input = Intcode;
 fn problem1(input: &Input) -> i64 {
     let mut program = input.clone();
     program.set_noun_verb(12, 2);
-    program.execute(&[]).register0
+    program.execute();
+    program.get_location0()
 }
 
 fn problem2(input: &Input) -> i64 {
@@ -25,7 +26,8 @@ fn problem2(input: &Input) -> i64 {
         for verb in 0..100 {
             let mut program = input.clone();
             program.set_noun_verb(noun, verb);
-            if program.execute(&[]).register0 == expected {
+            program.execute();
+            if program.get_location0() == expected {
                 return 100 * noun + verb;
             }
         }
@@ -41,7 +43,7 @@ mod test {
     fn first() {
         let input = include_str!("../test.txt");
         let mut program = Intcode::parse(input);
-        let result = program.execute(&[]);
-        assert_eq!(result.register0, 3500);
+        program.execute();
+        assert_eq!(program.get_location0(), 3500);
     }
 }
