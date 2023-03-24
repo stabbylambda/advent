@@ -259,7 +259,7 @@ fn run_simple_program(program: &[i64], input: i64) -> i64 {
     let mut p = Intcode::new(program);
     p.input.push(input);
     p.execute();
-    *p.output.last().unwrap()
+    p.get_last_output()
 }
 
 #[test]
