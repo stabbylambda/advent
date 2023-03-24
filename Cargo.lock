@@ -906,6 +906,7 @@ name = "advent_2019_09"
 version = "0.1.0"
 dependencies = [
  "common",
+ "intcode",
  "nom 7.1.3",
 ]
 
