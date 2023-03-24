@@ -1,8 +1,8 @@
-use nom::IResult;
+use intcode::Intcode;
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(input);
+    let input = Intcode::parse(input);
 
     let answer = problem1(&input);
     println!("problem 1 answer: {answer}");
@@ -11,13 +11,7 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Vec<u32>;
-
-fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
-
-    result.unwrap().1
-}
+type Input = Intcode;
 
 fn problem1(_input: &Input) -> u32 {
     todo!()
@@ -29,11 +23,13 @@ fn problem2(_input: &Input) -> u32 {
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use intcode::Intcode;
+
+    use crate::{problem1, problem2};
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
-        let input = parse(input);
+        let input = Intcode::parse(input);
         let result = problem1(&input);
         assert_eq!(result, 0)
     }
@@ -41,7 +37,7 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let input = parse(input);
+        let input = Intcode::parse(input);
         let result = problem2(&input);
         assert_eq!(result, 0)
     }
