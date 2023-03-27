@@ -1,6 +1,6 @@
+use common::math::div_ceil;
 use nom::{
-    bytes::complete::tag, character::complete::i32 as nom_i32,
-    multi::separated_list1, IResult,
+    bytes::complete::tag, character::complete::i32 as nom_i32, multi::separated_list1, IResult,
 };
 fn main() {
     let input = include_str!("../input.txt");
@@ -73,17 +73,6 @@ impl CrabFleet {
 
             *mid1
         }
-    }
-}
-
-// pretty much ripped directly from https://github.com/rust-lang/rust/pull/88582/files#diff-dd440fe33121a785308d5cde98a1ab79b0b285d27bb29eaa9800e180870e16a6R1809
-pub const fn div_ceil(lhs: i32, rhs: i32) -> i32 {
-    let d = lhs / rhs;
-    let r = lhs % rhs;
-    if (r > 0 && rhs > 0) || (r < 0 && rhs < 0) {
-        d + 1
-    } else {
-        d
     }
 }
 
