@@ -79,7 +79,7 @@ pub enum ExecutionResult {
     WaitingForInput,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Intcode {
     pub program: Vec<i64>,
     pub input: Vec<i64>,
