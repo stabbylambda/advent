@@ -75,6 +75,19 @@ impl<'a, T: Copy> Neighbors<'a, T> {
         v.into_iter().flatten().collect()
     }
 }
+impl<'a, T: Copy> IntoIterator for &'a Neighbors<'a, T> {
+    type Item = MapSquare<'a, T>;
+
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let v = vec![self.north, self.west, self.east, self.south];
+        v.iter()
+            .filter_map(|x| *x)
+            .collect::<Vec<MapSquare<'a, T>>>()
+            .into_iter()
+    }
+}
 
 pub struct AllNeighbors<'a, T: Copy> {
     pub north: Option<MapSquare<'a, T>>,

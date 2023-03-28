@@ -96,7 +96,7 @@ impl Intcode {
 
         // make sure we have plenty of writeable memory
         let mut program = input.to_vec();
-        program.extend(vec![0; 10_000_000]);
+        program.extend(vec![0; 100]);
 
         Intcode {
             program,
@@ -141,18 +141,33 @@ impl Intcode {
         location: usize,
         instruction: &Instruction,
     ) -> Option<&mut i64> {
+        self.grow_if_necessary(location);
         match self.get_location(location, instruction) {
             (_, ParameterMode::Immediate) => {
                 unreachable!("Writeable parameters will never be in immediate mode")
             }
-            (x, _) => self.program.get_mut(x as usize),
+            (x, _) => {
+                self.grow_if_necessary(x as usize);
+                self.program.get_mut(x as usize)
+            }
         }
     }
 
-    fn get_parameter(&self, location: usize, instruction: &Instruction) -> i64 {
+    fn grow_if_necessary(&mut self, location: usize) {
+        if location >= self.program.len() {
+            let diff = location.abs_diff(self.program.len()) + 1;
+            self.program.extend(vec![0; diff]);
+        }
+    }
+
+    fn get_parameter(&mut self, location: usize, instruction: &Instruction) -> i64 {
+        self.grow_if_necessary(location);
         match self.get_location(location, instruction) {
             (x, ParameterMode::Immediate) => x,
-            (x, _) => self.program[x as usize],
+            (x, _) => {
+                self.grow_if_necessary(x as usize);
+                self.program[x as usize]
+            }
         }
     }
 
