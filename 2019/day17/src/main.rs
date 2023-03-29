@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use common::map::Map;
-use intcode::{ExecutionResult, Intcode};
+use intcode::Intcode;
 
 fn main() {
     let input = include_str!("../input.txt");
