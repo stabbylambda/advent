@@ -188,6 +188,10 @@ impl<T: Copy> Map<T> {
         }
     }
 
+    pub fn get_grid_index(&self, (x, y): Coord) -> usize {
+        y * self.width + x
+    }
+
     pub fn print<F>(&self, f: F)
     where
         F: Fn(MapSquare<T>) -> char,
