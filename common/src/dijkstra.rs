@@ -5,7 +5,7 @@ use std::{
 
 use crate::map::MapSquare;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Edge {
     pub node: usize,
     pub cost: usize,

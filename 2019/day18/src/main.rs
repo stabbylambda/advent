@@ -1,6 +1,7 @@
 use std::{
     collections::{BTreeMap, BTreeSet, BinaryHeap},
     fmt::Display,
+    time::{Duration, Instant},
 };
 
 use common::{
@@ -17,10 +18,11 @@ use nom::{
 fn main() {
     let input = include_str!("../input.txt");
     let input = parse(input);
-
     let answer = problem1(&input);
     println!("problem 1 answer: {answer}");
 
+    let input = include_str!("../input2.txt");
+    let input = parse(input);
     let answer = problem2(&input);
     println!("problem 2 answer: {answer}");
 }
@@ -71,32 +73,55 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-fn get_edges(maze: &Map<Tile>, keys: &BTreeSet<char>) -> Vec<Vec<Edge>> {
-    // could probably cut out a bunch of tiles if we used edge weights equal to the number of spaces between nodes instead of
-    // just having everything be neighbors with an edge weight of 1
+// build an adjacency list for the map
+fn get_edges(maze: &Map<Tile>) -> Vec<Vec<Edge>> {
     let is_open = |t: &Tile| {
         match t {
             // walls have no edges
             Tile::Wall => false,
-            // doors that we don't have the key for also have no edges
-            Tile::Door(c) if !keys.contains(c) => false,
             _ => true,
         }
     };
-
     maze.into_iter()
         .map(|square| {
-            if is_open(square.data) {
-                square
-                    .neighbors()
-                    .into_iter()
-                    .filter_map(|n| is_open(n.data).then(|| Edge::from_map_square(&n)))
-                    .collect()
-            } else {
-                vec![]
+            // walls have no edges
+            if !is_open(square.data) {
+                return vec![];
             }
+
+            square
+                .neighbors()
+                .to_vec()
+                .iter()
+                .filter_map(|n| {
+                    if !is_open(n.data) {
+                        return None;
+                    }
+
+                    Some(Edge::from_map_square(n))
+                })
+                .collect()
         })
         .collect()
+}
+
+/// Remove any edges from the adjacency list that go through a door we don't have the key for
+fn strip_edges(
+    edges: &[Vec<Edge>],
+    doors: &[(usize, char)],
+    keys: &BTreeSet<char>,
+) -> Vec<Vec<Edge>> {
+    let mut edges = edges.to_vec();
+
+    for (grid_index, c) in doors {
+        // if we don't have the key
+        if !keys.contains(c) {
+            // remove any edges through that door
+            edges[*grid_index].clear()
+        }
+    }
+
+    edges
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -104,6 +129,7 @@ struct State {
     steps: usize,
     position: (usize, usize),
     keys: BTreeSet<char>,
+    key_count: usize,
 }
 
 impl State {
@@ -112,6 +138,7 @@ impl State {
         new_state.steps += steps;
         new_state.position = position;
         new_state.keys.insert(key);
+        new_state.key_count += 1;
 
         new_state
     }
@@ -132,7 +159,7 @@ impl Ord for State {
         other
             .steps
             .cmp(&self.steps)
-            .then(self.keys.len().cmp(&other.keys.len()))
+            .then(self.key_count.cmp(&other.key_count))
     }
 }
 
@@ -146,12 +173,20 @@ fn problem1(input: &Input) -> usize {
         .into_iter()
         .filter(|x| matches!(x.data, Tile::Key(..)))
         .collect();
+    let doors: Vec<(usize, char)> = input
+        .into_iter()
+        .filter_map(|x| match x.data {
+            Tile::Door(c) => Some((x.get_grid_index(), *c)),
+            _ => None,
+        })
+        .collect();
 
     // we're starting at the entrance with no keys
     let state = State {
         steps: 0,
         position: start.coords,
         keys: BTreeSet::new(),
+        key_count: 0,
     };
 
     let mut seen: BTreeMap<((usize, usize), BTreeSet<char>), usize> = BTreeMap::new();
@@ -160,9 +195,18 @@ fn problem1(input: &Input) -> usize {
     let mut queue = BinaryHeap::new();
     queue.push(state);
 
+    let mut elapsed = Duration::ZERO;
+
+    let edges = get_edges(input);
+
+    let mut considered = 1;
+    let start = Instant::now();
     while let Some(state) = queue.pop() {
+        considered += 1;
         // we've got all the keys, so we're done!
         if state.keys.len() == keys.len() {
+            let total_time = start.elapsed();
+            println!("Considered {considered} states. Dijkstra took {elapsed:?}. Total time {total_time:?}");
             return state.steps;
         }
 
@@ -173,12 +217,10 @@ fn problem1(input: &Input) -> usize {
             }
         }
 
-        println!("{state:?}");
-
         // get the edges given the keys that we have right now (but cache the adjacency list because it won't change)
         let edges = adjacencies
             .entry(state.keys.clone())
-            .or_insert_with(|| get_edges(input, &state.keys));
+            .or_insert_with(|| strip_edges(&edges, &doors, &state.keys));
 
         let new_states: Vec<State> = keys
             .iter()
@@ -189,9 +231,14 @@ fn problem1(input: &Input) -> usize {
                     return None;
                 }
 
-                let position = x.get_grid_index();
-                shortest_path(edges, input.get_grid_index(state.position), position)
-                    .map(|cost| state.get_key(cost, x.coords, *c))
+                let start = input.get_grid_index(state.position);
+                let goal = x.get_grid_index();
+
+                let now = Instant::now();
+                shortest_path(edges, start, goal).map(|cost| {
+                    elapsed += now.elapsed();
+                    state.get_key(cost, x.coords, *c)
+                })
             })
             .collect();
 
