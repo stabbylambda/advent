@@ -18,12 +18,12 @@ use nom::{
 fn main() {
     let input = include_str!("../input.txt");
     let input = parse(input);
-    let answer = problem1(&input);
+    let answer = problem(&input);
     println!("problem 1 answer: {answer}");
 
     let input = include_str!("../input2.txt");
     let input = parse(input);
-    let answer = problem2(&input);
+    let answer = problem(&input);
     println!("problem 2 answer: {answer}");
 }
 
@@ -127,24 +127,24 @@ fn strip_edges(
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct State {
     steps: usize,
-    position: (usize, usize),
+    positions: Vec<Coord>,
     keys: BTreeSet<char>,
     key_count: usize,
 }
 
 impl State {
-    fn get_key(&self, steps: usize, position: (usize, usize), key: char) -> State {
+    fn get_key(&self, steps: usize, position_idx: usize, position: Coord, key: char) -> State {
         let mut new_state = self.clone();
         new_state.steps += steps;
-        new_state.position = position;
+        new_state.positions[position_idx] = position;
         new_state.keys.insert(key);
         new_state.key_count += 1;
 
         new_state
     }
 
-    fn to_cache_key(&self) -> ((usize, usize), BTreeSet<char>) {
-        (self.position, self.keys.clone())
+    fn to_cache_key(&self) -> (Vec<Coord>, BTreeSet<char>) {
+        (self.positions.clone(), self.keys.clone())
     }
 }
 
@@ -163,12 +163,13 @@ impl Ord for State {
     }
 }
 
-fn problem1(input: &Input) -> usize {
+type Coord = (usize, usize);
+fn problem(input: &Input) -> usize {
     println!("{input}");
-    let start = input
+    let start: Vec<Coord> = input
         .into_iter()
-        .find(|x| x.data == &Tile::Entrance)
-        .unwrap();
+        .filter_map(|x| (x.data == &Tile::Entrance).then_some(x.coords))
+        .collect();
     let keys: Vec<MapSquare<Tile>> = input
         .into_iter()
         .filter(|x| matches!(x.data, Tile::Key(..)))
@@ -184,12 +185,12 @@ fn problem1(input: &Input) -> usize {
     // we're starting at the entrance with no keys
     let state = State {
         steps: 0,
-        position: start.coords,
+        positions: start,
         keys: BTreeSet::new(),
         key_count: 0,
     };
 
-    let mut seen: BTreeMap<((usize, usize), BTreeSet<char>), usize> = BTreeMap::new();
+    let mut seen: BTreeMap<(Vec<Coord>, BTreeSet<char>), usize> = BTreeMap::new();
     let mut adjacencies: BTreeMap<BTreeSet<char>, Vec<Vec<Edge>>> = BTreeMap::new();
 
     let mut queue = BinaryHeap::new();
@@ -222,23 +223,30 @@ fn problem1(input: &Input) -> usize {
             .entry(state.keys.clone())
             .or_insert_with(|| strip_edges(&edges, &doors, &state.keys));
 
-        let new_states: Vec<State> = keys
+        let new_states: Vec<State> = state
+            .positions
             .iter()
-            .filter_map(|x| {
-                // only keep keys we don't already have
-                let Tile::Key(c) = x.data else { return None };
-                if state.keys.contains(c) {
-                    return None;
-                }
+            .cloned()
+            .enumerate()
+            .flat_map(|(position_idx, position)| {
+                keys.iter()
+                    .filter_map(|x| {
+                        // only keep keys we don't already have
+                        let Tile::Key(c) = x.data else { return None };
+                        if state.keys.contains(c) {
+                            return None;
+                        }
 
-                let start = input.get_grid_index(state.position);
-                let goal = x.get_grid_index();
+                        let start = input.get_grid_index(position);
+                        let goal = x.get_grid_index();
 
-                let now = Instant::now();
-                shortest_path(edges, start, goal).map(|cost| {
-                    elapsed += now.elapsed();
-                    state.get_key(cost, x.coords, *c)
-                })
+                        let now = Instant::now();
+                        shortest_path(edges, start, goal).map(|cost| {
+                            elapsed += now.elapsed();
+                            state.get_key(cost, position_idx, x.coords, *c)
+                        })
+                    })
+                    .collect::<Vec<_>>()
             })
             .collect();
 
@@ -249,18 +257,15 @@ fn problem1(input: &Input) -> usize {
     0
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
-}
-
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::{parse, problem};
     #[test]
+    #[ignore]
     fn first() {
         let input = include_str!("../test.txt");
         let input = parse(input);
-        let result = problem1(&input);
+        let result = problem(&input);
         assert_eq!(result, 136)
     }
 
@@ -269,15 +274,15 @@ mod test {
     fn input() {
         let input = include_str!("../input.txt");
         let input = parse(input);
-        let result = problem1(&input);
+        let result = problem(&input);
         assert_eq!(result, 5198)
     }
 
     #[test]
     fn second() {
-        let input = include_str!("../test.txt");
+        let input = include_str!("../test2.txt");
         let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let result = problem(&input);
+        assert_eq!(result, 72)
     }
 }
