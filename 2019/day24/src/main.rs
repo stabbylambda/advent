@@ -1,4 +1,13 @@
-use nom::IResult;
+use std::collections::{BTreeMap, BTreeSet};
+
+use common::map::Map;
+use nom::{
+    branch::alt,
+    character::complete::{char, newline},
+    combinator::map,
+    multi::{many1, separated_list1},
+    IResult,
+};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -7,24 +16,203 @@ fn main() {
     let answer = problem1(&input);
     println!("problem 1 answer: {answer}");
 
-    let answer = problem2(&input);
+    let answer = problem2(&input, 200);
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Vec<u32>;
+type Input = Map<Tile>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    let result: IResult<&str, Input> = map(
+        separated_list1(
+            newline,
+            many1(alt((
+                map(char('#'), |_| Tile::Bug),
+                map(char('.'), |_| Tile::Space),
+            ))),
+        ),
+        Map::new,
+    )(input);
 
     result.unwrap().1
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Tile {
+    Bug,
+    Space,
+    Level,
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+impl Tile {
+    fn tick(&self, neighbor_bugs: usize) -> Tile {
+        match (self, neighbor_bugs) {
+            (Tile::Bug, 1) => Tile::Bug,
+            (Tile::Bug, _) => Tile::Space,
+            (Tile::Space, 1) | (Tile::Space, 2) => Tile::Bug,
+            _ => Tile::Space,
+        }
+    }
+}
+
+fn tick(map: &Map<Tile>) -> Map<Tile> {
+    let mut new_map = Map::new(vec![vec![Tile::Space; 5]; 5]);
+    for tile in map.into_iter() {
+        let neighbor_bug_count = tile
+            .neighbors()
+            .into_iter()
+            .filter(|x| matches!(x.data, Tile::Bug))
+            .count();
+
+        let new_tile = tile.data.tick(neighbor_bug_count);
+
+        new_map.set(tile.coords, new_tile);
+    }
+    new_map
+}
+
+fn biodiversity(map: &Map<Tile>) -> u32 {
+    map.into_iter().enumerate().fold(0, |acc, (idx, x)| {
+        let base = match x.data {
+            Tile::Bug => 1,
+            Tile::Space => 0,
+            _ => unreachable!(),
+        };
+
+        acc | (base << idx)
+    })
+}
+
+fn problem1(input: &Input) -> u32 {
+    let mut seen: BTreeSet<u32> = BTreeSet::new();
+    let mut map = input.clone();
+
+    loop {
+        let key = biodiversity(&map);
+        if !seen.insert(key) {
+            return key;
+        }
+
+        map = tick(&map);
+    }
+}
+
+type ErisCoord = (isize, usize, usize);
+struct Eris {
+    tiles: BTreeMap<ErisCoord, Tile>,
+}
+
+impl Eris {
+    fn new(input: &Input) -> Self {
+        let initial = input.clone();
+        let tiles: BTreeMap<ErisCoord, Tile> = initial
+            .into_iter()
+            .map(|t| {
+                let data = if t.coords == (2, 2) {
+                    Tile::Level
+                } else {
+                    *t.data
+                };
+                ((0, t.coords.1, t.coords.0), data)
+            })
+            .collect();
+
+        Self { tiles }
+    }
+
+    fn get_tile(&self, coords: ErisCoord) -> Tile {
+        if let Some(tile) = self.tiles.get(&coords) {
+            *tile
+        } else {
+            Tile::Space
+        }
+    }
+
+    fn tick_tile(&self, tile: Tile, (level, y, x): ErisCoord) -> Option<Tile> {
+        let up = level + 1;
+        let down = level - 1;
+        let top_neighbors = match (y, x) {
+            (0, _) => vec![self.get_tile((down, 1, 2))], // A - E => 8
+            (3, 2) => (0..5).map(|x| self.get_tile((up, 4, x))).collect(), // 18 => U - Y
+            (_, _) => vec![self.get_tile((level, y - 1, x))], // normal
+        };
+
+        let left_neighbors = match (y, x) {
+            (_, 0) => vec![self.get_tile((down, 2, 1))], // A, F, K, P, U => 12
+            (2, 3) => (0..5).map(|y| self.get_tile((up, y, 4))).collect(), // 14 => E, J, O, T, Y
+            (_, _) => vec![self.get_tile((level, y, x - 1))], // normal
+        };
+
+        let right_neighbors = match (y, x) {
+            (_, 4) => vec![self.get_tile((down, 2, 3))], // E, J, O, T, Y => 14
+            (2, 1) => (0..5).map(|y| self.get_tile((up, y, 0))).collect(), // 12 => A, F, K, P, U
+            (_, _) => vec![self.get_tile((level, y, x + 1))], // normal
+        };
+
+        let bottom_neighbors = match (y, x) {
+            (4, _) => vec![self.get_tile((down, 3, 2))], // U - Y => 18
+            (1, 2) => (0..5).map(|x| self.get_tile((up, 0, x))).collect(), // 8 => A - E
+            (_, _) => vec![self.get_tile((level, y + 1, x))], // normal
+        };
+
+        let neighbors = vec![
+            top_neighbors,
+            left_neighbors,
+            right_neighbors,
+            bottom_neighbors,
+        ];
+
+        let neighbor_bugs = neighbors
+            .iter()
+            .flatten()
+            .filter(|x| **x == Tile::Bug)
+            .count();
+
+        match tile.tick(neighbor_bugs) {
+            Tile::Bug => Some(Tile::Bug),
+            _ => None,
+        }
+    }
+
+    fn level_range(&self) -> (isize, isize) {
+        let min = self.tiles.keys().min().unwrap().0;
+        let max = self.tiles.keys().max().unwrap().0;
+
+        (min, max)
+    }
+
+    fn all_coords(&self) -> impl Iterator<Item = ErisCoord> {
+        let (min, max) = self.level_range();
+        (min - 1..=max + 1)
+            .flat_map(|level| (0..5).flat_map(move |y| (0..5).map(move |x| (level, y, x))))
+    }
+
+    fn tick(&self) -> Self {
+        let new_tiles = self
+            .all_coords()
+            .filter_map(|(level, y, x)| {
+                let tile = self.get_tile((level, y, x));
+                let new_tile = match tile {
+                    Tile::Level => None,
+                    _ if x == 2 && y == 2 => None,
+                    _ => self.tick_tile(tile, (level, y, x)),
+                };
+
+                // we only need to insert into the map if we've got a bug
+                new_tile.map(|new_tile| ((level, y, x), new_tile))
+            })
+            .collect();
+
+        Eris { tiles: new_tiles }
+    }
+
+    fn bug_count(&self) -> usize {
+        self.tiles.values().filter(|x| **x == Tile::Bug).count()
+    }
+}
+fn problem2(input: &Input, ticks: usize) -> usize {
+    let eris = (0..ticks).fold(Eris::new(input), |eris, _n| eris.tick());
+    eris.bug_count()
 }
 
 #[cfg(test)]
@@ -35,14 +223,14 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 2129920)
     }
 
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
         let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let result = problem2(&input, 10);
+        assert_eq!(result, 99)
     }
 }
