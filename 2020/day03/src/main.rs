@@ -1,4 +1,9 @@
-use nom::IResult;
+use nom::{
+    branch::alt,
+    character::complete::{char, newline},
+    multi::{many1, separated_list1},
+    IResult,
+};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -11,20 +16,42 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Vec<u32>;
+type Input = Vec<Vec<char>>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    let result: IResult<&str, Input> =
+        separated_list1(newline, many1(alt((char('#'), char('.')))))(input);
 
     result.unwrap().1
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
+fn count_trees(input: &Input, dx: usize, dy: usize) -> u32 {
+    let (mut x, mut y) = (0, 0);
+    let mut trees = 0;
+
+    let width = input[0].len();
+
+    while y < input.len() {
+        let current = input[y][x];
+        trees += (current == '#') as u32;
+
+        x = (x + dx) % width;
+        y += dy;
+    }
+
+    trees
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem1(input: &Input) -> u32 {
+    count_trees(input, 3, 1)
+}
+
+fn problem2(input: &Input) -> u32 {
+    count_trees(input, 1, 1)
+        * count_trees(input, 3, 1)
+        * count_trees(input, 5, 1)
+        * count_trees(input, 7, 1)
+        * count_trees(input, 1, 2)
 }
 
 #[cfg(test)]
@@ -35,7 +62,7 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 7)
     }
 
     #[test]
@@ -43,6 +70,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 336)
     }
 }
