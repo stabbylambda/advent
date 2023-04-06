@@ -379,6 +379,7 @@ fn relative_base() {
     let program = &[109, 19, 204, -34, 99];
     let mut p = Intcode::new(program);
     p.relative_base = 2000;
+    p.grow_if_necessary(1985);
     p.program[1985] = 100;
     p.execute();
     assert_eq!(p.get_last_output(), 100);
