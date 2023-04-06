@@ -1,4 +1,13 @@
-use nom::IResult;
+use nom::{
+    bytes::complete::tag,
+    character::complete::{anychar, newline, not_line_ending},
+    combinator::map,
+    multi::separated_list1,
+    sequence::{separated_pair, terminated, tuple},
+    IResult,
+};
+
+use common::nom::usize;
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -11,20 +20,45 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Vec<u32>;
+type Input = Vec<((usize, usize, char), String)>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    let result: IResult<&str, Input> = separated_list1(
+        newline,
+        separated_pair(
+            tuple((
+                terminated(usize, tag("-")),
+                terminated(usize, tag(" ")),
+                anychar,
+            )),
+            tag(": "),
+            map(not_line_ending, |x: &str| x.to_string()),
+        ),
+    )(input);
 
     result.unwrap().1
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
+fn problem1(input: &Input) -> usize {
+    input
+        .iter()
+        .filter(|((low, high, c), password)| {
+            let actual = password.chars().filter(|x| x == c).count();
+            *low <= actual && actual <= *high
+        })
+        .count()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem2(input: &Input) -> usize {
+    input
+        .iter()
+        .filter(|((idx1, idx2, c), password)| {
+            let first = password.chars().nth(idx1 - 1).unwrap();
+            let second = password.chars().nth(idx2 - 1).unwrap();
+
+            (first == *c && second != *c) || (first != *c && second == *c)
+        })
+        .count()
 }
 
 #[cfg(test)]
@@ -35,7 +69,7 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 2)
     }
 
     #[test]
@@ -43,6 +77,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 1)
     }
 }
