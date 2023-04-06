@@ -1,4 +1,8 @@
-use nom::IResult;
+use nom::{
+    character::complete::{newline, u32},
+    multi::separated_list1,
+    IResult,
+};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -14,17 +18,33 @@ fn main() {
 type Input = Vec<u32>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    let result: IResult<&str, Input> = separated_list1(newline, u32)(input);
 
     result.unwrap().1
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
+fn problem1(input: &Input) -> u32 {
+    for i in 0..input.len() {
+        for j in i + 1..input.len() {
+            if input[i] + input[j] == 2020 {
+                return input[i] * input[j];
+            }
+        }
+    }
+    unreachable!()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem2(input: &Input) -> u32 {
+    for i in 0..input.len() {
+        for j in i + 1..input.len() {
+            for k in j + 1..input.len() {
+                if input[i] + input[j] + input[k] == 2020 {
+                    return input[i] * input[j] * input[k];
+                }
+            }
+        }
+    }
+    unreachable!()
 }
 
 #[cfg(test)]
@@ -35,7 +55,7 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 514579)
     }
 
     #[test]
@@ -43,6 +63,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 241861950)
     }
 }
