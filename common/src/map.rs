@@ -75,17 +75,14 @@ impl<'a, T: Copy> Neighbors<'a, T> {
         v.into_iter().flatten().collect()
     }
 }
+
 impl<'a, T: Copy> IntoIterator for &'a Neighbors<'a, T> {
     type Item = MapSquare<'a, T>;
 
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let v = vec![self.north, self.west, self.east, self.south];
-        v.iter()
-            .filter_map(|x| *x)
-            .collect::<Vec<MapSquare<'a, T>>>()
-            .into_iter()
+        self.to_vec().into_iter()
     }
 }
 
@@ -115,6 +112,16 @@ impl<'a, T: Copy> AllNeighbors<'a, T> {
         ];
 
         v.into_iter().flatten().collect()
+    }
+}
+
+impl<'a, T: Copy> IntoIterator for &'a AllNeighbors<'a, T> {
+    type Item = MapSquare<'a, T>;
+
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.to_vec().into_iter()
     }
 }
 
@@ -238,6 +245,10 @@ pub struct MapSquare<'a, T: Copy> {
 impl<'a, T: Copy> MapSquare<'a, T> {
     pub fn neighbors(&self) -> Neighbors<'a, T> {
         self.map.neighbors(self.coords)
+    }
+
+    pub fn all_neighbors(&self) -> AllNeighbors<'a, T> {
+        self.map.all_neighbors(self.coords)
     }
 
     pub fn get_grid_index(&self) -> usize {
