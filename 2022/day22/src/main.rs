@@ -1,3 +1,4 @@
+use common::heading::Heading;
 use ndarray::prelude::*;
 
 use crate::parsing::parse;
@@ -37,10 +38,10 @@ fn print_map(grid: &Array2<Space>, player_position: &Position) {
         for (x, space) in row.iter().enumerate() {
             if [y, x] == player_position.coords {
                 let player_char = match player_position.heading {
-                    Heading::Right => ">",
-                    Heading::Down => "v",
-                    Heading::Left => "<",
-                    Heading::Up => "^",
+                    Heading::East => ">",
+                    Heading::South => "v",
+                    Heading::West => "<",
+                    Heading::North => "^",
                 };
                 print!("{player_char}");
                 continue;
@@ -54,28 +55,6 @@ fn print_map(grid: &Array2<Space>, player_position: &Position) {
         println!();
     }
     println!("==================");
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-enum Heading {
-    Right,
-    Down,
-    Left,
-    Up,
-}
-
-impl TryFrom<u32> for Heading {
-    type Error = &'static str;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        Ok(match value % 4 {
-            0 => Heading::Right,
-            1 => Heading::Down,
-            2 => Heading::Left,
-            3 => Heading::Up,
-            _ => panic!("Not a valid num to heading conversion"),
-        })
-    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -92,24 +71,29 @@ impl Position {
                 0,
                 grid.row(0).iter().position(|&x| x == Space::Empty).unwrap(),
             ],
-            heading: Heading::Right,
+            heading: Heading::East,
         }
     }
 
     fn rotate(&mut self, instruction: &Instruction) {
-        let x = match instruction {
-            Instruction::TurnLeft => 3,
-            Instruction::TurnRight => 1,
-            _ => 0,
+        let heading = match instruction {
+            Instruction::TurnLeft => self.heading.turn_left(),
+            Instruction::TurnRight => self.heading.turn_right(),
+            _ => self.heading,
         };
-        self.heading = (self.heading as u32 + x).try_into().unwrap();
+        self.heading = heading;
     }
 
     fn get_password(&self) -> u32 {
         // The final password is the sum of 1000 times the row, 4 times the column, and the facing.
         let first = 1000 * (self.coords[0] + 1) as u32;
         let second = 4 * (self.coords[1] + 1) as u32;
-        let third = self.heading as u32;
+        let third = match self.heading {
+            Heading::East => 0,
+            Heading::South => 1,
+            Heading::West => 2,
+            Heading::North => 3,
+        };
 
         first + second + third
     }
@@ -117,10 +101,10 @@ impl Position {
     fn walk(&mut self, steps: u32, grid: &Array2<Space>, void_treatment: VoidTreatment) {
         // get the correct axis to look at and slice the array on that axis
         let (axis, idx, rev) = match self.heading {
-            Heading::Up => (Axis(1), 0, true),
-            Heading::Down => (Axis(1), 0, false),
-            Heading::Left => (Axis(0), 1, true),
-            Heading::Right => (Axis(0), 1, false),
+            Heading::North => (Axis(1), 0, true),
+            Heading::South => (Axis(1), 0, false),
+            Heading::West => (Axis(0), 1, true),
+            Heading::East => (Axis(0), 1, false),
         };
 
         let slice = grid.index_axis(axis, self.coords[axis.0]);
@@ -208,25 +192,25 @@ impl Position {
         let face = self.get_face();
 
         match (face, heading, row, col) {
-            (1, Heading::Up, 0, _) => (150 + (col - 50), 0, Heading::Right),
-            (1, Heading::Left, _, 50) => (149 - row, 0, Heading::Right),
+            (1, Heading::North, 0, _) => (150 + (col - 50), 0, Heading::East),
+            (1, Heading::West, _, 50) => (149 - row, 0, Heading::East),
 
-            (2, Heading::Up, 0, _) => (199, col - 100, Heading::Up),
-            (2, Heading::Right, _, 149) => (149 - row, 99, Heading::Left),
-            (2, Heading::Down, 49, _) => (50 + (col - 100), 99, Heading::Left),
+            (2, Heading::North, 0, _) => (199, col - 100, Heading::North),
+            (2, Heading::East, _, 149) => (149 - row, 99, Heading::West),
+            (2, Heading::South, 49, _) => (50 + (col - 100), 99, Heading::West),
 
-            (3, Heading::Left, _, 50) => (100, row - 50, Heading::Down),
-            (3, Heading::Right, _, 99) => (49, 100 + (row - 50), Heading::Up),
+            (3, Heading::West, _, 50) => (100, row - 50, Heading::South),
+            (3, Heading::East, _, 99) => (49, 100 + (row - 50), Heading::North),
 
-            (4, Heading::Right, _, 99) => (49 - (row - 100), 149, Heading::Left),
-            (4, Heading::Down, 149, _) => (150 + (col - 50), 49, Heading::Left),
+            (4, Heading::East, _, 99) => (49 - (row - 100), 149, Heading::West),
+            (4, Heading::South, 149, _) => (150 + (col - 50), 49, Heading::West),
 
-            (5, Heading::Left, _, 0) => (49 - (row - 100), 50, Heading::Right),
-            (5, Heading::Up, 100, _) => (50 + col, 50, Heading::Right),
+            (5, Heading::West, _, 0) => (49 - (row - 100), 50, Heading::East),
+            (5, Heading::North, 100, _) => (50 + col, 50, Heading::East),
 
-            (6, Heading::Left, _, 0) => (0, 50 + (row - 150), Heading::Down),
-            (6, Heading::Down, 199, _) => (0, 100 + col, Heading::Down),
-            (6, Heading::Right, _, 49) => (149, 50 + (row - 150), Heading::Up),
+            (6, Heading::West, _, 0) => (0, 50 + (row - 150), Heading::South),
+            (6, Heading::South, 199, _) => (0, 100 + col, Heading::South),
+            (6, Heading::East, _, 49) => (149, 50 + (row - 150), Heading::North),
 
             _ => panic!(),
         }
@@ -302,7 +286,7 @@ mod test {
 
         let mut p = Position {
             coords: [0, 0],
-            heading: Heading::Up,
+            heading: Heading::North,
         };
 
         // can walk over the top of the map
@@ -326,7 +310,7 @@ mod test {
 
         let mut p = Position {
             coords: [0, 2],
-            heading: Heading::Left,
+            heading: Heading::West,
         };
 
         // can walk over void left

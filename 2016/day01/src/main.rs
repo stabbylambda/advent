@@ -1,4 +1,5 @@
 use common::extensions::PointExt;
+use common::heading::Heading;
 use std::collections::HashSet;
 
 use nom::{
@@ -41,34 +42,14 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-#[derive(Clone, Copy, Debug)]
-enum Heading {
-    North,
-    South,
-    East,
-    West,
-}
-
-impl Heading {
-    fn turn(&self, turn: &Instruction) -> Heading {
-        match (turn, self) {
-            (Instruction::Left, Heading::North) => Heading::West,
-            (Instruction::Left, Heading::West) => Heading::South,
-            (Instruction::Left, Heading::South) => Heading::East,
-            (Instruction::Left, Heading::East) => Heading::North,
-            (Instruction::Right, Heading::North) => Heading::East,
-            (Instruction::Right, Heading::East) => Heading::South,
-            (Instruction::Right, Heading::South) => Heading::West,
-            (Instruction::Right, Heading::West) => Heading::North,
-        }
-    }
-}
-
 fn problem1(input: &Input) -> i64 {
     let mut position = (Heading::North, 0i64, 0i64);
     for (turn, blocks) in input {
         let (heading, x, y) = position;
-        let new_heading = heading.turn(turn);
+        let new_heading = match turn {
+            Instruction::Left => heading.turn_left(),
+            Instruction::Right => heading.turn_right(),
+        };
 
         let new_position = match new_heading {
             Heading::North => (x, y + blocks),
@@ -91,7 +72,10 @@ fn problem2(input: &Input) -> i64 {
     let mut position = (0i64, 0i64);
     'outer: for (turn, blocks) in input {
         let (x, y) = position;
-        heading = heading.turn(turn);
+        heading = match turn {
+            Instruction::Left => heading.turn_left(),
+            Instruction::Right => heading.turn_right(),
+        };
 
         for d in 1..=*blocks {
             position = match heading {
