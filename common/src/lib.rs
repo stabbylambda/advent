@@ -1,5 +1,6 @@
 pub mod dijkstra;
 pub mod extensions;
+pub mod heading;
 pub mod map;
 pub mod math;
 pub mod nom;
