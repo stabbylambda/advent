@@ -1,13 +1,13 @@
-use std::{collections::BTreeMap, fmt::Debug, ops::RangeFrom};
+use std::{collections::BTreeMap, fmt::Debug};
 
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
-    character::complete::{anychar, char, newline, u32},
+    character::complete::{anychar, newline, u32},
     combinator::map,
     multi::separated_list1,
     sequence::{delimited, separated_pair},
-    AsChar, IResult, InputIter, Slice,
+    IResult,
 };
 
 fn main() {
@@ -17,7 +17,7 @@ fn main() {
     let answer = problem1(&input);
     println!("problem 1 answer: {answer}");
 
-    let input = include_str!("../input2.txt");
+    let input = include_str!("../input.txt");
     let input = input
         .replace("8: 42", "8: 42 | 42 8")
         .replace("11: 42 31", "11: 42 31 | 42 11 31");
@@ -34,6 +34,62 @@ enum Rule {
     Literal(char),
     String(Vec<u32>),
     Or(Vec<u32>, Vec<u32>),
+}
+
+impl Rule {
+    fn matches<'a>(
+        &self,
+        rules: &'a BTreeMap<u32, Rule>,
+        remainder: &'a [char],
+    ) -> Vec<&'a [char]> {
+        if remainder.is_empty() {
+            return vec![];
+        }
+
+        match self {
+            // "Consume" one char and move on with the parsing
+            Rule::Literal(c) if remainder[0] == *c => vec![&remainder[1..]],
+            // bail on this branch
+            Rule::Literal(_) => vec![],
+            Rule::String(keys) if keys.len() == 1 => {
+                let a = &rules[&keys[0]];
+
+                a.matches(rules, remainder)
+            }
+            Rule::String(keys) if keys.len() == 2 => {
+                let a = &rules[&keys[0]];
+                let b = &rules[&keys[1]];
+
+                a.matches(rules, remainder)
+                    .into_iter()
+                    .flat_map(|x| b.matches(rules, x))
+                    .collect()
+            }
+            Rule::String(keys) if keys.len() == 3 => {
+                let a = &rules[&keys[0]];
+                let b = &rules[&keys[1]];
+                let c = &rules[&keys[2]];
+
+                a.matches(rules, remainder)
+                    .into_iter()
+                    .flat_map(|x| b.matches(rules, x))
+                    .flat_map(|x| c.matches(rules, x))
+                    .collect()
+            }
+            Rule::Or(a, b) => {
+                let mut result = vec![];
+                let a_results = Rule::String(a.clone()).matches(rules, remainder);
+                let b_results = Rule::String(b.clone()).matches(rules, remainder);
+
+                result.extend(a_results);
+                result.extend(b_results);
+
+                result
+            }
+
+            _ => unreachable!(),
+        }
+    }
 }
 
 fn parse(input: &str) -> Input {
@@ -64,73 +120,26 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-fn build_string_parser<'a, I>(
-    keys: &'a [u32],
-    rules: &'a BTreeMap<u32, Rule>,
-) -> impl Fn(I) -> IResult<I, Vec<char>, nom::error::Error<I>> + 'a
-where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + Copy + Debug,
-    <I as InputIter>::Item: AsChar,
-{
-    move |input: I| {
-        let mut input = input;
-        let mut result = vec![];
-        for k in keys {
-            let (p_i, p_r) = build_parser(*k, rules)(input)?;
-            result.push(p_r);
-            input = p_i;
-        }
-
-        Ok((input, result.into_iter().flatten().collect()))
-    }
-}
-
-// clippy is wrong
-#[allow(clippy::needless_lifetimes)]
-fn build_parser<'a, I>(
-    key: u32,
-    rules: &'a BTreeMap<u32, Rule>,
-) -> impl Fn(I) -> IResult<I, Vec<char>, nom::error::Error<I>> + 'a
-where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + Copy + Debug,
-    <I as InputIter>::Item: AsChar,
-{
-    move |s: I| {
-        let rule = rules.get(&key).unwrap();
-        match rule {
-            Rule::Literal(x) => map(char(*x), |c| vec![c])(s),
-            Rule::String(v) => build_string_parser(v, rules)(s),
-            Rule::Or(a, b) => {
-                let a = build_string_parser(a, rules);
-                let b = build_string_parser(b, rules);
-                alt((a, b))(s)
-            }
-        }
-    }
-}
-
 fn problem1((rules, messages): &Input) -> usize {
-    let parser = |s| build_parser::<&str>(0, rules)(s);
+    let root = rules.get(&0).unwrap();
 
     messages
         .iter()
-        .filter(|x| match parser(x) {
-            // did we consume the entire input?
-            Result::Ok((rest, _result)) => rest.is_empty(),
-            Err(_) => false,
+        .filter(|x| {
+            let cs = x.chars().collect::<Vec<char>>();
+            root.matches(rules, &cs).iter().any(|m| m.is_empty())
         })
         .count()
 }
 
 fn problem2((rules, messages): &Input) -> usize {
-    let parser = |s| build_parser::<&str>(0, rules)(s);
+    let root = rules.get(&0).unwrap();
 
     messages
         .iter()
-        .filter(|x| match parser(x) {
-            // did we consume the entire input?
-            Result::Ok((rest, _result)) => rest.is_empty(),
-            Err(_err) => false,
+        .filter(|x| {
+            let cs = x.chars().collect::<Vec<char>>();
+            root.matches(rules, &cs).iter().any(|m| m.is_empty())
         })
         .count()
 }
@@ -139,7 +148,6 @@ fn problem2((rules, messages): &Input) -> usize {
 mod test {
     use crate::{parse, problem1, problem2};
     #[test]
-    #[ignore]
     fn first() {
         let input = include_str!("../test.txt");
         let input = parse(input);
@@ -158,31 +166,3 @@ mod test {
         assert_eq!(result, 12)
     }
 }
-
-//         if let &[a, b, c] = keys {
-//             let (input, result_a) = build_parser(a, rules)(input)?;
-//             let (input, result_b) = build_parser(b, rules)(input)?;
-//             let (input, result_c) = build_parser(c, rules)(input)?;
-
-//             let result = vec![result_a, result_b, result_c]
-//                 .into_iter()
-//                 .flatten()
-//                 .collect();
-
-//             Ok((input, result))
-//         } else if let &[a, b] = keys {
-//             let (input, result_a) = build_parser(a, rules)(input)?;
-//             let (input, result_b) = build_parser(b, rules)(input)?;
-
-//             let result = vec![result_a, result_b].into_iter().flatten().collect();
-
-//             Ok((input, result))
-//         } else if let &[a] = keys {
-//             let (input, result_a) = build_parser(a, rules)(input)?;
-
-//             let result = vec![result_a].into_iter().flatten().collect();
-
-//             Ok((input, result))
-//         } else {
-//             panic!()
-//         }
