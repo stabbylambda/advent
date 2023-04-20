@@ -2,8 +2,7 @@ use common::nom::usize;
 use ndarray::{prelude::*, OwnedRepr};
 use nom::{
     bytes::complete::tag,
-    character::complete::{newline, u32 as nom_u32},
-    combinator::map,
+    character::complete::newline,
     multi::separated_list0,
     sequence::{terminated, tuple},
     IResult,
