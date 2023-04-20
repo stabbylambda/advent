@@ -57,3 +57,19 @@ pub fn chinese_remainder(residues: &[i64], modulii: &[i64]) -> Option<i64> {
 
     Some(sum % prod)
 }
+
+pub fn mod_pow(mut base: u64, mut exp: u64, modulus: u64) -> u64 {
+    if modulus == 1 {
+        return 0;
+    }
+    let mut result = 1;
+    base %= modulus;
+    while exp > 0 {
+        if exp % 2 == 1 {
+            result = result * base % modulus;
+        }
+        exp >>= 1;
+        base = base * base % modulus
+    }
+    result
+}
