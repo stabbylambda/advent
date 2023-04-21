@@ -1,7 +1,7 @@
-use nalgebra::{DMatrix, Matrix3, Vector3};
+use nalgebra::{DMatrix, Matrix3, MatrixXx3, Vector3};
 
 #[allow(dead_code)]
-pub(crate) fn kabsch(p: DMatrix<f64>, q: DMatrix<f64>) -> nalgebra::DMatrix<f64> {
+pub(crate) fn kabsch(p: MatrixXx3<f64>, q: MatrixXx3<f64>) -> nalgebra::MatrixXx3<f64> {
     let pm = p.mean();
     let qm = q.mean();
 
