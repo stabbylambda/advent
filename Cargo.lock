@@ -1402,6 +1402,7 @@ name = "advent_2021_19"
 version = "0.1.0"
 dependencies = [
  "common",
+ "itertools",
  "nalgebra",
  "ndarray",
  "nom 7.1.3",

@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 common = { path = "../../common" }
+itertools = "0.10.5"
 nalgebra = "0.31.4"
 ndarray = "0.15.6"
 nom = "7"
