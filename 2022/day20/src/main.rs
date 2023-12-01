@@ -55,7 +55,7 @@ fn get_coordinates(numbers: &[i64]) -> i64 {
     // find the 1, 2, and 3000th numbers from the current position of the 0 element
     let start = numbers.iter().position(|&x| x == 0).unwrap();
     (1..=3)
-        .map(|x| numbers[((start + (x * 1000)) % length)])
+        .map(|x| numbers[(start + (x * 1000)) % length])
         .sum()
 }
 

@@ -158,7 +158,7 @@ fn display(positions: Vec<Knot>) {
     for y in (0usize..size as usize).rev() {
         for x in 0usize..size as usize {
             match grid[y][x] {
-                Some(n) if n == 0 => print!("H"),
+                Some(0) => print!("H"),
                 Some(n) if n == positions.len() - 1 => print!("T"),
                 Some(n) => print!("{n}"),
                 None => print!("."),

@@ -1,4 +1,5 @@
 use crypto::{digest::Digest, md5::Md5};
+use std::fmt::Write;
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -44,14 +45,17 @@ fn problem1(input: &str) -> String {
         result.push(c);
     }
 
-    result.iter().map(|c| format!("{c:x?}")).collect()
+    result.iter().fold(String::new(), |mut output, c| {
+        let _ = write!(output, "{c:x?}");
+        output
+    })
 }
 
 fn problem2(input: &str) -> String {
     let mut md5 = Md5::new();
     md5.input_str(input);
 
-    let mut result = vec!['_'; 8];
+    let mut result = ['_'; 8];
     let mut i: u128 = 0;
 
     loop {

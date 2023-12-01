@@ -40,7 +40,7 @@ fn problem2(input: &Input) -> usize {
     // our particular input happens to be in the fourth register
     let x = registers[3];
     // find the sum of all the divisors of the number (this is what the assembly is doing)
-    (1..=x).filter_map(|n| (x % n == 0).then_some(n)).sum()
+    (1..=x).filter(|n| x % n == 0).sum()
 }
 
 #[cfg(test)]
