@@ -123,7 +123,7 @@ impl Tile {
         let bottom = self.bottom();
         let left = self.left();
         let right = self.right();
-        vec![top, left, bottom, right]
+        [top, left, bottom, right]
             .iter()
             .map(Self::min_key)
             .collect()
@@ -183,7 +183,7 @@ fn create_edge_map(input: &Input) -> BTreeMap<Edge, Vec<u64>> {
 fn problem1(input: &Input) -> u64 {
     let board = assemble_board(input);
 
-    let corners = vec![
+    let corners = [
         board.first().unwrap().first().unwrap().id,
         board.first().unwrap().last().unwrap().id,
         board.last().unwrap().first().unwrap().id,

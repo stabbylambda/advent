@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::fmt::Write;
 
 pub fn hash_str(input: &str) -> u128 {
     let mut input: Vec<u8> = input.bytes().collect();
@@ -52,8 +53,10 @@ impl SparseHash for Vec<u8> {
         let dense: String = self
             .chunks(16)
             .map(|x| x.iter().fold(0, |a, b| a ^ b))
-            .map(|c| format!("{:02x}", c))
-            .collect();
+            .fold(String::new(), |mut output, c| {
+                let _ = write!(output, "{:02x}", c);
+                output
+            });
 
         dense
     }

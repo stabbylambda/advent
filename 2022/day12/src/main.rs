@@ -76,14 +76,8 @@ fn get_edges(map: &Map<Position>) -> Vec<Vec<Edge>> {
                 .neighbors()
                 .to_vec()
                 .iter()
-                .filter_map(|neighbor| {
-                    // Create an edge with weight 1 for anything that is actually a
-                    // valid edge
-                    square
-                        .data
-                        .can_travel_to(neighbor.data)
-                        .then(|| Edge::from_map_square(neighbor))
-                })
+                .filter(|&neighbor| square.data.can_travel_to(neighbor.data))
+                .map(|neighbor| Edge::from_map_square(neighbor))
                 .collect()
         })
         .collect()

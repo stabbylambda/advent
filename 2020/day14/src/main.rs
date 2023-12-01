@@ -166,26 +166,6 @@ fn problem2(input: &Input) -> u64 {
     map.values().map(|x| x.0).sum::<u64>()
 }
 
-#[cfg(test)]
-mod test {
-    use crate::{parse, problem1, problem2};
-    #[test]
-    fn first() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem1(&input);
-        assert_eq!(result, 165)
-    }
-
-    #[test]
-    fn second() {
-        let input = include_str!("../test2.txt");
-        let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 208)
-    }
-}
-
 impl Display for Bitmask {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for m in self.0.iter().rev() {
@@ -231,5 +211,25 @@ impl Display for Address36 {
             write!(f, "{:0b}", self.kth_bit(k))?;
         }
         write!(f, " (decimal {})", self.0)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{parse, problem1, problem2};
+    #[test]
+    fn first() {
+        let input = include_str!("../test.txt");
+        let input = parse(input);
+        let result = problem1(&input);
+        assert_eq!(result, 165)
+    }
+
+    #[test]
+    fn second() {
+        let input = include_str!("../test2.txt");
+        let input = parse(input);
+        let result = problem2(&input);
+        assert_eq!(result, 208)
     }
 }

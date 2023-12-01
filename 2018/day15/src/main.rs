@@ -68,7 +68,7 @@ impl Display for Game {
             let units = self
                 .units
                 .values()
-                .filter_map(|unit| (unit.location.0 == y).then_some(unit))
+                .filter(|unit| unit.location.0 == y)
                 .map(|x| x.to_string())
                 .collect::<Vec<_>>()
                 .join(", ");

@@ -118,7 +118,7 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, vec![71, 51, 26, 437, 12240, 13632].iter().sum())
+        assert_eq!(result, [71, 51, 26, 437, 12240, 13632].iter().sum())
     }
 
     #[test]
@@ -126,6 +126,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, vec![231, 51, 46, 1445, 669060, 23340].iter().sum())
+        assert_eq!(result, [231, 51, 46, 1445, 669060, 23340].iter().sum())
     }
 }
