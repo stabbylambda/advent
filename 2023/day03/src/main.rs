@@ -1,12 +1,12 @@
-use std::ascii::AsciiExt;
+use std::collections::{HashMap, HashSet};
 
 use common::{
-    map::{Map, MapSquare},
+    map::{Coord, Map, MapSquare},
     nom::single_digit,
 };
 use nom::{
     branch::alt,
-    character::complete::{char, newline, one_of, u32},
+    character::complete::{char, newline, one_of},
     combinator::map,
     multi::{many1, separated_list1},
     IResult,
@@ -14,7 +14,7 @@ use nom::{
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(&input);
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -30,17 +30,8 @@ enum SchematicPart {
     Blank,
 }
 
-impl std::fmt::Display for SchematicPart {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            SchematicPart::Symbol(c) => write!(f, "{c}"),
-            SchematicPart::Number(n) => write!(f, "{n}"),
-            SchematicPart::Blank => write!(f, "."),
-        }
-    }
-}
-
-type Input = Map<SchematicPart>;
+type PartNumber = u32;
+type Input = HashMap<(char, Coord), Vec<PartNumber>>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = map(
@@ -49,61 +40,95 @@ fn parse(input: &str) -> Input {
             many1(alt((
                 map(char('.'), |_| SchematicPart::Blank),
                 map(single_digit, SchematicPart::Number),
+                // there's definitely a better way to do this...maybe?
                 map(one_of("!@#$%^&*+-=/\\"), SchematicPart::Symbol),
             ))),
         ),
-        Map::new,
+        parse_schematic_parts,
     )(input);
 
-    let r = result.unwrap();
-    println!("{}", r.0);
-
-    r.1
+    result.unwrap().1
 }
 
-fn next_to_symbol(x: &MapSquare<SchematicPart>) -> bool {
+/** Get all the neighbors (including diagonal) that are symbols */
+fn get_adjacent_symbols(x: &MapSquare<SchematicPart>) -> HashSet<(char, Coord)> {
     x.all_neighbors()
         .into_iter()
-        .any(|x| matches!(x.data, SchematicPart::Symbol(..)))
+        .filter_map(|x| match x.data {
+            SchematicPart::Symbol(c) => Some((*c, x.coords)),
+            _ => None,
+        })
+        .collect()
 }
 
-fn problem1(input: &Input) -> u32 {
-    let mut total = 0;
-    let mut examined: Vec<(usize, usize)> = vec![];
-    for x in input {
+fn parse_schematic_parts(input: Vec<Vec<SchematicPart>>) -> Input {
+    let input = Map::new(input);
+
+    // maintain a cache for all the coordinates we've examined
+    let mut examined: Vec<Coord> = vec![];
+
+    // We ultimately want a list of adjacent numbers for each individual symbol
+    let mut adjacencies: Input = HashMap::new();
+
+    for x in &input {
         // have we already been here?
         if examined.contains(&x.coords) {
             continue;
         }
 
-        // if we're on a number
+        /*
+        We'll go through the grid number-wise, not symbol-wise. This makes it easier to find the whole number
+        (because we only have to move right once we find the first digit) and to check the adjacent symbols
+        for each digit in the number. We'll know the unique symbols because the hashset will be populated with
+        the symbol itself *and* the coordinates so that we won't double count.
+        */
         if let SchematicPart::Number(n) = x.data {
             let mut current = x;
             let mut num = *n;
-            let mut is_adjacent_to_symbol = next_to_symbol(&x);
+            let mut adjacent_symbols = get_adjacent_symbols(&x);
 
             // go right until we don't have a number anymore
             while let Some(SchematicPart::Number(next)) = current.neighbors().east.map(|x| x.data) {
-                // are we adjacent to a symbol here?
+                // multiply by 10 then add the next number and move the cursor over
                 num = (num * 10) + *next;
                 current = current.neighbors().east.unwrap();
-                is_adjacent_to_symbol |= next_to_symbol(&current);
+
+                // are we adjacent to a symbol here?
+                adjacent_symbols.extend(get_adjacent_symbols(&current));
 
                 // mark that we've seen the successor square and don't need to visit it again
                 examined.push(current.coords);
             }
 
-            // we know the whole number now
-            if is_adjacent_to_symbol {
-                total += num;
+            // if we don't have any adjacent symbols, this number doesn't matter
+            if adjacent_symbols.is_empty() {
+                continue;
+            }
+
+            // add this number to the adjacency list for each symbol
+            for adj in adjacent_symbols {
+                adjacencies
+                    .entry(adj)
+                    .and_modify(|v| v.push(num))
+                    .or_insert(vec![num]);
             }
         }
     }
-    total
+    adjacencies
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem1(input: &Input) -> u32 {
+    input.values().flatten().sum()
+}
+
+fn problem2(input: &Input) -> u32 {
+    input
+        .iter()
+        // get all the gears (marked as an asterisk) with two adjacent part numbers
+        .filter(|((c, _), parts)| *c == '*' && parts.len() == 2)
+        // get the gear ratios
+        .map(|(_, v)| v.iter().product::<u32>())
+        .sum()
 }
 
 #[cfg(test)]
@@ -112,7 +137,7 @@ mod test {
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem1(&input);
         assert_eq!(result, 4361)
     }
@@ -120,8 +145,8 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 467835)
     }
 }
