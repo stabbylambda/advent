@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use nom::{
     bytes::complete::tag,
@@ -11,7 +11,7 @@ use nom::{
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(&input);
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -21,19 +21,26 @@ fn main() {
 }
 
 type Input = Vec<Card>;
+type CardId = u32;
 
 #[derive(Debug)]
 struct Card {
-    id: u32,
+    id: CardId,
     winning: Vec<u32>,
     have: Vec<u32>,
 }
 
 impl Card {
-    fn score(&self) -> u32 {
+    /* Get the count of all matching cards */
+    fn matching(&self) -> u32 {
         let winning: HashSet<u32> = HashSet::from_iter(self.winning.iter().cloned());
         let have: HashSet<u32> = HashSet::from_iter(self.have.iter().cloned());
-        let count = winning.intersection(&have).count() as u32;
+        winning.intersection(&have).count() as u32
+    }
+
+    /* Score for part 1 */
+    fn score(&self) -> u32 {
+        let count = self.matching();
 
         if count == 0 {
             0
@@ -68,8 +75,24 @@ fn problem1(input: &Input) -> u32 {
     input.iter().map(|x| x.score()).sum()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem2(input: &Input) -> u32 {
+    // seed the map with 1 of each card we have
+    let mut card_count: HashMap<CardId, u32> = input.iter().map(|x| (x.id, 1)).collect();
+
+    for card in input {
+        // how many copies of this card do we have already?
+        let copies_of_current = *card_count.get(&card.id).unwrap();
+
+        // how many new cards do we get?
+        for subsequent_copy in (card.id + 1)..=(card.id + card.matching()) {
+            // update the existing subsequent card with 1 new copy for each copy of the current card
+            if let Some(e) = card_count.get_mut(&subsequent_copy) {
+                *e += copies_of_current;
+            }
+        }
+    }
+
+    card_count.values().sum()
 }
 
 #[cfg(test)]
@@ -86,8 +109,8 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 30)
     }
 }
