@@ -1,5 +1,4 @@
 use nom::{
-    branch::alt,
     bytes::complete::{tag, take_until},
     character::complete::{newline, u64},
     combinator::map,
@@ -7,10 +6,11 @@ use nom::{
     sequence::{preceded, separated_pair, terminated, tuple},
     IResult,
 };
+use rayon::prelude::*;
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(&input);
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -28,6 +28,7 @@ fn parse(input: &str) -> Input {
         source_start: v[1],
         length: v[2],
     });
+
     let almanac_maps = separated_list1(
         tag("\n\n"),
         map(
@@ -92,10 +93,8 @@ struct Almanac {
 }
 
 impl Almanac {
-    fn translate_all(&self) -> Vec<u64> {
-        self.seeds.iter().map(|x| self.translate(*x)).collect()
-    }
     fn translate(&self, n: u64) -> u64 {
+        // thankfully the maps aren't out of order in the source document, so just fold over them in order
         self.maps
             .iter()
             .fold(n, |current, map| map.translate(current))
@@ -103,16 +102,37 @@ impl Almanac {
 }
 
 fn problem1(input: &Input) -> u64 {
-    *input.translate_all().iter().min().unwrap()
+    input
+        .seeds
+        .iter()
+        .map(|x| input.translate(*x))
+        .min()
+        .unwrap()
 }
 
-fn problem2(_input: &Input) -> u64 {
-    todo!()
+fn problem2(input: &Input) -> u64 {
+    input
+        .seeds
+        // rayon feels like cheating: parallelism for free!
+        .par_iter()
+        // combine them pairwise
+        .chunks(2)
+        .flat_map(|c| {
+            let start = *c[0];
+            let length = *c[1];
+
+            // create every number in the given seed range and translate them
+            (start..(start + length))
+                .into_par_iter()
+                .map(|x| input.translate(x))
+        })
+        .min()
+        .unwrap()
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2, Almanac, AlmanacMap, AlmanacRange};
+    use crate::{parse, problem1, problem2, AlmanacMap, AlmanacRange};
 
     #[test]
     fn range_translate() {
@@ -179,8 +199,8 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 46)
     }
 }
