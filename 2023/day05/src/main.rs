@@ -22,11 +22,8 @@ fn main() {
 type Input = Almanac;
 
 fn parse(input: &str) -> Input {
-    let numbers = |s| separated_list1(tag(" "), u64)(s);
-    let almanac_range = map(separated_list1(tag(" "), u64), |v| AlmanacRange {
-        destination_start: v[0],
-        source_start: v[1],
-        length: v[2],
+    let almanac_range = map(separated_list1(tag(" "), u64), |v| {
+        AlmanacRange::new(v[0], v[1], v[2])
     });
 
     let almanac_maps = separated_list1(
@@ -40,8 +37,10 @@ fn parse(input: &str) -> Input {
         ),
     );
 
+    let seeds = preceded(tag("seeds: "), separated_list1(tag(" "), u64));
+
     let result: IResult<&str, Input> = map(
-        separated_pair(preceded(tag("seeds: "), numbers), tag("\n\n"), almanac_maps),
+        separated_pair(seeds, tag("\n\n"), almanac_maps),
         |(seeds, maps)| Almanac { seeds, maps },
     )(input);
 
@@ -56,6 +55,14 @@ struct AlmanacRange {
 }
 
 impl AlmanacRange {
+    fn new(destination_start: u64, source_start: u64, length: u64) -> Self {
+        Self {
+            destination_start,
+            source_start,
+            length,
+        }
+    }
+
     fn translate(&self, n: u64) -> Option<u64> {
         let range = self.source_start..self.source_start + self.length;
 
@@ -136,11 +143,7 @@ mod test {
 
     #[test]
     fn range_translate() {
-        let r = AlmanacRange {
-            destination_start: 50,
-            source_start: 98,
-            length: 2,
-        };
+        let r = AlmanacRange::new(50, 98, 2);
 
         assert_eq!(r.translate(1), None);
         assert_eq!(r.translate(98), Some(50));
@@ -150,16 +153,8 @@ mod test {
 
     #[test]
     fn map_translate() {
-        let r1 = AlmanacRange {
-            destination_start: 50,
-            source_start: 98,
-            length: 2,
-        };
-        let r2 = AlmanacRange {
-            destination_start: 52,
-            source_start: 50,
-            length: 48,
-        };
+        let r1 = AlmanacRange::new(50, 98, 2);
+        let r2 = AlmanacRange::new(52, 50, 48);
 
         let map = AlmanacMap {
             ranges: vec![r1, r2],
