@@ -73,7 +73,7 @@ name = "advent_2015_09"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
  "petgraph",
 ]
@@ -83,7 +83,7 @@ name = "advent_2015_10"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -92,7 +92,7 @@ name = "advent_2015_11"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -111,7 +111,7 @@ name = "advent_2015_13"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -120,7 +120,7 @@ name = "advent_2015_14"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -145,7 +145,7 @@ name = "advent_2015_17"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -179,7 +179,7 @@ name = "advent_2015_21"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -204,7 +204,7 @@ name = "advent_2015_24"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -245,7 +245,7 @@ name = "advent_2016_04"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -263,7 +263,7 @@ name = "advent_2016_06"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -305,7 +305,7 @@ name = "advent_2016_11"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -396,7 +396,7 @@ name = "advent_2016_22"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -415,7 +415,7 @@ name = "advent_2016_24"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -665,7 +665,7 @@ name = "advent_2018_06"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -796,7 +796,7 @@ name = "advent_2018_24"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -864,7 +864,7 @@ version = "0.1.0"
 dependencies = [
  "common",
  "intcode",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -890,7 +890,7 @@ name = "advent_2019_10"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -908,7 +908,7 @@ name = "advent_2019_12"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -918,7 +918,7 @@ version = "0.1.0"
 dependencies = [
  "common",
  "intcode",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -936,7 +936,7 @@ version = "0.1.0"
 dependencies = [
  "common",
  "intcode",
- "itertools",
+ "itertools 0.10.5",
  "nom",
  "num-derive",
  "num-traits",
@@ -1024,7 +1024,7 @@ version = "0.1.0"
 dependencies = [
  "common",
  "intcode",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -1377,7 +1377,7 @@ name = "advent_2021_19"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nalgebra",
  "ndarray",
  "nom",
@@ -1388,7 +1388,7 @@ name = "advent_2021_20"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -1414,7 +1414,7 @@ name = "advent_2021_23"
 version = "0.1.0"
 dependencies = [
  "common",
- "itertools",
+ "itertools 0.10.5",
  "nom",
 ]
 
@@ -1694,6 +1694,7 @@ name = "advent_2023_07"
 version = "0.1.0"
 dependencies = [
  "common",
+ "itertools 0.12.0",
  "nom",
 ]
 
@@ -2056,6 +2057,15 @@ name = "itertools"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
+dependencies = [
+ "either",
+]
+
+[[package]]
+name = "itertools"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25db6b064527c5d482d0423354fcd07a89a2dfe07b67892e62411946db7f07b0"
 dependencies = [
  "either",
 ]
