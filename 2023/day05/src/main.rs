@@ -1,3 +1,5 @@
+use std::{collections::VecDeque, ops::Range};
+
 use nom::{
     bytes::complete::{tag, take_until},
     character::complete::{newline, u64},
@@ -6,7 +8,6 @@ use nom::{
     sequence::{preceded, separated_pair, terminated, tuple},
     IResult,
 };
-use rayon::prelude::*;
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -47,7 +48,7 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 struct AlmanacRange {
     destination_start: u64,
     source_start: u64,
@@ -63,33 +64,79 @@ impl AlmanacRange {
         }
     }
 
-    fn translate(&self, n: u64) -> Option<u64> {
-        let range = self.source_start..self.source_start + self.length;
+    fn get_overlap(&self, r: &Range<u64>) -> Option<Range<u64>> {
+        let overlap_start = r.start.max(self.source_start);
+        let overlap_end = r.end.min(self.source_start + self.length);
 
-        if range.contains(&n) {
-            // map the value in the range
-            Some(self.destination_start + (n - self.source_start))
-        } else {
-            // this range doesn't map the value
-            None
-        }
+        let overlap = overlap_start..overlap_end;
+        (!overlap.is_empty()).then_some(overlap)
+    }
+
+    fn create_mapped_range(&self, overlap: Range<u64>) -> Range<u64> {
+        // Get the offsets
+        let start_offset = overlap.start - self.source_start;
+        let end_offset = overlap.end - self.source_start;
+
+        // Map the range
+        let new_start = self.destination_start + start_offset;
+        let new_end = self.destination_start + end_offset;
+
+        new_start..new_end
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct AlmanacMap {
     ranges: Vec<AlmanacRange>,
 }
 
 impl AlmanacMap {
-    fn translate(&self, n: u64) -> u64 {
-        // do any of the ranges map this number?
-        if let Some(mapped) = self.ranges.iter().find_map(|x| x.translate(n)) {
-            mapped
-        } else {
-            // if not, return the number
-            n
+    fn process(&self, seeds: Vec<Range<u64>>) -> Vec<Range<u64>> {
+        let mut new_seeds = vec![];
+
+        /* I would normally write this up as a fold, but we have to consider partial range overlaps, which means
+        we'll need to break the AlmanacRange in two and then re-consider the remainder of the range. Consider the
+        situation where a seed range overlaps 2 ranges:
+
+        Seed Range:                       | ---- sr1 ---- |
+        Almanac Ranges:        | ---- ar1 ---- |    | ---- ar2 ----- |
+
+        We'll have to break sr1 into three chunks. Rather than having a huge else if, it's easier to just consider
+        each overlapping segment and then push back the remainders onto the VecDeque. This would get worse if we
+        have an interior almanac range between ar1 and ar2 (which does happen in the real input).
+        */
+        let mut seed_queue = VecDeque::from(seeds);
+        while let Some(range) = seed_queue.pop_front() {
+            let mapped: Vec<Range<u64>> = self
+                .ranges
+                .iter()
+                .filter_map(|almanac_range| {
+                    almanac_range.get_overlap(&range).map(|overlap| {
+                        // if we're not fully overlapped, then we need to push partial ranges back to consider again
+                        if overlap.start > range.start {
+                            seed_queue.push_back(range.start..overlap.start)
+                        }
+
+                        if overlap.end < range.end {
+                            seed_queue.push_back(overlap.end..range.end)
+                        }
+
+                        // map the overlapped part of the range
+                        almanac_range.create_mapped_range(overlap)
+                    })
+                })
+                .collect();
+
+            if mapped.is_empty() {
+                // nothing got mapped, so this range is a passthrough
+                new_seeds.push(range);
+            } else {
+                // push the mapped ranges
+                new_seeds.extend(mapped);
+            }
         }
+
+        new_seeds
     }
 }
 
@@ -100,89 +147,34 @@ struct Almanac {
 }
 
 impl Almanac {
-    fn translate(&self, n: u64) -> u64 {
-        // thankfully the maps aren't out of order in the source document, so just fold over them in order
-        self.maps
-            .iter()
-            .fold(n, |current, map| map.translate(current))
+    fn get_mapped_seeds(&self, seed_ranges: Vec<Range<u64>>) -> u64 {
+        let mapped = self.maps.iter().fold(seed_ranges, |acc, m| m.process(acc));
+        mapped.iter().map(|x| x.start).min().unwrap()
     }
 }
 
 fn problem1(input: &Input) -> u64 {
-    input
-        .seeds
-        .iter()
-        .map(|x| input.translate(*x))
-        .min()
-        .unwrap()
+    let ranges = input.seeds.iter().map(|&start| start..start + 1).collect();
+    input.get_mapped_seeds(ranges)
 }
 
 fn problem2(input: &Input) -> u64 {
-    input
+    let ranges = input
         .seeds
-        // rayon feels like cheating: parallelism for free!
-        .par_iter()
-        // combine them pairwise
         .chunks(2)
-        .flat_map(|c| {
-            let start = *c[0];
-            let length = *c[1];
-
-            // create every number in the given seed range and translate them
-            (start..(start + length))
-                .into_par_iter()
-                .map(|x| input.translate(x))
+        .map(|c| {
+            let start = c[0];
+            let length = c[1];
+            start..start + length
         })
-        .min()
-        .unwrap()
+        .collect();
+
+    input.get_mapped_seeds(ranges)
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2, AlmanacMap, AlmanacRange};
-
-    #[test]
-    fn range_translate() {
-        let r = AlmanacRange::new(50, 98, 2);
-
-        assert_eq!(r.translate(1), None);
-        assert_eq!(r.translate(98), Some(50));
-        assert_eq!(r.translate(99), Some(51));
-        assert_eq!(r.translate(100), None);
-    }
-
-    #[test]
-    fn map_translate() {
-        let r1 = AlmanacRange::new(50, 98, 2);
-        let r2 = AlmanacRange::new(52, 50, 48);
-
-        let map = AlmanacMap {
-            ranges: vec![r1, r2],
-        };
-
-        assert_eq!(map.translate(0), 0);
-        assert_eq!(map.translate(1), 1);
-        assert_eq!(map.translate(48), 48);
-        assert_eq!(map.translate(49), 49);
-        assert_eq!(map.translate(50), 52);
-        assert_eq!(map.translate(51), 53);
-        assert_eq!(map.translate(96), 98);
-        assert_eq!(map.translate(97), 99);
-        assert_eq!(map.translate(98), 50);
-        assert_eq!(map.translate(99), 51);
-    }
-
-    #[test]
-    fn almanac_translate() {
-        let input = include_str!("../test.txt");
-        let a = parse(input);
-
-        assert_eq!(a.translate(79), 82);
-        assert_eq!(a.translate(14), 43);
-        assert_eq!(a.translate(55), 86);
-        assert_eq!(a.translate(13), 35);
-    }
-
+    use crate::{parse, problem1, problem2};
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
