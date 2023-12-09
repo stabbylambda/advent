@@ -1,8 +1,13 @@
-use nom::IResult;
+use nom::{
+    bytes::complete::tag,
+    character::complete::{i64, newline},
+    multi::separated_list1,
+    IResult,
+};
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(&input);
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -11,16 +16,41 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Vec<u32>;
+type Input = Vec<Vec<i64>>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = todo!();
+    let result: IResult<&str, Input> =
+        separated_list1(newline, separated_list1(tag(" "), i64))(input);
 
     result.unwrap().1
 }
 
-fn problem1(_input: &Input) -> u32 {
-    todo!()
+fn extrapolate(v: &[i64]) -> i64 {
+    let mut rows = vec![v.to_vec()];
+    while let Some(last_row) = rows.last() {
+        // create a new row with the deltas between all of the items
+        let new_row = last_row
+            .windows(2)
+            .map(|x| x[1] - x[0])
+            .collect::<Vec<i64>>();
+
+        let is_zero_row = new_row.iter().all(|x| *x == 0);
+        rows.push(new_row);
+
+        // if we got to the zero row, bail
+        if is_zero_row {
+            break;
+        }
+    }
+
+    rows.reverse();
+
+    // Accumulate up the chain again, adding the last item on each row with the new delta below it
+    rows.iter().rev().fold(0, |acc, x| acc + x.last().unwrap())
+}
+
+fn problem1(input: &Input) -> i64 {
+    input.iter().fold(0, |acc, x| acc + extrapolate(x))
 }
 
 fn problem2(_input: &Input) -> u32 {
@@ -33,9 +63,9 @@ mod test {
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 114)
     }
 
     #[test]
