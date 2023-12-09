@@ -25,7 +25,7 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-fn extrapolate(v: &[i64]) -> i64 {
+fn get_to_zeros(v: &[i64]) -> Vec<Vec<i64>> {
     let mut rows = vec![v.to_vec()];
     while let Some(last_row) = rows.last() {
         // create a new row with the deltas between all of the items
@@ -35,26 +35,41 @@ fn extrapolate(v: &[i64]) -> i64 {
             .collect::<Vec<i64>>();
 
         let is_zero_row = new_row.iter().all(|x| *x == 0);
-        rows.push(new_row);
 
         // if we got to the zero row, bail
         if is_zero_row {
             break;
         }
+        rows.push(new_row);
     }
 
+    // reverse it so we always start from the bottom
     rows.reverse();
-
-    // Accumulate up the chain again, adding the last item on each row with the new delta below it
-    rows.iter().rev().fold(0, |acc, x| acc + x.last().unwrap())
+    rows
 }
 
 fn problem1(input: &Input) -> i64 {
-    input.iter().fold(0, |acc, x| acc + extrapolate(x))
+    input
+        .iter()
+        .map(|x| {
+            // Accumulate up the chain again, adding the last item on each row with the new delta below it
+            get_to_zeros(x)
+                .iter()
+                .fold(0, |acc, x| acc + x.last().unwrap())
+        })
+        .sum()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem2(input: &Input) -> i64 {
+    input
+        .iter()
+        .map(|x| {
+            // Accumulate up the chain again, subtracting the new delta from the first item in each row
+            get_to_zeros(x)
+                .iter()
+                .fold(0, |acc, x| x.first().unwrap() - acc)
+        })
+        .sum()
 }
 
 #[cfg(test)]
@@ -71,8 +86,8 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 2)
     }
 }
