@@ -8,4 +8,3 @@ edition = "2021"
 [dependencies]
 common = { path = "../../common" }
 nom = "7"
-rayon = "1.8"
