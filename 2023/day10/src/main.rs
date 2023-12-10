@@ -11,7 +11,7 @@ use nom::{
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(&input);
+    let input = parse(input);
 
     let score = problem1(&input);
     println!("problem 1 score: {score}");
@@ -157,13 +157,12 @@ fn connecting_neighbors<'a>(map_square: &MapSquare<'a, Tile>) -> Neighbors<'a, T
 
 // Data to keep track of while searching
 struct Path {
-    steps: u32,
     current: (usize, usize),
     /** we keep track of from to ensure we don't go backward */
-    from: (usize, usize),
+    from: Vec<(usize, usize)>,
 }
 
-fn problem1(input: &Input) -> u32 {
+fn find_path(input: &Input) -> Path {
     // figure out where we start
     let start = input
         .into_iter()
@@ -174,41 +173,59 @@ fn problem1(input: &Input) -> u32 {
     let mut path = connecting_neighbors(&start)
         .into_iter()
         .map(|x| Path {
-            steps: 1,
-            from: start.coords,
+            from: vec![start.coords],
             current: x.coords,
         })
         .next()
         .unwrap();
 
     // keep going until we find the starting position again
-    let path_length = loop {
+    loop {
         let current = input.get(path.current);
         if current.data == &Tile::StartingPosition {
-            break path.steps;
+            return path;
         }
 
         // pick the first neighbor we haven't been to
         if let Some(coords) = connecting_neighbors(&current)
             .into_iter()
-            .find(|x| x.coords != path.from)
+            .find(|x| x.coords != *path.from.last().unwrap())
             .map(|x| x.coords)
         {
             // update the path
-            path = Path {
-                steps: path.steps + 1,
-                from: path.current,
-                current: coords,
-            }
+            path.from.push(path.current);
+            path.current = coords;
         }
-    };
-
-    // obviously we only need the halfway point to find the farthest
-    path_length / 2
+    }
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem1(input: &Input) -> usize {
+    let path = find_path(input);
+    // obviously we only need the halfway point to find the farthest
+    path.from.len() / 2
+}
+
+fn problem2(input: &Input) -> i64 {
+    // get the path from part1 and make it a closed loop by pushing the starting location
+    let mut path = find_path(input).from;
+    path.push(*path.first().unwrap());
+
+    // Get all the points into i64s so we can do the math correctly (you know, to avoid underflow)
+    let points: Vec<(i64, i64)> = path.iter().map(|(x, y)| (*x as i64, *y as i64)).collect();
+
+    // Do the [Shoelace formula](https://en.wikipedia.org/wiki/Shoelace_formula#Shoelace_formula)
+    let area: i64 = points
+        .windows(2)
+        .map(|w| {
+            let (x1, y1) = w[0];
+            let (x2, y2) = w[1];
+
+            (y1 + y2) * (x2 - x1)
+        })
+        .sum();
+
+    // And apply [Pick's theorem](https://en.wikipedia.org/wiki/Pick%27s_theorem)
+    area.abs() / 2 - (path.len() as i64) / 2 + 1
 }
 
 #[cfg(test)]
@@ -231,10 +248,18 @@ mod test {
     }
 
     #[test]
-    fn second() {
-        let input = include_str!("../test.txt");
-        let input = parse(&input);
+    fn basic_area() {
+        let input = include_str!("../basic_area.txt");
+        let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 4)
+    }
+
+    #[test]
+    fn larger_area() {
+        let input = include_str!("../larger_area.txt");
+        let input = parse(input);
+        let result = problem2(&input);
+        assert_eq!(result, 10)
     }
 }
