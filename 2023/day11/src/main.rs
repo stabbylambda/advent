@@ -1,6 +1,9 @@
 use std::fmt::Debug;
 
-use common::{extensions::PointExt, map::Map};
+use common::{
+    extensions::PointExt,
+    map::{Coord, Map},
+};
 use itertools::Itertools;
 use nom::{
     branch::alt,
@@ -21,90 +24,126 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Vec<Vec<Tile>>;
+type Input = Map<Tile>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(
-        newline,
-        many1(alt((
-            map(char('.'), |_| Tile::Empty),
-            map(char('#'), |_| Tile::Galaxy),
-        ))),
+    let result: IResult<&str, Input> = map(
+        separated_list1(
+            newline,
+            many1(alt((
+                map(char('.'), |_| Tile::Empty),
+                map(char('#'), |_| Tile::Galaxy),
+            ))),
+        ),
+        Map::new,
     )(input);
 
     result.unwrap().1
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Tile {
     Galaxy,
     Empty,
 }
 
-fn expand_universe(galaxy: Vec<Vec<Tile>>) -> Map<Tile> {
-    // Expand any row that's all empty
-    let mut expanded_rows: Vec<Vec<Tile>> = galaxy
-        .into_iter()
-        .flat_map(|row| {
-            if row.iter().all(|t| *t == Tile::Empty) {
-                vec![row.clone(), row]
-            } else {
-                vec![row]
-            }
-        })
-        .collect();
+#[derive(Debug)]
+struct Universe {
+    map: Map<Tile>,
+    row_costs: Vec<usize>,
+    column_costs: Vec<usize>,
+}
 
-    // Expand the inner vectors which are the columns (this is super gross, should probably have transposed? I don't know.)
-    let mut max_width = expanded_rows[0].len();
-    let mut x = 0;
+impl Universe {
+    fn new(map: Map<Tile>, expansion_amount: usize) -> Universe {
+        // Expand any row that's all empty
+        let row_costs = (0..map.height)
+            .map(|y| {
+                if map.points[y].iter().all(|t| *t == Tile::Empty) {
+                    /* We have to subtract 1 because these are extra costs. The base cost comes from
+                    the manhattan function itself */
+                    expansion_amount - 1
+                } else {
+                    0
+                }
+            })
+            .collect();
 
-    while x < max_width {
-        let empty_colum = expanded_rows.iter().all(|r| r[x] == Tile::Empty);
-        if empty_colum {
-            (0..expanded_rows.len()).for_each(|y| {
-                expanded_rows[y].insert(x, Tile::Empty);
-            });
-            x += 2;
-            max_width += 1;
-        } else {
-            x += 1;
+        // expand any column that's all empty
+        let column_costs = (0..map.width)
+            .map(|x| {
+                if map.points.iter().all(|r| r[x] == Tile::Empty) {
+                    /* We have to subtract 1 because these are extra costs. The base cost comes from
+                    the manhattan function itself */
+                    expansion_amount - 1
+                } else {
+                    0
+                }
+            })
+            .collect();
+
+        Universe {
+            map,
+            row_costs,
+            column_costs,
         }
     }
 
-    Map::new(expanded_rows)
-}
+    fn get_galaxy_coordinates(&self) -> Vec<(usize, usize)> {
+        self.map
+            .into_iter()
+            .filter_map(|x| (*x.data == Tile::Galaxy).then_some(x.coords))
+            .collect_vec()
+    }
 
-impl Debug for Tile {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Galaxy => write!(f, "#"),
-            Self::Empty => write!(f, "."),
-        }
+    /** Get the manhattan distance between two points that takes into account universe expansion */
+    fn manhattan(&self, a: Coord, b: Coord) -> usize {
+        let (ax, ay) = a;
+        let (bx, by) = b;
+
+        // first get the normal manhattan distance between the two points
+        let basic_manhattan = a.manhattan(&b);
+
+        // min/max the coordinates so we can get the ranges for the extra traversal costs
+        let min_x = ax.min(bx);
+        let max_x = ax.max(bx);
+        let min_y = ay.min(by);
+        let max_y = ay.max(by);
+
+        // sum the extra costs to simulate universe expansion
+        let extra_row: usize = (min_y..max_y).map(|y| self.row_costs[y]).sum();
+        let extra_col: usize = (min_x..max_x).map(|x| self.column_costs[x]).sum();
+
+        basic_manhattan + extra_col + extra_row
     }
 }
 
-fn problem1(input: &Input) -> usize {
-    let universe = expand_universe(input.clone());
+fn get_distances(input: &Input, expansion_amount: usize) -> usize {
+    let universe = Universe::new(input.clone(), expansion_amount);
 
     // find the manhattan distances between all the galaxies
     let distances: usize = universe
+        .get_galaxy_coordinates()
         .into_iter()
-        .filter_map(|x| (*x.data == Tile::Galaxy).then_some(x.coords))
         .permutations(2)
-        .map(|x| x[0].manhattan(&x[1]))
+        .map(|x| universe.manhattan(x[0], x[1]))
         .sum();
 
     // permutations gives us all pairs twice...so rather than sorting pairs and de-duping...just divide by 2
     distances / 2
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem1(input: &Input) -> usize {
+    get_distances(input, 2)
+}
+
+fn problem2(input: &Input) -> usize {
+    get_distances(input, 1000000)
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::{get_distances, parse, problem1};
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
@@ -116,8 +155,8 @@ mod test {
     #[test]
     fn second() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
+        let input = parse(input);
+        assert_eq!(get_distances(&input, 10), 1030);
+        assert_eq!(get_distances(&input, 100), 8410);
     }
 }
