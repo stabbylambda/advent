@@ -1,11 +1,10 @@
-use std::collections::VecDeque;
+use cached::{Cached, UnboundCache};
 
-use cached::proc_macro::cached;
-
+use common::nom::usize;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, newline, u64},
+    character::complete::{char, newline},
     combinator::map,
     multi::{many1, separated_list1},
     sequence::separated_pair,
@@ -34,9 +33,9 @@ fn parse_record(s: &str) -> IResult<&str, SpringRecord> {
                 map(char('?'), |_| Spring::Unknown),
             ))),
             tag(" "),
-            separated_list1(tag(","), u64),
+            separated_list1(tag(","), usize),
         ),
-        |(springs, groups)| SpringRecord::new(VecDeque::from(springs), VecDeque::from(groups)),
+        |(springs, groups)| SpringRecord::new(springs, groups),
     )(s)
 }
 
@@ -55,127 +54,120 @@ enum Spring {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 struct SpringRecord {
-    springs: VecDeque<Spring>,
-    groups: VecDeque<u64>,
+    springs: Vec<Spring>,
+    groups: Vec<usize>,
 }
 
 impl SpringRecord {
-    fn new(springs: VecDeque<Spring>, groups: VecDeque<u64>) -> Self {
+    fn new(springs: Vec<Spring>, groups: Vec<usize>) -> Self {
         Self { springs, groups }
     }
 
     fn multiply(&self, count: u64) -> Self {
-        let springs: VecDeque<Spring> = (0..count)
+        let springs: Vec<Spring> = (0..count)
             .flat_map(|x| {
                 let mut s = self.springs.clone();
                 if x < count - 1 {
-                    s.push_back(Spring::Unknown);
+                    s.push(Spring::Unknown);
                 }
                 s
             })
             .collect();
 
-        let groups: VecDeque<u64> = (0..count).flat_map(|_| self.groups.clone()).collect();
+        let groups: Vec<usize> = (0..count).flat_map(|_| self.groups.clone()).collect();
 
         Self { springs, groups }
     }
-
-    fn remaining_count(&self) -> u64 {
-        self.groups.iter().sum()
-    }
-
-    fn possible_broken(&self) -> u64 {
-        self.springs
-            .iter()
-            .filter(|&&x| x == Spring::Broken || x == Spring::Unknown)
-            .count() as u64
-    }
-
-    fn consume_spring(&self) -> Self {
-        let mut new = self.clone();
-        new.springs.pop_front();
-        new
-    }
-
-    fn consume_spring_and_group(&self) -> Self {
-        let mut new = self.clone();
-        new.springs.pop_front();
-        new.groups.pop_front();
-        new
-    }
 }
 
-// Memoize the function. I hate dynamic programming problems.
-#[cached]
-fn count_solutions(sr: SpringRecord, current_run: Option<u64>) -> u64 {
-    // If there are no springs left, then we're done
-    if sr.springs.is_empty() {
-        match (sr.groups.len(), current_run, sr.groups.front()) {
-            // no groups left, no run
-            (0, None, _) => return 1,
-            // one group left, same size as current run
-            (1, Some(run), Some(&last_group)) if run == last_group => return 1,
-            // otherwise no solutions
-            _ => return 0,
-        };
+type SolutionCache = UnboundCache<(usize, usize, Option<usize>), usize>;
+fn count_solutions(
+    cache: &mut SolutionCache,
+    springs: &[Spring],
+    groups: &[usize],
+    current_run: Option<usize>,
+) -> usize {
+    use Spring::*;
+    // hit the cache first to see if we have a solution already
+    let key = (springs.len(), groups.len(), current_run);
+    if let Some(x) = cache.cache_get(&key) {
+        return *x;
     }
 
-    // if we have a run going, but there are no groups left, then this isn't solveable
-    if let (Some(_), None) = (current_run, sr.groups.front()) {
-        return 0;
-    }
+    // these are all the terminating conditions
+    match (springs.len(), groups.len(), current_run) {
+        // no springs, no groups left, no run
+        (0, 0, None) => return 1,
+        // no springs, one group left, same size as current run
+        (0, 1, Some(run)) if run == groups[0] => return 1,
+        // no springs, anything else, no solution
+        (0, _, _) => return 0,
+        // springs, no groups left, in a run
+        (_, 0, Some(_)) => return 0,
+        _ => (),
+    };
 
-    // we can't solve it if we don't have enough to even match the rest of the checksums
-    let possible_current_run = current_run.unwrap_or(0);
-    if sr.possible_broken() + possible_current_run < sr.remaining_count() {
-        return 0;
-    }
+    // we know we have at least one spring, so destructure it out
+    let [spring, springs @ ..] = springs else {
+        unreachable!()
+    };
 
-    let details = (sr.springs[0], current_run, sr.groups.front().cloned());
+    let possible = match (spring, current_run, groups.first()) {
+        // if we hit an operational spring, but our run doesn't match the expected group, this isn't a solution
+        (Operational, Some(current_run), Some(&next_group)) if current_run != next_group => 0,
 
-    let mut possible = 0;
+        // If we hit operational spring with a run going, consume the spring and the group and clear the run
+        (Operational, Some(_), _) => count_solutions(cache, springs, &groups[1..], None),
 
-    // if we hit an operational spring, but our run doesn't match the expected group, this isn't a solution
-    if let (Spring::Operational, Some(current_run), Some(next_group)) = details {
-        if current_run != next_group {
-            return 0;
+        // if we hit operational with no run going, consume the spring, keep going
+        (Operational, None, _) => count_solutions(cache, springs, groups, None),
+
+        // If we hit broken, consume the spring and keep going down the run or start a new one
+        (Broken, Some(run), _) => count_solutions(cache, springs, groups, Some(run + 1)),
+        (Broken, None, _) => count_solutions(cache, springs, groups, Some(1)),
+
+        // If we hit unknown spring, and the run matches the group, we need to pursue two paths
+        (Unknown, Some(current_run), Some(&next_group)) if current_run == next_group => {
+            let new_run = count_solutions(cache, springs, &groups[1..], None);
+            let current_run = count_solutions(cache, springs, groups, Some(current_run + 1));
+
+            new_run + current_run
         }
-    }
-
-    // If we hit operational spring with a run going, consume the spring and the group and clear the run
-    if let (Spring::Operational, Some(_), _) = details {
-        possible += count_solutions(sr.consume_spring_and_group(), None);
-    }
-
-    // If we hit unknown spring, and the run matches the group, act as if this is operational
-    if let (Spring::Unknown, Some(current_run), Some(next_group)) = details {
-        if current_run == next_group {
-            possible += count_solutions(sr.consume_spring_and_group(), None);
+        (Unknown, Some(current_run), _) => {
+            count_solutions(cache, springs, groups, Some(current_run + 1))
         }
-    }
 
-    // If we hit broken or unknown, consume the spring and keep going down the run or start a new one
-    if let (Spring::Broken | Spring::Unknown, _, _) = details {
-        let run = current_run.unwrap_or(0);
-        possible += count_solutions(sr.consume_spring(), Some(run + 1));
-    }
+        // if we hit an unknown with no run going, we need to consider both universes
+        (Unknown, None, _) => {
+            let broken = count_solutions(cache, springs, groups, Some(1));
+            let fixed = count_solutions(cache, springs, groups, None);
 
-    // if we hit operational or unknown with no run going, consume the spring and wipe the run
-    if let (Spring::Unknown | Spring::Operational, None, _) = details {
-        possible += count_solutions(sr.consume_spring(), None);
-    }
+            broken + fixed
+        }
+    };
+
+    cache.cache_set(key, possible);
 
     possible
 }
 
-fn problem1(input: &Input) -> u64 {
-    input.iter().map(|x| count_solutions(x.clone(), None)).sum()
-}
-
-fn problem2(input: &Input) -> u64 {
+fn problem1(input: &Input) -> usize {
     input
         .iter()
-        .map(|sr| count_solutions(sr.multiply(5), None))
+        .map(|x| {
+            let sr = x.clone();
+            count_solutions(&mut UnboundCache::new(), &sr.springs, &sr.groups, None)
+        })
+        .sum()
+}
+
+fn problem2(input: &Input) -> usize {
+    input
+        .iter()
+        .map(|sr| {
+            let sr = sr.multiply(5);
+            count_solutions(&mut UnboundCache::new(), &sr.springs, &sr.groups, None)
+        })
         .sum()
 }
 
