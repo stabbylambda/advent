@@ -106,6 +106,7 @@ name = "advent_2023_13"
 version = "0.1.0"
 dependencies = [
  "common",
+ "itertools",
  "nom",
 ]
 
