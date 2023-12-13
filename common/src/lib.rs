@@ -30,3 +30,14 @@ pub fn digits(input: usize) -> Vec<u8> {
     v.reverse();
     v
 }
+
+pub fn transpose<T: Clone + Copy>(input: &Vec<Vec<T>>) -> Vec<Vec<T>> {
+    let width = input[0].len();
+    // transpose the nested vec so we can examine each char index
+    let mut i_t: Vec<Vec<T>> = vec![vec![]; width];
+    (0..width).for_each(|x| {
+        (0..input.len()).for_each(|y| i_t[x].push(input[y][x]));
+    });
+
+    i_t
+}

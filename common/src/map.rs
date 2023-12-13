@@ -3,6 +3,8 @@ use std::{
     fmt::{Debug, Display},
 };
 
+use crate::transpose;
+
 #[derive(Debug)]
 pub struct Path {
     pub segments: Vec<Coord>,
@@ -197,6 +199,10 @@ impl<T: Copy> Map<T> {
 
     pub fn get_grid_index(&self, (x, y): Coord) -> usize {
         y * self.width + x
+    }
+
+    pub fn transpose(&self) -> Map<T> {
+        Map::new(transpose(&self.points))
     }
 
     pub fn print<F>(&self, f: F)
