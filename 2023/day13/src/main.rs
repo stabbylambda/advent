@@ -1,5 +1,4 @@
-use std::fmt::Display;
-
+use common::map::Map;
 use itertools::Itertools;
 use nom::{
     branch::alt,
@@ -21,7 +20,7 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Vec<Valley>;
+type Input = Vec<Map<bool>>;
 
 fn parse(input: &str) -> Input {
     let image = map(
@@ -29,22 +28,11 @@ fn parse(input: &str) -> Input {
             newline,
             many1(alt((map(char('.'), |_| false), map(char('#'), |_| true)))),
         ),
-        |x| Valley { valley: x },
+        Map::new,
     );
     let result: IResult<&str, Input> = separated_list1(tag("\n\n"), image)(input);
 
     result.unwrap().1
-}
-
-fn transpose(input: &Vec<Vec<bool>>) -> Vec<Vec<bool>> {
-    let width = input[0].len();
-    // transpose the nested vec so we can examine each char index
-    let mut i_t: Vec<Vec<bool>> = vec![vec![]; width];
-    (0..width).for_each(|x| {
-        (0..input.len()).for_each(|y| i_t[x].push(input[y][x]));
-    });
-
-    i_t
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -62,132 +50,90 @@ impl Reflection {
     }
 }
 
-struct Valley {
-    valley: Vec<Vec<bool>>,
+fn get_row_pair(map: &Map<bool>, index: usize, offset: usize) -> Option<(&Vec<bool>, &Vec<bool>)> {
+    let lower_idx = index.checked_sub(offset);
+    let upper_idx = index.checked_add(offset + 1);
+
+    let lower = lower_idx.and_then(|i| map.points.get(i));
+    let upper = upper_idx.and_then(|i| map.points.get(i));
+
+    lower.zip(upper)
 }
 
-impl Display for Valley {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for row in &self.valley {
-            for col in row {
-                match col {
-                    true => write!(f, "#")?,
-                    false => write!(f, ".")?,
-                };
+fn find_reflections(map: &Map<bool>, f: impl Fn(usize) -> Reflection) -> Vec<Reflection> {
+    (0..map.height)
+        .filter_map(|i| {
+            // check this row and the next
+            let Some((a, b)) = get_row_pair(map, i, 0) else {
+                return None;
+            };
+
+            // if they're not equal, bail
+            if a != b {
+                return None;
             }
-            writeln!(f)?;
-        }
 
-        Ok(())
-    }
-}
+            // start at 1, we don't need to compare the rows we just compared
+            let mut offset = 1;
 
-impl Valley {
-    fn get_row_pair(&self, index: usize, offset: usize) -> Option<(&Vec<bool>, &Vec<bool>)> {
-        let lower_idx = index.checked_sub(offset);
-        let upper_idx = index.checked_add(offset + 1);
-
-        let lower = lower_idx.and_then(|i| self.valley.get(i));
-        let upper = upper_idx.and_then(|i| self.valley.get(i));
-
-        lower.zip(upper)
-    }
-
-    fn find_reflections(&self) -> Vec<usize> {
-        // find all the pairs that equal each other so we know where we have to start
-        let top_reflections: Vec<usize> = self
-            .valley
-            .iter()
-            .enumerate()
-            .tuple_windows()
-            .filter_map(|((a_idx, a), (_b_idx, b))| (a == b).then_some(a_idx))
-            .collect();
-
-        // for each reflection row we found, start from there and compare outward
-        top_reflections
-            .into_iter()
-            .filter_map(|t| {
-                // start at 1, we don't need to compare the rows we just compared
-                let mut offset = 1;
-                // search until there are no more pairs to compare because we walked off the end of the grid
-                while let Some((upper, lower)) = self.get_row_pair(t, offset) {
-                    // bail when we find something that doesn't match
-                    if upper != lower {
-                        return None;
-                    }
-
-                    // keep going
-                    offset += 1;
+            // search until there are no more pairs to compare because we walked off the end of the grid
+            while let Some((upper, lower)) = get_row_pair(map, i, offset) {
+                // bail when we find something that doesn't match
+                if upper != lower {
+                    return None;
                 }
 
-                Some(t + 1)
-            })
-            .collect_vec()
-    }
-
-    fn find_horizontal_reflection(&self) -> Vec<Reflection> {
-        self.find_reflections()
-            .into_iter()
-            .map(Reflection::Horizontal)
-            .collect_vec()
-    }
-
-    fn find_vertical_reflection(&self) -> Vec<Reflection> {
-        let image = transpose(&self.valley);
-        let v = Valley { valley: image };
-        v.find_reflections()
-            .into_iter()
-            .map(Reflection::Vertical)
-            .collect_vec()
-    }
-
-    fn find_reflection(&self) -> Reflection {
-        let rs = self.find_all_reflections();
-        rs.first().cloned().unwrap()
-    }
-
-    fn find_all_reflections(&self) -> Vec<Reflection> {
-        vec![
-            self.find_horizontal_reflection(),
-            self.find_vertical_reflection(),
-        ]
-        .into_iter()
-        .flatten()
-        .collect_vec()
-    }
-
-    fn get_all_smudges(&self) -> Vec<(usize, usize, Valley)> {
-        let mut all = vec![];
-        for y in 0..self.valley.len() {
-            for x in 0..self.valley[0].len() {
-                let mut v = self.valley.clone();
-                // swap the cell
-                v[y][x] = !v[y][x];
-                all.push((y, x, Valley { valley: v }));
+                // keep going
+                offset += 1;
             }
-        }
 
-        all
-    }
+            Some(f(i + 1))
+        })
+        .collect_vec()
+}
+
+fn find_all_reflections(map: &Map<bool>) -> Vec<Reflection> {
+    vec![
+        find_reflections(map, Reflection::Horizontal),
+        find_reflections(&map.transpose(), Reflection::Vertical),
+    ]
+    .into_iter()
+    .flatten()
+    .collect_vec()
+}
+
+/** For each square in the map, create a clone of the map where it's flipped */
+fn get_all_smudges(map: &Map<bool>) -> Vec<Map<bool>> {
+    map.into_iter()
+        .map(|x| {
+            let mut m = map.clone();
+            m.set(x.coords, !x.data);
+            m
+        })
+        .collect_vec()
 }
 
 fn problem1(input: &Input) -> usize {
-    input.iter().map(|v| v.find_reflection().to_score()).sum()
+    input
+        .iter()
+        .flat_map(find_all_reflections)
+        .map(|r| r.to_score())
+        .sum()
 }
 
 fn problem2(input: &Input) -> usize {
     input
         .iter()
         .flat_map(|v| {
-            let r = v.find_reflection();
-            let smudges = v.get_all_smudges();
-            let smudge_reflections: Vec<Reflection> = smudges
+            let r = *find_all_reflections(v).first().unwrap();
+            let smudges = get_all_smudges(v);
+
+            smudges
                 .iter()
-                .flat_map(|(_, _, v1)| v1.find_all_reflections())
+                .flat_map(find_all_reflections)
                 .filter(|r1| r != *r1)
                 .unique()
-                .collect_vec();
-            smudge_reflections
+                .collect_vec()
         })
         .map(|x| x.to_score())
         .sum()
@@ -195,13 +141,12 @@ fn problem2(input: &Input) -> usize {
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::{find_reflections, parse, problem1, problem2, Reflection};
     #[test]
     fn horizontal() {
         let input = include_str!("../horizontal.txt");
         let input = parse(input);
-        let result = input[0]
-            .find_horizontal_reflection()
+        let result = find_reflections(&input[0], Reflection::Horizontal)
             .first()
             .unwrap()
             .to_score();
@@ -212,8 +157,7 @@ mod test {
     fn vertical() {
         let input = include_str!("../vertical.txt");
         let input = parse(input);
-        let result = input[0]
-            .find_vertical_reflection()
+        let result = find_reflections(&input[0].transpose(), Reflection::Vertical)
             .first()
             .unwrap()
             .to_score();
