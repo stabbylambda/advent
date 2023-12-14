@@ -3,6 +3,8 @@ use std::{fmt::Debug, usize};
 
 use std::fmt::Display;
 
+use common::extensions::vecvec::VecVec;
+
 use nom::{
     branch::alt,
     character::complete::{char, newline},
@@ -94,17 +96,8 @@ impl Platform {
     }
 
     fn rotate(&mut self) {
-        let mut platform = self.platform.clone();
-        platform.reverse();
-        for i in 0..platform.len() {
-            for j in i..platform.len() {
-                // I'm sure we can use mem::swap here, but that probably involves slicing and isn't as clear
-                let x = platform[i][j];
-                let y = platform[j][i];
-                platform[j][i] = x;
-                platform[i][j] = y;
-            }
-        }
+        let platform = self.platform.rotate();
+
         self.width = platform[0].len();
         self.height = platform.len();
         self.platform = platform;

@@ -1,5 +1,7 @@
 use std::ops::RangeInclusive;
 
+pub mod vecvec;
+
 pub trait RangeExt<T>
 where
     T: PartialOrd,
