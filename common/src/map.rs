@@ -3,7 +3,7 @@ use std::{
     fmt::{Debug, Display},
 };
 
-use crate::transpose;
+use crate::{extensions::vecvec::VecVec, transpose};
 
 #[derive(Debug)]
 pub struct Path {
@@ -202,7 +202,7 @@ impl<T: Copy> Map<T> {
     }
 
     pub fn transpose(&self) -> Map<T> {
-        Map::new(transpose(&self.points))
+        Map::new(self.points.transpose())
     }
 
     pub fn print<F>(&self, f: F)
