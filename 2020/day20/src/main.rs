@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, VecDeque};
 
+use common::extensions::vecvec::VecVec;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -76,21 +77,9 @@ impl Tile {
     }
 
     fn rotate(&self) -> Self {
-        let mut matrix = self.value.clone();
-        matrix.reverse();
-        for i in 0..matrix.len() {
-            for j in i..matrix.len() {
-                // I'm sure we can use mem::swap here, but that probably involves slicing and isn't as clear
-                let x = matrix[i][j];
-                let y = matrix[j][i];
-                matrix[j][i] = x;
-                matrix[i][j] = y;
-            }
-        }
-
         Self {
             id: self.id,
-            value: matrix,
+            value: self.value.rotate(),
         }
     }
 
