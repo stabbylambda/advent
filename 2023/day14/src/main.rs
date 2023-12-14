@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 use std::{fmt::Debug, usize};
 
-use std::fmt::Display;
-
 use common::extensions::vecvec::VecVec;
 
+use common::map::Map;
 use nom::{
     branch::alt,
     character::complete::{char, newline},
@@ -60,47 +59,29 @@ impl Debug for Tile {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Platform {
-    platform: Vec<Vec<Tile>>,
-    width: usize,
-    height: usize,
+    platform: Map<Tile>,
 }
 
 impl Platform {
     fn new(v: Vec<Vec<Tile>>) -> Self {
-        let height = v.len();
-        let width = v[0].len();
-
-        let mut s = Self {
-            platform: v,
-            height,
-            width,
-        };
-
-        // rotate so that the end of each row is "north"
-        s.rotate();
-        s
+        Self {
+            // rotate so that the end of each row is "north"
+            platform: Map::new(v.rotate()),
+        }
     }
 
     fn load(&self) -> usize {
         self.platform
-            .iter()
-            .map(|row| {
-                row.iter()
-                    .enumerate()
-                    .filter_map(|(weight, tile)| (*tile == Tile::RoundedRock).then_some(weight + 1))
-                    .sum::<usize>()
-            })
+            .into_iter()
+            .filter_map(|square| (square.data == &Tile::RoundedRock).then_some(square.coords.0 + 1))
             .sum()
     }
 
     fn rotate(&mut self) {
-        let platform = self.platform.rotate();
-
-        self.width = platform[0].len();
-        self.height = platform.len();
-        self.platform = platform;
+        let platform = self.platform.points.rotate();
+        self.platform = Map::new(platform);
     }
 
     fn spin_cycle(&mut self) {
@@ -115,43 +96,13 @@ impl Platform {
      * have to deal with stupid columnar math. Should also make Vec operations faster since we have better memory-locality?
      */
     fn tilt(&mut self) {
-        let sorted: Vec<Vec<Tile>> = self
-            .platform
-            .iter()
-            .map(|slice| {
-                slice
-                    // split at the cube rocks, inclusive, so we get slices that end in a rock
-                    .split_inclusive(|x| *x == Tile::CubeRock)
-                    .flat_map(|s| {
-                        let mut s1 = s.to_vec().clone();
-                        // sort them in place, this will get all the empty spaces, then the boulders, then the cube rocks
-                        // which is neat because then we basically have "falling" for free
-                        s1.sort();
-                        s1
-                    })
-                    .collect::<Vec<Tile>>()
-            })
-            .collect();
-
-        self.platform = sorted;
-    }
-}
-
-impl Display for Platform {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let p = self;
-
-        for x in 0..p.width {
-            for y in 0..p.height {
-                write!(f, "{:?}", p.platform[x][y])?;
+        for row in self.platform.points.iter_mut() {
+            for slice in row.split_inclusive_mut(|x| *x == Tile::CubeRock) {
+                // sort them in place, this will get all the empty spaces, then the boulders, then the cube rocks
+                // which is neat because then we basically have "falling" for free
+                slice.sort()
             }
-
-            writeln!(f)?;
         }
-
-        writeln!(f)?;
-
-        Ok(())
     }
 }
 
@@ -178,7 +129,7 @@ fn problem2(input: &Input) -> usize {
         load = platform.load();
 
         // insert the current state of the board and get the last time we saw it
-        if let Some(previous) = platform_cache.insert(platform.to_string(), current) {
+        if let Some(previous) = platform_cache.insert(format!("{platform:?}"), current) {
             // if we've seen it before, then we need to do some cool cycle math from 2022 day 17
             let cycle_size = previous.abs_diff(current);
             let skip_count = (limit - current) / cycle_size;
