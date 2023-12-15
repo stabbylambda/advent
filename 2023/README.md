@@ -141,3 +141,15 @@ I undid the stupid columnar stuff and grabbed some rotate90 code I had sitting a
 Of course doing 1000000000 cycles of 4 tilts is ridiculous. Enter my cycle detection code from 2022 Day 17. Basically insert the board as the hashmap key with the current cycle index as the value. If there’s a collision, we’ve seen that particular board before, which means we hit a cycle. Now do some math to figure out how many cycles we should skip (and clear the hashmap) so that we can run the rest of the count to 1000000000.
 
 This was fun!
+
+## Day 15
+
+### Part 1
+
+That was kind of a welcome break. I resisted the urge to do something fancy for the first part and create a struct. The
+instruction just needs to be hashed. Because add and mul both work in the group of integers mod _n_, it's easy to do the hash without overflowing u8.  
+
+### Part 2
+
+Struct time. I went back to the `nom` parser and actually parsed out the `-` and `=` which did require me to go back and rework the hash function. Next step was putting together the instructions, which was pretty straightforward. I used a `BTreeMap` so I could see the keys in order while debugging. Nothing really that fancy in this.
+
