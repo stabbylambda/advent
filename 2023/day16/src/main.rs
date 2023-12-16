@@ -1,6 +1,6 @@
 use std::collections::{BTreeSet, VecDeque};
 
-use common::map::{Map, MapSquare};
+use common::map::Map;
 use nom::{
     branch::alt,
     character::complete::{char, newline},
@@ -8,6 +8,8 @@ use nom::{
     multi::{many1, separated_list1},
     IResult,
 };
+use Direction::*;
+use Tile::*;
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -48,6 +50,7 @@ enum Tile {
     ForwardMirror,
     BackwardMirror,
 }
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum Direction {
     North,
@@ -56,21 +59,24 @@ enum Direction {
     West,
 }
 
-fn problem1(input: &Input) -> usize {
-    use Direction::*;
-    use Tile::*;
-    let start = ((0, 0), Direction::East);
-    let mut queue: VecDeque<((usize, usize), Direction)> = VecDeque::new();
+type Key = ((usize, usize), Direction);
+
+fn fire_beam(input: &Input, start: Key) -> usize {
+    // We'll need to manage multiple beams per start
+    let mut queue: VecDeque<Key> = VecDeque::new();
     queue.push_back(start);
 
-    let mut visited: BTreeSet<((usize, usize), Direction)> = BTreeSet::new();
+    // keep track of where we've been and what direction we were going at the time
+    let mut visited: BTreeSet<Key> = BTreeSet::new();
 
     while let Some(data @ (coords, direction)) = queue.pop_front() {
-        let tile = input.get(coords);
+        // if we've already been here and going this direction, bail
         if !visited.insert(data) {
             continue;
         };
 
+        // figure out where to go from here
+        let tile = input.get(coords);
         let new_tiles = match (tile.data, direction) {
             (Empty, North)
             | (VerticalSplitter, North)
@@ -115,12 +121,49 @@ fn problem1(input: &Input) -> usize {
         }
     }
 
-    let coords_only: BTreeSet<(usize, usize)> = visited.into_iter().map(|(c, _dir)| c).collect();
+    // only consider unique coords, we don't care about the direction we were going when we were there
+    let coords_only: BTreeSet<&(usize, usize)> = visited.iter().map(|(c, _dir)| c).collect();
     coords_only.len()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem1(input: &Input) -> usize {
+    fire_beam(input, ((0, 0), East))
+}
+
+fn problem2(input: &Input) -> usize {
+    input
+        .into_iter()
+        .flat_map(|t| {
+            let c @ (x, y) = t.coords;
+            let top = y == 0;
+            let left = x == 0;
+            let right = x == input.width - 1;
+            let bottom = y == input.height - 1;
+
+            // only look at the edges, the corners get two directions
+            if top && left {
+                vec![(c, East), (c, South)]
+            } else if top && right {
+                vec![(c, West), (c, South)]
+            } else if bottom && left {
+                vec![(c, North), (c, East)]
+            } else if bottom && right {
+                vec![(c, North), (c, West)]
+            } else if top {
+                vec![(c, South)]
+            } else if left {
+                vec![(c, East)]
+            } else if bottom {
+                vec![(c, North)]
+            } else if right {
+                vec![(c, West)]
+            } else {
+                vec![]
+            }
+        })
+        .map(|s| fire_beam(input, s))
+        .max()
+        .unwrap()
 }
 
 #[cfg(test)]
@@ -139,6 +182,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 51)
     }
 }
