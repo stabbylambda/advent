@@ -153,3 +153,12 @@ instruction just needs to be hashed. Because add and mul both work in the group 
 
 Struct time. I went back to the `nom` parser and actually parsed out the `-` and `=` which did require me to go back and rework the hash function. Next step was putting together the instructions, which was pretty straightforward. I used a `BTreeMap` so I could see the keys in order while debugging. Nothing really that fancy in this.
 
+## Day 16
+
+### Part 1
+
+Another pretty easy one. As soon as I saw the splitting, I knew it was going to be a `VecDeque` solution where we push and pop. I initially let the autocomplete scaffold out all of the match conditions and then manually collapsed them when I figured out what the outcomes were. I initially hit an infinite loop because I assumed the beam would always end up off the edge and I'd get a None for the neighbor. But that's not true. So I updated the `visited` set to take into account the `Direction` because then we won't retrace steps.
+
+### Part 2
+
+Just extract part 1's function and then generate a new beam for each edge tile and then find the max. I don't know if there's much more to say about this one. 
