@@ -1,7 +1,10 @@
-use std::collections::{BTreeMap, BinaryHeap};
+use std::{
+    cmp::Reverse,
+    collections::{BTreeMap, BinaryHeap},
+};
 
 use common::{
-    map::{Coord, Map, MapSquare},
+    map::{Coord, Direction, Map, MapSquare},
     nom::single_digit,
 };
 use nom::{
@@ -31,18 +34,10 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-enum Direction {
-    North,
-    South,
-    East,
-    West,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct State {
-    current: Coord,
     heat_loss: u32,
+    current: Coord,
     consecutive_steps: u32,
     direction: Direction,
 }
@@ -74,36 +69,24 @@ impl State {
             West => vec![West, North, South],
         }
     }
-}
 
-impl PartialOrd for State {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
+    fn to_cache_key(&self) -> CacheKey {
+        // because we can't turn around, we can cut the cache key space in half by only considering vertical or horizontal directions
+        let dt = match self.direction {
+            Direction::North | Direction::South => DirectionType::Vertical,
+            Direction::East | Direction::West => DirectionType::Horizontal,
+        };
+        (self.current, dt, self.consecutive_steps)
     }
 }
 
-impl Ord for State {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other
-            .heat_loss
-            .cmp(&self.heat_loss)
-            .then(self.current.cmp(&other.current))
-            // these don't really matter for anything other than getting the BTreeMap working
-            .then(self.consecutive_steps.cmp(&other.consecutive_steps))
-            .then(self.direction.cmp(&other.direction))
-    }
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+enum DirectionType {
+    Horizontal,
+    Vertical,
 }
 
-fn get_neighbor(current: MapSquare<u32>, direction: Direction) -> Option<MapSquare<u32>> {
-    let neighbors = current.neighbors();
-
-    match direction {
-        Direction::North => neighbors.north,
-        Direction::South => neighbors.south,
-        Direction::East => neighbors.east,
-        Direction::West => neighbors.west,
-    }
-}
+type CacheKey = ((usize, usize), DirectionType, u32);
 
 fn problem1(input: &Input) -> u32 {
     dijkstra(input, 1, 3)
@@ -116,29 +99,30 @@ fn problem2(input: &Input) -> u32 {
 fn dijkstra(input: &Input, min: u32, max: u32) -> u32 {
     let goal = (input.width - 1, input.height - 1);
 
-    let mut seen: BTreeMap<State, u32> = BTreeMap::new();
-    let mut queue: BinaryHeap<State> = BinaryHeap::with_capacity(100000);
+    let mut seen: BTreeMap<CacheKey, u32> = BTreeMap::new();
+    let mut queue: BinaryHeap<Reverse<State>> = BinaryHeap::new();
 
     // start by going south and east
     let initial_east = State::new(input.get((1, 0)), Direction::East, 1);
     let initial_south = State::new(input.get((0, 1)), Direction::South, 1);
 
-    queue.push(initial_east.clone());
-    seen.insert(initial_east, 0);
-    queue.push(initial_south.clone());
-    seen.insert(initial_south, 0);
+    seen.insert(initial_east.to_cache_key(), 0);
+    queue.push(Reverse(initial_east));
+    seen.insert(initial_south.to_cache_key(), 0);
+    queue.push(Reverse(initial_south));
 
-    while let Some(state) = queue.pop() {
+    while let Some(Reverse(state)) = queue.pop() {
         // if we're at the goal, mark this as best available
         if state.current == goal {
             return state.heat_loss;
         }
 
         let current = input.get(state.current);
+        let neighbors = current.neighbors();
 
         // get all the eligible neighbors
         for dir in state.get_eligible_directions(min, max) {
-            if let Some(neighbor) = get_neighbor(current, dir) {
+            if let Some(neighbor) = neighbors.get(dir) {
                 let heat_loss = state.heat_loss + *neighbor.data;
 
                 let consecutive_steps = if dir == state.direction {
@@ -155,10 +139,10 @@ fn dijkstra(input: &Input, min: u32, max: u32) -> u32 {
                 };
 
                 // figure out if we should go to the next state
-                let prev_cost = seen.get(&next).unwrap_or(&u32::MAX);
+                let prev_cost = seen.get(&next.to_cache_key()).unwrap_or(&u32::MAX);
                 if next.heat_loss < *prev_cost {
-                    queue.push(next.clone());
-                    seen.insert(next, heat_loss);
+                    seen.insert(next.to_cache_key(), heat_loss);
+                    queue.push(Reverse(next));
                 }
             }
         }
