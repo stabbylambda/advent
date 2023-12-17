@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BinaryHeap, HashMap};
+use std::collections::{BTreeMap, BinaryHeap};
 
 use common::{
     map::{Coord, Map, MapSquare},
@@ -8,7 +8,7 @@ use nom::{
     character::complete::newline,
     combinator::map,
     multi::{many1, separated_list1},
-    ExtendInto, IResult,
+    IResult,
 };
 
 fn main() {
@@ -57,11 +57,17 @@ impl State {
         }
     }
 
-    fn get_eligible_directions(&self) -> Vec<Direction> {
+    fn get_eligible_directions(&self, min: u32, max: u32) -> Vec<Direction> {
         use Direction::*;
         match self.direction {
-            North | South if self.consecutive_steps == 3 => vec![East, West],
-            East | West if self.consecutive_steps == 3 => vec![North, South],
+            // if we're less than min, keep going
+            x if self.consecutive_steps < min => vec![x],
+
+            // if we're at max, turn left or right
+            North | South if self.consecutive_steps == max => vec![East, West],
+            East | West if self.consecutive_steps == max => vec![North, South],
+
+            // otherwise we can go anywhere but where we just came from
             North => vec![North, East, West],
             South => vec![South, East, West],
             East => vec![East, North, South],
@@ -82,6 +88,7 @@ impl Ord for State {
             .heat_loss
             .cmp(&self.heat_loss)
             .then(self.current.cmp(&other.current))
+            // these don't really matter for anything other than getting the BTreeMap working
             .then(self.consecutive_steps.cmp(&other.consecutive_steps))
             .then(self.direction.cmp(&other.direction))
     }
@@ -99,6 +106,14 @@ fn get_neighbor(current: MapSquare<u32>, direction: Direction) -> Option<MapSqua
 }
 
 fn problem1(input: &Input) -> u32 {
+    dijkstra(input, 1, 3)
+}
+
+fn problem2(input: &Input) -> u32 {
+    dijkstra(input, 4, 10)
+}
+
+fn dijkstra(input: &Input, min: u32, max: u32) -> u32 {
     let goal = (input.width - 1, input.height - 1);
 
     let mut seen: BTreeMap<State, u32> = BTreeMap::new();
@@ -122,7 +137,7 @@ fn problem1(input: &Input) -> u32 {
         let current = input.get(state.current);
 
         // get all the eligible neighbors
-        for dir in state.get_eligible_directions() {
+        for dir in state.get_eligible_directions(min, max) {
             if let Some(neighbor) = get_neighbor(current, dir) {
                 let heat_loss = state.heat_loss + *neighbor.data;
 
@@ -152,10 +167,6 @@ fn problem1(input: &Input) -> u32 {
     unreachable!()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
-}
-
 #[cfg(test)]
 mod test {
     use crate::{parse, problem1, problem2};
@@ -172,6 +183,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 94)
     }
 }
