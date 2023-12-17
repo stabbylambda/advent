@@ -162,3 +162,21 @@ Another pretty easy one. As soon as I saw the splitting, I knew it was going to 
 ### Part 2
 
 Just extract part 1's function and then generate a new beam for each edge tile and then find the max. I don't know if there's much more to say about this one. 
+
+## Day 17
+
+### Part 1
+
+Hello Dijkstra my old friend. So I have a pretty standard dijkstra available in my common implementation, but it really expects an adjacency list. And I didn’t really see an easy way to pre-compute the adjacency list, so I just copy/pasted the code and mangled the pieces necessary to use the whole state (including the direction and consecutive steps) as the lookup for previous costs. It’s slow though and I thought moving to `BTreeMap` was going to fix it, but that’s not looking like it’s true. There’s something wrong with my implementation and I’ll figure it out Later ™️.
+
+### Part 2
+
+Oh something’s super wrong with the implementation. This took like 10 minutes to compute on my macbook. I just had to add the min and max to the `get_eligible_directions` function and pass 1 and 3 for part 1 and 4 and 10 for part 2. I’ll take a look tomorrow at why this is so freaking slow. My guess is too much time spent popping and inserting into the map, but those should be fast.
+
+### Later...
+
+hahahahaha I was putting the entire `State` object as the cache key. That includes the `heat_loss` field which is also the value. So of course the `BTreeMap` was absolutely exploding, which made the entire process grind to a crawl. Defining the cache key as `((usize, usize), Direction, u32)` (i.e the entire state object minus the `heat_loss` field) makes it complete both problems in half a second. I also added a small optimization to only consider `DirectionType` instead of `Direction` because you really only care about horizontal and vertical movement when thinking about moving next, not individual directions.
+
+
+
+

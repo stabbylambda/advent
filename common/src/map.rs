@@ -63,11 +63,30 @@ pub struct Map<T> {
 }
 pub type Coord = (usize, usize);
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Direction {
+    North,
+    South,
+    East,
+    West,
+}
+
 pub struct Neighbors<'a, T: Copy> {
     pub north: Option<MapSquare<'a, T>>,
     pub south: Option<MapSquare<'a, T>>,
     pub east: Option<MapSquare<'a, T>>,
     pub west: Option<MapSquare<'a, T>>,
+}
+
+impl<'a, T: Copy> Neighbors<'a, T> {
+    pub fn get(&self, direction: Direction) -> Option<MapSquare<T>> {
+        match direction {
+            Direction::North => self.north,
+            Direction::South => self.south,
+            Direction::East => self.east,
+            Direction::West => self.west,
+        }
+    }
 }
 
 impl<'a, T: Copy> Neighbors<'a, T> {
