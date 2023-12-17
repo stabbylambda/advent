@@ -3,7 +3,7 @@ use std::{
     fmt::{Debug, Display},
 };
 
-use crate::{extensions::vecvec::VecVec, transpose};
+use crate::extensions::vecvec::VecVec;
 
 #[derive(Debug)]
 pub struct Path {
