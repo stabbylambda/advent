@@ -43,12 +43,14 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-fn generate_points<'a>(directions: &[(Direction, u32, &'a str)]) -> (i64, Vec<(i64, i64)>) {
+fn generate_points(directions: &[(Direction, u32)]) -> (i64, Vec<(i64, i64)>) {
     let mut points: Vec<(i64, i64)> = vec![];
     let (mut x, mut y) = (0, 0);
     let mut length = 0i64;
-    for (direction, d, color) in directions {
+    for (direction, d) in directions {
+        // keep track of the lengths
         length += *d as i64;
+
         for _n in 0..*d {
             (x, y) = match direction {
                 Direction::North => (x, y - 1),
@@ -57,6 +59,8 @@ fn generate_points<'a>(directions: &[(Direction, u32, &'a str)]) -> (i64, Vec<(i
                 Direction::East => (x + 1, y),
             };
         }
+
+        // push the vertex only
         points.push((x, y));
     }
 
@@ -83,24 +87,43 @@ fn picks_theorem(area: i64, length: i64) -> i64 {
     area - length / 2 + 1
 }
 
-fn problem1(input: &Input) -> i64 {
-    let (length, mut vertices) = generate_points(input);
-
-    let area = shoelace(&vertices).abs();
-    let area = if area.is_negative() {
-        vertices.reverse();
-        shoelace(&vertices)
-    } else {
-        area
-    };
-
-    let inside = picks_theorem(area, length);
+fn calculate_area(directions: &[(Direction, u32)]) -> i64 {
+    let (length, vertices) = generate_points(directions);
+    let area = shoelace(&vertices);
+    let inside = picks_theorem(area.abs(), length);
 
     inside + length
 }
 
-fn problem2(input: &Input) -> u32 {
-    todo!()
+fn problem1(input: &Input) -> i64 {
+    let directions: Vec<(Direction, u32)> =
+        input.iter().map(|(dir, len, _)| (*dir, *len)).collect();
+
+    calculate_area(&directions)
+}
+
+fn problem2(input: &Input) -> i64 {
+    let v: Vec<(Direction, u32)> = input
+        .iter()
+        .map(|(_, _, hex)| {
+            let dir = match hex.chars().nth(5) {
+                Some('0') => Direction::East,
+                Some('1') => Direction::South,
+                Some('2') => Direction::West,
+                Some('3') => Direction::North,
+                _ => unreachable!(),
+            };
+
+            let length = hex
+                .get(0..5)
+                .and_then(|s| u32::from_str_radix(s, 16).ok())
+                .unwrap();
+
+            (dir, length)
+        })
+        .collect();
+
+    calculate_area(&v)
 }
 
 #[cfg(test)]
@@ -119,6 +142,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 952408144115)
     }
 }
