@@ -45,20 +45,20 @@ fn parse(input: &str) -> Input {
 
 fn generate_points(directions: &[(Direction, u32)]) -> (i64, Vec<(i64, i64)>) {
     let mut points: Vec<(i64, i64)> = vec![];
-    let (mut x, mut y) = (0, 0);
+    let (mut x, mut y) = (0i64, 0i64);
     let mut length = 0i64;
     for (direction, d) in directions {
-        // keep track of the lengths
-        length += *d as i64;
+        let d = *d as i64;
 
-        for _n in 0..*d {
-            (x, y) = match direction {
-                Direction::North => (x, y - 1),
-                Direction::South => (x, y + 1),
-                Direction::West => (x - 1, y),
-                Direction::East => (x + 1, y),
-            };
-        }
+        // keep track of the lengths
+        length += d;
+
+        (x, y) = match direction {
+            Direction::North => (x, y - d),
+            Direction::South => (x, y + d),
+            Direction::West => (x - d, y),
+            Direction::East => (x + d, y),
+        };
 
         // push the vertex only
         points.push((x, y));
