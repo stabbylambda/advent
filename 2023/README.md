@@ -177,6 +177,14 @@ Oh something’s super wrong with the implementation. This took like 10 minutes 
 
 hahahahaha I was putting the entire `State` object as the cache key. That includes the `heat_loss` field which is also the value. So of course the `BTreeMap` was absolutely exploding, which made the entire process grind to a crawl. Defining the cache key as `((usize, usize), Direction, u32)` (i.e the entire state object minus the `heat_loss` field) makes it complete both problems in half a second. I also added a small optimization to only consider `DirectionType` instead of `Direction` because you really only care about horizontal and vertical movement when thinking about moving next, not individual directions.
 
+## Day 18
 
+### Part 1
+
+Neat. Grab code from day 10. Change it a bit to just get the vertices and track the length. Use shoelace + pick's theorem. Done.
+
+### Part 2
+
+Okay, same thing, but instead, just decode some hex values first. And that's a big number.
 
 
