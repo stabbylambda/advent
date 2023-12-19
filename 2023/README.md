@@ -187,4 +187,15 @@ Neat. Grab code from day 10. Change it a bit to just get the vertices and track 
 
 Okay, same thing, but instead, just decode some hex values first. And that's a big number.
 
+## Day 19
 
+### Part 1
+These parsing problems are why I always use a parser combinator library. I would not want to do this with regex or a bunch of `split` calls.  Once you get the stuff into the right data structure, it’s kind of straightforward.  I modeled everything as `Rule` (an enum with `Branch` or `Fallthrough`) and then `Workflows` was a `BTreeMap<str, Vec<Rule>>`. Then `evaluate`  just turns into “keep going until you hit `A` or `R`”. Implementing that was easier than parsing the input.
+
+### Part 2
+
+I stumbled through this one for longer than I’d have liked. It wasn’t that dissimilar from the range splitting stuff in day 5, but I was having a harder time reconciling that with the map. The “aha” came when I rewrote my evaluate to `evaluate_part` and made it recursive.
+
+I created a `RangedPart` which is basically `Part` but with ranges instead of scalars as values. Then I implemented an `evaluate_ranged_part` which does a DFS of the rules and, at each `Rule`, splits the ranges around the value in the rule, creating two `RangedParts`: one with the accepted values, one with the rejected values. Then we just keep whittling down the rejected part by splitting it into branches that are accepted. Finally at the end, what we’re left with is just the `Fallthrough` case, which will either be `A` or `R`. `A` gets the count of the `RangedPart` which is the product of the counts of all the ranges.
+
+Fun!
