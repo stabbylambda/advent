@@ -1,11 +1,11 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, ops::Range};
 
 use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{alpha1, char, newline, u32},
     combinator::map,
-    multi::{many1, separated_list1},
+    multi::separated_list1,
     sequence::{delimited, preceded, separated_pair, tuple},
     IResult,
 };
@@ -42,7 +42,7 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum Xmas {
     X,
     M,
@@ -98,7 +98,7 @@ impl<'a> Rule<'a> {
         ))(input)
     }
 
-    fn evaluate(&self, part: &Part) -> Option<&str> {
+    fn evaluate_part(&self, part: &Part) -> Option<&str> {
         match self {
             Rule::Branch(xmas, comp, num, result) => {
                 let value = part.attributes[xmas];
@@ -107,13 +107,47 @@ impl<'a> Rule<'a> {
                     Comparison::Less => value < *num,
                 };
 
-                if test {
-                    Some(result)
-                } else {
-                    None
-                }
+                test.then_some(result)
             }
             Rule::Fallthrough(result) => Some(result),
+        }
+    }
+
+    fn evaluate_ranged_part(&self, rp: &RangedPart) -> (RangedPart, RangedPart) {
+        let mut accepted_part = rp.clone();
+        let mut rejected_part = rp.clone();
+
+        // we only care about branches, not the fallthrough
+        if let Rule::Branch(xmas, comp, val, _target) = self {
+            let attribute = &rp.attributes[&xmas];
+            let val = *val as usize;
+
+            let (accepted_range, rejected_range) = match comp {
+                Comparison::Greater => {
+                    let accepted = val + 1..attribute.end;
+                    let rejected = attribute.start..val + 1;
+
+                    (accepted, rejected)
+                }
+                Comparison::Less => {
+                    let accepted = attribute.start..val;
+                    let rejected = val..attribute.end;
+
+                    (accepted, rejected)
+                }
+            };
+
+            accepted_part.attributes.insert(*xmas, accepted_range);
+            rejected_part.attributes.insert(*xmas, rejected_range);
+        }
+
+        (accepted_part, rejected_part)
+    }
+
+    fn target(&self) -> &str {
+        match self {
+            Rule::Branch(_, _, _, t) => t,
+            Rule::Fallthrough(t) => t,
         }
     }
 }
@@ -158,21 +192,61 @@ impl<'a> Workflows<'a> {
         }
     }
 
-    fn evalute(&self, p: &Part) -> bool {
-        // always start at "in"
-        let mut current = "in";
-
-        loop {
-            let rules = &self.map[&current];
-            let result = rules.iter().find_map(|x| x.evaluate(p)).unwrap();
-
-            // bail if we hit A or R
-            match result {
-                "A" => return true,
-                "R" => return false,
-                _ => current = result,
-            };
+    fn evalute_part(&self, rule: &str, p: &Part) -> bool {
+        match rule {
+            "A" => true,
+            "R" => false,
+            _ => {
+                let rules = &self.map[&rule];
+                let result = rules.iter().find_map(|x| x.evaluate_part(p)).unwrap();
+                self.evalute_part(result, p)
+            }
         }
+    }
+
+    /** Do a DFS on the workflows, going down each path and splitting the ranges based on the conditions */
+    fn evaluate_ranged_part(&self, rule: &str, p: &RangedPart) -> usize {
+        match rule {
+            "A" => p.count(),
+            "R" => 0,
+            _ => {
+                let rules = &self.map[rule];
+                let (total, _) = rules.iter().fold((0, p.clone()), |(total, rejected), r| {
+                    // split the ranges into two based on the rule
+                    let (accepted, rejected) = r.evaluate_ranged_part(&rejected);
+                    let total = total + self.evaluate_ranged_part(r.target(), &accepted);
+
+                    (total, rejected)
+                });
+                total
+            }
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+struct RangedPart {
+    attributes: BTreeMap<Xmas, Range<usize>>,
+}
+
+impl RangedPart {
+    fn new() -> Self {
+        let attributes = [
+            (Xmas::X, 1..4001),
+            (Xmas::M, 1..4001),
+            (Xmas::A, 1..4001),
+            (Xmas::S, 1..4001),
+        ];
+        Self {
+            attributes: attributes.into_iter().collect(),
+        }
+    }
+
+    fn count(&self) -> usize {
+        self.attributes
+            .values()
+            .map(|x| x.clone().count())
+            .product()
     }
 }
 
@@ -181,12 +255,14 @@ fn problem1(input: &Input) -> u32 {
 
     parts
         .iter()
-        .filter_map(|p| workflows.evalute(p).then_some(p.rating()))
+        .filter_map(|p| workflows.evalute_part("in", p).then_some(p.rating()))
         .sum()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem2(input: &Input) -> usize {
+    let (workflows, _) = input;
+
+    workflows.evaluate_ranged_part("in", &RangedPart::new())
 }
 
 #[cfg(test)]
@@ -205,6 +281,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 167409079868000)
     }
 }
