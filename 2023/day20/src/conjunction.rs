@@ -16,6 +16,7 @@ impl<'a> Conjunction {
                 .collect(),
         }
     }
+
     pub fn receive(&mut self, from: &'a str, pulse: Pulse) -> Option<Pulse> {
         self.last_pulses.insert(from.to_string(), pulse);
 
