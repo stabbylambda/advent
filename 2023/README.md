@@ -199,3 +199,17 @@ I stumbled through this one for longer than I’d have liked. It wasn’t that d
 I created a `RangedPart` which is basically `Part` but with ranges instead of scalars as values. Then I implemented an `evaluate_ranged_part` which does a DFS of the rules and, at each `Rule`, splits the ranges around the value in the rule, creating two `RangedParts`: one with the accepted values, one with the rejected values. Then we just keep whittling down the rejected part by splitting it into branches that are accepted. Finally at the end, what we’re left with is just the `Fallthrough` case, which will either be `A` or `R`. `A` gets the count of the `RangedPart` which is the product of the counts of all the ranges.
 
 Fun!
+
+## Day 20
+
+### Part 1
+
+I took a domain modeling approach to this one. Started off by creating all the different types of modules because I wanted to just write it, write a test for it, make sure it worked independently, and move on. This actually worked pretty well for me. The tricky bit is that I needed the list of incoming nodes for each of the conjunctions in order to know when to swap it. So I had to parse everything, then *invert* the map to find the incoming nodes for each conjunction, then create the actual map. I don't love the double parse, but I couldn't think of a better way to do it.
+
+After that, it's just a matter of keeping pulses in a `VecDeque` and queueing and dequeueing them. Every time you see a high pulse, increment a counter. Same with low pulses. And multiply them together.
+
+### Part 2
+
+I wrote it naively and let it run, knowing it wasn't going to be the answer. Then I popped open the input and saw that `rx` only has one incoming node which is a `Conjunction` node. That node has four nodes coming into it. First thing I did was hardcode to my input. I wrote some code to print out which button press each of them swaps to a High pulse and noticed that the periods were stable. Shove them all in a cache, once you have all four, least common multiple them and there's the answer.
+
+I went back to un-hardcode my solution and wound up doing a double invert of the map. Find the node coming into `rx`, get the count of nodes coming into that node. That wasn't that hard, but I definitely did it after getting the answer.
