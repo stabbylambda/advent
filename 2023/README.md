@@ -213,3 +213,21 @@ After that, it's just a matter of keeping pulses in a `VecDeque` and queueing an
 I wrote it naively and let it run, knowing it wasn't going to be the answer. Then I popped open the input and saw that `rx` only has one incoming node which is a `Conjunction` node. That node has four nodes coming into it. First thing I did was hardcode to my input. I wrote some code to print out which button press each of them swaps to a High pulse and noticed that the periods were stable. Shove them all in a cache, once you have all four, least common multiple them and there's the answer.
 
 I went back to un-hardcode my solution and wound up doing a double invert of the map. Find the node coming into `rx`, get the count of nodes coming into that node. That wasn't that hard, but I definitely did it after getting the answer.
+
+## Day 21
+
+### Part 1
+
+Super simple BFS. Literally nothing to add here.
+
+### Part 2
+
+This was hard. I went to inspect the input and noticed the diamond thanks to the VS Code preview pane. I figured it was going to be some sort of cycle detection code and I knew it was going to be a formula that grew non-linearly because you can see that in the text in part 2. But I had to check the subreddit to see what I was missing. The real trick is that that there are no walls in the row or column of the starting position (which is not easy to see in the preview pane). That means that eventually given enough steps, you'll sort yourself into a perfect quadratic equation, which you can eventually use to just find the right answer without simulation.
+
+So:
+
+ 1. Simulate the steps, keeping track of where we have `            last % input.width == step_goal % input.width`.
+ 2. Once we have three of those, we can create the quadratic polynomial
+ 3. Have the computer do simple math on the input
+
+I'm not sure I ever would have gotten this one without looking at a few hints. 
