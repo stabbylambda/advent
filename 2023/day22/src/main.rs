@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeMap, BTreeSet},
+    collections::{BTreeMap, BTreeSet, VecDeque},
     fmt::{Debug, Display},
 };
 
@@ -23,7 +23,8 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Vec<Brick>;
+type SupportMap = BTreeMap<usize, BTreeSet<usize>>;
+type Input = (SupportMap, SupportMap);
 
 fn parse(input: &str) -> Input {
     let mut idx = 0usize;
@@ -33,12 +34,15 @@ fn parse(input: &str) -> Input {
             |(x, y, z)| Triple::new(z, y, x),
         )(s)
     };
-    let result: IResult<&str, Input> = separated_list1(
-        newline,
-        map(separated_pair(triple, tag("~"), triple), |(start, end)| {
-            idx += 1;
-            Brick::new(idx, start, end)
-        }),
+    let result: IResult<&str, Input> = map(
+        separated_list1(
+            newline,
+            map(separated_pair(triple, tag("~"), triple), |(start, end)| {
+                idx += 1;
+                Brick::new(idx, start, end)
+            }),
+        ),
+        |x| settle(&x),
     )(input);
 
     result.unwrap().1
@@ -130,22 +134,22 @@ impl Ord for Brick {
     }
 }
 
-fn problem1(input: &Input) -> usize {
+fn settle(input: &[Brick]) -> Input {
     // sort the bricks by z index
-    let mut bricks = input.clone();
+    let mut bricks = input.to_vec();
     bricks.sort();
 
     // The 3D tower, with brick id being the value
     let mut settled: BTreeMap<Triple, usize> = BTreeMap::new();
 
     // the "graph" indicating which bricks support other bricks
-    let mut holding_up: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
-    let mut sitting_on: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
+    let mut holding_up: SupportMap = BTreeMap::new();
+    let mut sitting_on: SupportMap = BTreeMap::new();
 
     for brick in bricks.iter_mut() {
         // set up our graph from here
-        holding_up.insert(brick.id, vec![]);
-        sitting_on.insert(brick.id, vec![]);
+        holding_up.insert(brick.id, BTreeSet::new());
+        sitting_on.insert(brick.id, BTreeSet::new());
 
         // move down until we find something below us
         let bricks_below = loop {
@@ -174,19 +178,47 @@ fn problem1(input: &Input) -> usize {
 
         // set up the graph for each of the bricks
         for below in bricks_below {
-            holding_up.entry(below).or_default().push(brick.id);
-            sitting_on.entry(brick.id).or_default().push(below);
+            holding_up.entry(below).or_default().insert(brick.id);
+            sitting_on.entry(brick.id).or_default().insert(below);
         }
     }
 
+    (holding_up, sitting_on)
+}
+
+fn problem1(input: &Input) -> usize {
+    let (holding_up, sitting_on) = input;
+
     holding_up
-        .into_iter()
+        .iter()
         .filter(|(_brick, above)| above.iter().all(|a| sitting_on[&a].len() != 1))
         .count()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem2(input: &Input) -> usize {
+    let (holding_up, sitting_on) = input;
+    holding_up
+        .iter()
+        .map(|(brick, above)| {
+            // start considering everything above us
+            let mut queue: VecDeque<usize> = VecDeque::from_iter(above.iter().cloned());
+            let mut unsupported: BTreeSet<usize> = BTreeSet::from_iter(vec![*brick]);
+
+            while let Some(brick) = queue.pop_front() {
+                // if all of the bricks that we're sitting on are unsupported
+                if sitting_on[&brick].is_subset(&unsupported) {
+                    // this one is unsupported, and consider the rest of the ones sitting on us
+                    unsupported.insert(brick);
+                    for b in &holding_up[&brick] {
+                        queue.push_back(*b);
+                    }
+                }
+            }
+
+            // discount the original brick we put in the falling set to get the rest of it to work
+            unsupported.len() - 1
+        })
+        .sum()
 }
 
 #[cfg(test)]
@@ -205,6 +237,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 7)
     }
 }
