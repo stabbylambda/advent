@@ -231,3 +231,17 @@ So:
  3. Have the computer do simple math on the input
 
 I'm not sure I ever would have gotten this one without looking at a few hints. 
+
+## Day 22
+
+### Part 1
+
+I waffled back and forth for a bit on best way to solve this. I was going to get fancy with a heightmap, but decided ultimately I would just model the entire 3d tower because the input wasn’t that large. First step was getting everything in the right order so I remapped all the triples from x-major to z-major so that they would sort correctly. Then, starting with the lowest block, drop it in the `settled` map, keeping track of each cube in the brick separately and assigning it the brick id. If it hits the ground, it just settles. If any cube in this brick hits any cube in another brick, we keep track of that in the `holding_up` and `sitting_on` maps (simulating a graph, I’m sure I “should” have pulled in petgraph for this). 
+
+After that, it’s just a matter of iterating over the `holding_up` (bottom) bricks and seeing which ones above them have more than 1 brick in the `sitting_on` (top) map.
+
+### Part 2
+
+For this, I pulled out all the code that settles the tower and builds the graph into the `parse` function because it’s needed for part 2 as well as part 1. The other thing I changed was changing the `cubes` field in brick from a `Vec<Cube>` to a `BTreeSet<Cube>` because I was going to need set intersection.
+
+For each brick in `holding_up` we disintegrate it by adding it to `unsupported` then we check to see if the bricks are only sitting on bricks that are in `unsupported` as well. If they are, then we add them to the queue and keep going until we have no more bricks to support. Then just count the `len` of `unsupported` minus the one that we pulled out and sum those all up.
