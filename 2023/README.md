@@ -245,3 +245,15 @@ After that, it’s just a matter of iterating over the `holding_up` (bottom) bri
 For this, I pulled out all the code that settles the tower and builds the graph into the `parse` function because it’s needed for part 2 as well as part 1. The other thing I changed was changing the `cubes` field in brick from a `Vec<Cube>` to a `BTreeSet<Cube>` because I was going to need set intersection.
 
 For each brick in `holding_up` we disintegrate it by adding it to `unsupported` then we check to see if the bricks are only sitting on bricks that are in `unsupported` as well. If they are, then we add them to the queue and keep going until we have no more bricks to support. Then just count the `len` of `unsupported` minus the one that we pulled out and sum those all up.
+
+## Day 23
+
+### Part 1
+
+This is a pretty straightforward DFS with some fun little conditions forcing you to go down the icy slopes. The logic got kinda messy here when checking for valid neighbors and I should go clean it up. It’s also not the fastest code, completing the entire search space on the input in around 3 seconds.
+
+### Part 2
+
+The version of the code where I just update the neighbors algorithm to ignore slopes? It’s still running right now as I type this. Has not yet spit out an answer and I’m sure it won’t by the time I kill it.
+
+If you look at the input you’ll see that there are a ton of long, connected hallways. So we’re going to use edge compression between any points with > 2 neighbors (intersections). First a small BFS (`get_edges`) and then a DFS through that. It cuts the problem space way down. The code is still slow, taking 31 seconds to run both problems. So I clearly need to prune some of the problem space more. But that’s a problem for Future David :tm:.
