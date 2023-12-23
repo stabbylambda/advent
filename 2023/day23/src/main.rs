@@ -1,9 +1,9 @@
 use std::{
     collections::{BTreeMap, BTreeSet, BinaryHeap, VecDeque},
-    fmt::Binary,
+    time::Instant,
 };
 
-use common::map::{Coord, Direction, Map};
+use common::map::{Coord, Direction, Map, Neighbors};
 use nom::{
     branch::alt,
     character::complete::{char, newline},
@@ -54,6 +54,13 @@ enum Tile {
     SlopeWest,
 }
 
+const DIRECTIONS: [Direction; 4] = [
+    Direction::North,
+    Direction::West,
+    Direction::East,
+    Direction::South,
+];
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct State {
     steps: usize,
@@ -72,103 +79,10 @@ impl State {
     }
 }
 
-fn find_longest_path(input: &Input) -> usize {
-    let start = (
-        input.points[0]
-            .iter()
-            .position(|x| x == &Tile::Path)
-            .unwrap(),
-        0,
-    );
-
-    let start = State {
-        steps: 0,
-        position: start,
-        visited: BTreeSet::new(),
-    };
-
-    let mut queue: BinaryHeap<State> = BinaryHeap::new();
-    queue.push(start);
-
-    let mut longest = 0;
-    while let Some(state) = queue.pop() {
-        if state.position.1 == input.height - 1 {
-            // we reached the end
-            longest = longest.max(state.steps);
-            continue;
-        }
-
-        let current = input.get(state.position);
-        let neighbors = current.neighbors();
-        let forced_neighbor = match current.data {
-            // we can only move in the direction of slopes
-            Tile::SlopeNorth => state.move_to(neighbors.north.unwrap().coords, 1),
-            Tile::SlopeSouth => state.move_to(neighbors.south.unwrap().coords, 1),
-            Tile::SlopeEast => state.move_to(neighbors.east.unwrap().coords, 1),
-            Tile::SlopeWest => state.move_to(neighbors.west.unwrap().coords, 1),
-            _ => None,
-        };
-
-        if let Some(new_state) = forced_neighbor {
-            queue.push(new_state);
-            continue;
-        } else {
-            for d in [
-                Direction::North,
-                Direction::West,
-                Direction::East,
-                Direction::South,
-            ] {
-                if let Some((d, n)) = neighbors.get(d).map(|n| (d, n)) {
-                    match (d, n.data) {
-                        (_, Tile::Forest)
-                        | (Direction::North, Tile::SlopeSouth)
-                        | (Direction::South, Tile::SlopeNorth)
-                        | (Direction::West, Tile::SlopeEast)
-                        | (Direction::East, Tile::SlopeWest) => continue,
-                        _ => {
-                            let neighbor = state.move_to(n.coords, 1);
-                            if let Some(new_state) = neighbor {
-                                queue.push(new_state);
-                                continue;
-                            }
-                        }
-                    }
-                };
-            }
-        }
-    }
-    longest
-}
-
-fn problem1(input: &Input) -> usize {
-    find_longest_path(input)
-}
-
-fn get_intersections(input: &Input, start: Coord, end: Coord) -> BTreeSet<(usize, usize)> {
-    let mut intersections: BTreeSet<Coord> = input
-        .into_iter()
-        .filter(|x| x.data != &Tile::Forest)
-        .filter_map(|x| {
-            // we only care about non-forest tiles
-            let valid_neighbors = x
-                .neighbors()
-                .into_iter()
-                .filter(|x| x.data != &Tile::Forest)
-                .count();
-
-            (valid_neighbors > 2).then_some(x.coords)
-        })
-        .collect();
-
-    // we also care about the start and end
-    intersections.insert(start);
-    intersections.insert(end);
-
-    intersections
-}
-
-fn problem2(input: &Input) -> usize {
+fn get_longest_path<F>(input: &Input, valid: F) -> usize
+where
+    F: Copy + Fn(Tile, Direction, Tile) -> bool,
+{
     let start = (
         input
             .points
@@ -192,10 +106,11 @@ fn problem2(input: &Input) -> usize {
     );
 
     let intersections = get_intersections(input, start, end);
+
     // do some edge compression because the grid has a ton of hallways
     let edges: BTreeMap<Coord, Vec<(Coord, usize)>> = intersections
         .iter()
-        .map(|&i| (i, get_edges(input, i, &intersections)))
+        .map(|&i| (i, get_edges(input, i, &intersections, valid)))
         .collect();
 
     let start = State {
@@ -228,6 +143,7 @@ fn get_edges(
     input: &Input,
     start: Coord,
     intersections: &BTreeSet<(usize, usize)>,
+    valid: impl Fn(Tile, Direction, Tile) -> bool,
 ) -> Vec<(Coord, usize)> {
     let mut results: Vec<(Coord, usize)> = vec![];
     let mut visited: BTreeSet<Coord> = BTreeSet::new();
@@ -240,18 +156,77 @@ fn get_edges(
             continue;
         }
 
-        for n in input
-            .neighbors(current)
-            .into_iter()
-            .filter(|x| x.data != &Tile::Forest)
-        {
-            if visited.insert(n.coords) {
+        let current = input.get(current);
+        let neighbors = current.neighbors();
+
+        let valid_neighbors = DIRECTIONS
+            .iter()
+            .filter_map(|d| neighbors.get(*d).map(|n| (d, n)));
+
+        for (d, n) in valid_neighbors {
+            if valid(*current.data, *d, *n.data) && visited.insert(n.coords) {
                 queue.push_back((n.coords, cost + 1));
             }
         }
     }
 
     results
+}
+
+fn get_intersections(input: &Input, start: Coord, end: Coord) -> BTreeSet<(usize, usize)> {
+    let mut intersections: BTreeSet<Coord> = input
+        .into_iter()
+        .filter(|x| x.data != &Tile::Forest)
+        .filter_map(|x| {
+            // we only care about non-forest tiles
+            let valid_neighbors = x
+                .neighbors()
+                .into_iter()
+                .filter(|x| x.data != &Tile::Forest)
+                .count();
+
+            (valid_neighbors > 2).then_some(x.coords)
+        })
+        .collect();
+
+    // we also care about the start and end
+    intersections.insert(start);
+    intersections.insert(end);
+
+    intersections
+}
+
+fn problem1(input: &Input) -> usize {
+    let valid = |current, dir, next| match (current, dir, next) {
+        // can't go into the forest
+        (_, _, Tile::Forest) => false,
+
+        // can only go down the corresponding slope
+        (Tile::SlopeNorth, d, _) => d == Direction::North,
+        (Tile::SlopeSouth, d, _) => d == Direction::South,
+        (Tile::SlopeEast, d, _) => d == Direction::East,
+
+        // can't go up the opposing slope
+        (_, Direction::North, Tile::SlopeSouth) => false,
+        (_, Direction::South, Tile::SlopeNorth) => false,
+        (_, Direction::East, Tile::SlopeWest) => false,
+        (_, Direction::West, Tile::SlopeEast) => false,
+
+        _ => true,
+    };
+
+    get_longest_path(input, valid)
+}
+
+fn problem2(input: &Input) -> usize {
+    let valid = |current, dir, next| match (current, dir, next) {
+        // can't go into the forest
+        (_, _, Tile::Forest) => false,
+
+        _ => true,
+    };
+
+    get_longest_path(input, valid)
 }
 
 #[cfg(test)]
