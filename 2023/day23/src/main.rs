@@ -1,9 +1,6 @@
-use std::{
-    collections::{BTreeMap, BTreeSet, BinaryHeap, VecDeque},
-    time::Instant,
-};
+use std::collections::{BTreeMap, BTreeSet, BinaryHeap, VecDeque};
 
-use common::map::{Coord, Direction, Map, Neighbors};
+use common::map::{Coord, Direction, Map};
 use nom::{
     branch::alt,
     character::complete::{char, newline},
