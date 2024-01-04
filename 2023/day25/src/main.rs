@@ -1,16 +1,13 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 
-use common::dijkstra::{connected_components, Edge};
-use itertools::Itertools;
 use nom::{
     bytes::complete::tag,
     character::complete::{alpha1, newline},
-    combinator::map,
     multi::separated_list1,
     sequence::separated_pair,
     IResult,
 };
-use rayon::iter::{ParallelBridge, ParallelIterator};
+use rustworkx_core::{connectivity::stoer_wagner_min_cut, petgraph::graphmap::UnGraphMap, Result};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -34,49 +31,25 @@ fn parse(input: &str) -> Input {
 }
 
 fn problem1(input: &Input) -> usize {
-    // unique the connections
+    // flatten the connections
     let all_wires: BTreeSet<(&str, &str)> = input
         .iter()
         .flat_map(|(from, tos)| tos.iter().map(|to| (*from, *to)))
         .collect();
 
-    // unique the components
-    let all_components: BTreeMap<&str, usize> = all_wires
-        .iter()
-        .flat_map(|(from, to)| vec![from, to])
-        .unique()
-        .enumerate()
-        .map(|(i, s)| (*s, i))
-        .collect();
+    let g = UnGraphMap::<&str, ()>::from_edges(&all_wires);
 
-    // get the adjacency matrix
-    let canonical_edges = vec![vec![]; all_components.len()];
-    for (from, tos) in input {
-        for to in tos {
-            let from_idx = all_components[*from];
-            let to_idx = all_components[*to];
+    let min_cut_res: Result<Option<(usize, Vec<_>)>> = stoer_wagner_min_cut(&g, |_| Ok(1));
+    let (wires_to_cut, p1) = min_cut_res.unwrap().unwrap();
 
-            // println!("{from} ({from_idx}) -> {to} ({to_idx})");
-            canonical_edges[from_idx].push(Edge {
-                node: to_idx,
-                cost: 1,
-            });
-            canonical_edges[to_idx].push(Edge {
-                node: from_idx,
-                cost: 1,
-            });
-        }
+    if wires_to_cut != 3 {
+        panic!("Something went wrong")
     }
 
-    all_wires
-        .iter()
-        .permutations(3)
-        .par_bridge()
-        .find_map_first(|skip| {
-            let c = connected_components(&edges);
-            (c.len() == 2).then(|| c.iter().map(|(k, v)| v.len()).product())
-        })
-        .unwrap()
+    let size1 = p1.len();
+    let size2 = g.node_count() - p1.len();
+
+    size1 * size2
 }
 
 #[cfg(test)]
