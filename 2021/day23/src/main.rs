@@ -20,6 +20,9 @@ fn main() {
     let answer = problem1(&input);
     println!("problem 1 answer: {answer}");
 
+    let input = include_str!("../input2.txt");
+    let input = parse(input);
+
     let answer = problem2(&input);
     println!("problem 2 answer: {answer}");
 }
@@ -43,7 +46,6 @@ fn parse(input: &str) -> Input {
             let amphipods: Vec<Amphipod> = input
                 .iter()
                 .skip(2)
-                .take(2)
                 .flat_map(|row| row.iter().filter_map(|x| *x).collect_vec())
                 .collect();
 
@@ -81,12 +83,13 @@ impl Amphipod {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
-struct Room(usize, [Option<Amphipod>; 2]);
+struct Room(usize, Vec<Option<Amphipod>>);
 
 impl Room {
     fn is_done(&self) -> bool {
-        self.1 == [Amphipod::from_idx(self.0); 2]
+        self.1.iter().all(|x| *x == Amphipod::from_idx(self.0))
     }
+
     fn has_mismatched_amphipods(&self) -> bool {
         let expected = Amphipod::from_idx(self.0).unwrap();
         self.1.iter().any(|x| x.is_some_and(|a| a != expected))
@@ -107,25 +110,13 @@ impl Room {
     fn is_open_to(&self, amphipod: Amphipod) -> bool {
         let expected = Amphipod::from_idx(self.0).unwrap();
         amphipod == expected
-            && self.1[0].is_none()
-            && (self.1[1].is_none() || self.1[1].is_some_and(|a| a == expected))
+            && self.1.iter().all(|x| match x {
+                Some(a) => *a == expected,
+                None => true,
+            })
     }
 }
 
-#[test]
-fn open_test() {
-    assert!(Room(Amphipod::Amber as usize, [None, None]).is_open_to(Amphipod::Amber));
-    assert!(!Room(Amphipod::Bronze as usize, [None, None]).is_open_to(Amphipod::Amber));
-    assert!(
-        Room(Amphipod::Copper as usize, [None, Some(Amphipod::Copper)])
-            .is_open_to(Amphipod::Copper)
-    );
-    assert!(!Room(
-        Amphipod::Copper as usize,
-        [Some(Amphipod::Copper), Some(Amphipod::Copper)]
-    )
-    .is_open_to(Amphipod::Copper));
-}
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 struct Amphipods {
     hallway: [Option<Amphipod>; 11],
@@ -135,10 +126,14 @@ struct Amphipods {
 impl Amphipods {
     fn new(amphipods: &[Amphipod]) -> Self {
         let mut s = Self::default();
-
         for x in 0..4 {
-            let r = Room(x, [Some(amphipods[x]), Some(amphipods[x + 4])]);
-            s.rooms[x] = r;
+            s.rooms[x] = Room(x, vec![]);
+        }
+
+        for row in amphipods.chunks(4) {
+            for (i, a) in row.iter().enumerate() {
+                s.rooms[i].1.push(Some(*a));
+            }
         }
 
         s
@@ -167,14 +162,6 @@ impl Amphipods {
     }
 }
 
-/* It's trivial to count the cost from the front space of the rooms to every valid hallway position:
- *
- * #############
- * #...........#
- * ###B#C#B#D###
- *   #A#D#C#A#
- *   #########
- */
 const HALLWAY_COSTS: [[usize; 11]; 4] = [
     [3, 2, 0, 2, 0, 4, 0, 6, 0, 8, 9], // room A
     [5, 4, 0, 2, 0, 2, 0, 4, 0, 6, 7], // room B
@@ -270,8 +257,6 @@ impl State {
             &mut amphipods.hallway[hallway_index],
             &mut amphipods.rooms[room_index].1[depth],
         );
-        // println!("{hallway_index} -> {room_index} @ {depth}");
-        // println!("{}", amphipods);
 
         State {
             amphipods,
@@ -320,8 +305,32 @@ fn problem1(input: &Input) -> usize {
     0
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem2(input: &Input) -> usize {
+    let mut queue = BinaryHeap::new();
+    queue.push(State {
+        amphipods: input.clone(),
+        energy_spent: 0,
+    });
+
+    let mut cost_cache = HashMap::new();
+    cost_cache.insert(input.clone(), 0);
+
+    while let Some(state) = queue.pop() {
+        if state.amphipods.is_done() {
+            return state.energy_spent;
+        }
+
+        let t = state.all_transitions();
+
+        for next in t {
+            if next.energy_spent < *cost_cache.get(&next.amphipods).unwrap_or(&usize::MAX) {
+                cost_cache.insert(next.amphipods.clone(), next.energy_spent);
+                queue.push(next);
+            }
+        }
+    }
+
+    0
 }
 
 impl Display for Amphipods {
@@ -371,9 +380,9 @@ mod test {
 
     #[test]
     fn second() {
-        let input = include_str!("../test.txt");
+        let input = include_str!("../test2.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 44169)
     }
 }
