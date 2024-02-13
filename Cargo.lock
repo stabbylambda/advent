@@ -2216,6 +2216,7 @@ checksum = "bd070e393353796e801d209ad339e89596eb4c8d430d18ede6a1cced8fafbd99"
 dependencies = [
  "autocfg",
  "hashbrown 0.12.3",
+ "rayon",
 ]
 
 [[package]]
@@ -2226,7 +2227,6 @@ checksum = "233cf39063f058ea2caae4091bf4a3ef70a653afbc026f5c4a4135d114e3c177"
 dependencies = [
  "equivalent",
  "hashbrown 0.14.3",
- "rayon",
 ]
 
 [[package]]
@@ -2690,7 +2690,7 @@ dependencies = [
  "ahash",
  "fixedbitset",
  "hashbrown 0.14.3",
- "indexmap 2.2.3",
+ "indexmap 1.9.3",
  "num-traits",
  "petgraph",
  "priority-queue",
