@@ -8,6 +8,7 @@ use nom::{
     sequence::{preceded, separated_pair},
     IResult,
 };
+#[cfg(feature = "z3")]
 use z3::{
     ast::{Ast, Int, Real},
     Config, Context, Optimize, SatResult, Solver,
@@ -120,29 +121,37 @@ fn problem1(input: &Input) -> usize {
 }
 
 fn problem2(input: &Input) -> i64 {
-    let ctx = z3::Context::new(&z3::Config::new());
-    let s = z3::Solver::new(&ctx);
-    let [fx, fy, fz, fdx, fdy, fdz] =
-        ["fx", "fy", "fz", "fdx", "fdy", "fdz"].map(|v| Real::from_int(&Int::new_const(&ctx, v)));
+    #[cfg(feature = "z3")]
+    {
+        let ctx = z3::Context::new(&z3::Config::new());
+        let s = z3::Solver::new(&ctx);
+        let [fx, fy, fz, fdx, fdy, fdz] = ["fx", "fy", "fz", "fdx", "fdy", "fdz"]
+            .map(|v| Real::from_int(&Int::new_const(&ctx, v)));
 
-    let zero = Real::from_int(&Int::from_i64(&ctx, 0));
-    for (i, hailstone) in input.iter().enumerate().take(3) {
-        let (x, y, z) = hailstone.position;
-        let (dx, dy, dz) = hailstone.velocity;
+        let zero = Real::from_int(&Int::from_i64(&ctx, 0));
+        for (i, hailstone) in input.iter().enumerate().take(3) {
+            let (x, y, z) = hailstone.position;
+            let (dx, dy, dz) = hailstone.velocity;
 
-        let [x, y, z, dx, dy, dz] =
-            [x, y, z, dx, dy, dz].map(|v| Real::from_int(&Int::from_i64(&ctx, v as _)));
-        let t = Real::new_const(&ctx, format!("t{i}"));
-        s.assert(&t.ge(&zero));
-        s.assert(&((&x + &dx * &t)._eq(&(&fx + &fdx * &t))));
-        s.assert(&((&y + &dy * &t)._eq(&(&fy + &fdy * &t))));
-        s.assert(&((&z + &dz * &t)._eq(&(&fz + &fdz * &t))));
+            let [x, y, z, dx, dy, dz] =
+                [x, y, z, dx, dy, dz].map(|v| Real::from_int(&Int::from_i64(&ctx, v as _)));
+            let t = Real::new_const(&ctx, format!("t{i}"));
+            s.assert(&t.ge(&zero));
+            s.assert(&((&x + &dx * &t)._eq(&(&fx + &fdx * &t))));
+            s.assert(&((&y + &dy * &t)._eq(&(&fy + &fdy * &t))));
+            s.assert(&((&z + &dz * &t)._eq(&(&fz + &fdz * &t))));
+        }
+
+        assert_eq!(s.check(), z3::SatResult::Sat);
+        let model = s.get_model().unwrap();
+        let res = model.eval(&(&fx + &fy + &fz), true).unwrap();
+        res.as_real().unwrap().0
     }
 
-    assert_eq!(s.check(), z3::SatResult::Sat);
-    let model = s.get_model().unwrap();
-    let res = model.eval(&(&fx + &fy + &fz), true).unwrap();
-    res.as_real().unwrap().0
+    #[cfg(not(feature = "z3"))]
+    {
+        unimplemented!()
+    }
 }
 
 #[cfg(test)]
@@ -157,7 +166,7 @@ mod test {
     }
 
     #[test]
-    #[ignore = "tooooo slow"]
+    #[cfg(feature = "z3")]
     fn second() {
         let input = include_str!("../test.txt");
         let input = parse(input);

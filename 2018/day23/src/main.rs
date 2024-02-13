@@ -6,6 +6,8 @@ use nom::{
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
+
+#[cfg(feature = "z3")]
 use z3::{ast::Int, Config, Context, Optimize, SatResult};
 
 fn main() {
@@ -80,61 +82,68 @@ fn problem1(input: &Input) -> usize {
  * https://www.forrestthewoods.com/blog/solving-advent-of-code-in-under-a-second/
 */
 fn problem2(input: &Input) -> u64 {
-    let cfg = Config::new();
-    let ctx = Context::new(&cfg);
-    let o = Optimize::new(&ctx);
+    #[cfg(feature = "z3")]
+    {
+        fn abs_diff<'ctx>(ctx: &'ctx Context, a: &Int<'ctx>, b: &Int<'ctx>) -> Int<'ctx> {
+            abs(ctx, &(a - b))
+        }
 
-    let zx = Int::new_const(&ctx, "x");
-    let zy = Int::new_const(&ctx, "y");
-    let zz = Int::new_const(&ctx, "z");
+        fn abs<'ctx>(ctx: &'ctx Context, i: &Int<'ctx>) -> Int<'ctx> {
+            let zero = Int::from_i64(ctx, 0);
+            let negative_one = Int::from_i64(ctx, -1);
 
-    let mut in_range = Int::from_i64(&ctx, 0);
+            i.gt(&zero).ite(i, &(i * &negative_one))
+        }
+        let cfg = Config::new();
+        let ctx = Context::new(&cfg);
+        let o = Optimize::new(&ctx);
 
-    for bot in input {
-        let (x, y, z) = bot.position;
-        println!("Adding constraint for bot at {:?}", bot.position);
-        let dist_x = abs_diff(&ctx, &Int::from_i64(&ctx, x), &zx);
-        let dist_y = abs_diff(&ctx, &Int::from_i64(&ctx, y), &zy);
-        let dist_z = abs_diff(&ctx, &Int::from_i64(&ctx, z), &zz);
+        let zx = Int::new_const(&ctx, "x");
+        let zy = Int::new_const(&ctx, "y");
+        let zz = Int::new_const(&ctx, "z");
 
-        let distance_to_bot = dist_x + dist_y + dist_z;
+        let mut in_range = Int::from_i64(&ctx, 0);
 
-        let is_in_range_of_bot = distance_to_bot.lt(&Int::from_u64(&ctx, bot.radius + 1));
-        in_range += is_in_range_of_bot.ite(&Int::from_u64(&ctx, 1), &Int::from_u64(&ctx, 0));
+        for bot in input {
+            let (x, y, z) = bot.position;
+            println!("Adding constraint for bot at {:?}", bot.position);
+            let dist_x = abs_diff(&ctx, &Int::from_i64(&ctx, x), &zx);
+            let dist_y = abs_diff(&ctx, &Int::from_i64(&ctx, y), &zy);
+            let dist_z = abs_diff(&ctx, &Int::from_i64(&ctx, z), &zz);
+
+            let distance_to_bot = dist_x + dist_y + dist_z;
+
+            let is_in_range_of_bot = distance_to_bot.lt(&Int::from_u64(&ctx, bot.radius + 1));
+            in_range += is_in_range_of_bot.ite(&Int::from_u64(&ctx, 1), &Int::from_u64(&ctx, 0));
+        }
+
+        let distance_to_origin = &zx + &zy + &zz;
+
+        o.maximize(&in_range);
+        o.minimize(&distance_to_origin);
+
+        println!("Optimizing with Z3");
+        if SatResult::Sat == o.check(&[]) {
+            let model = o.get_model().unwrap();
+            let x = model.eval(&zx, true).unwrap().as_i64().unwrap();
+            let y = model.eval(&zy, true).unwrap().as_i64().unwrap();
+            let z = model.eval(&zz, true).unwrap().as_i64().unwrap();
+            let distance = model
+                .eval(&distance_to_origin, true)
+                .unwrap()
+                .as_u64()
+                .unwrap();
+            println!("The best coordinate is ({x},{y},{z}) at distance {distance}");
+            distance
+        } else {
+            unreachable!("The model was not satisfied!")
+        }
     }
 
-    let distance_to_origin = &zx + &zy + &zz;
-
-    o.maximize(&in_range);
-    o.minimize(&distance_to_origin);
-
-    println!("Optimizing with Z3");
-    if SatResult::Sat == o.check(&[]) {
-        let model = o.get_model().unwrap();
-        let x = model.eval(&zx, true).unwrap().as_i64().unwrap();
-        let y = model.eval(&zy, true).unwrap().as_i64().unwrap();
-        let z = model.eval(&zz, true).unwrap().as_i64().unwrap();
-        let distance = model
-            .eval(&distance_to_origin, true)
-            .unwrap()
-            .as_u64()
-            .unwrap();
-        println!("The best coordinate is ({x},{y},{z}) at distance {distance}");
-        distance
-    } else {
-        unreachable!("The model was not satisfied!")
+    #[cfg(not(feature = "z3"))]
+    {
+        unimplemented!()
     }
-}
-
-fn abs_diff<'ctx>(ctx: &'ctx Context, a: &Int<'ctx>, b: &Int<'ctx>) -> Int<'ctx> {
-    abs(ctx, &(a - b))
-}
-
-fn abs<'ctx>(ctx: &'ctx Context, i: &Int<'ctx>) -> Int<'ctx> {
-    let zero = Int::from_i64(ctx, 0);
-    let negative_one = Int::from_i64(ctx, -1);
-
-    i.gt(&zero).ite(i, &(i * &negative_one))
 }
 
 #[cfg(test)]
@@ -149,6 +158,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "z3")]
     fn second() {
         let input = include_str!("../test2.txt");
         let input = parse(input);

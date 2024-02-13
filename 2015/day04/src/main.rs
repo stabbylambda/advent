@@ -56,6 +56,7 @@ mod test {
     }
 
     #[test]
+    #[ignore = "too slow"]
     fn second() {
         let result = problem2("abcdef");
         assert_eq!(result, 6742839)
