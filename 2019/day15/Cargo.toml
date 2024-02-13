@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 common = { path = "../../common" }
 intcode = { path = "../intcode" }
-itertools = "0.10.5"
-nom = "7"
-num-derive = "0.3.3"
+itertools = { workspace = true }
+nom = { workspace = true }
+num-derive = "0.4.2"
 num-traits = "0.2.15"

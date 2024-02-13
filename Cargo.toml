@@ -1,38 +1,18 @@
 [workspace]
 resolver = "2"
-
 members = [
     "common",
     "2015/day*",
     "2016/day*",
     "2017/day*",
-    "2018/day01",
-    "2018/day03",
-    "2018/day04",
-    "2018/day05",
-    "2018/day06",
-    "2018/day07",
-    "2018/day08",
-    "2018/day09",
-    "2018/day10",
-    "2018/day11",
-    "2018/day13",
-    "2018/day14",
-    "2018/day15",
-    "2018/day16",
-    "2018/day17",
-    "2018/day18",
-    "2018/day19",
-    "2018/day20",
-    "2018/day21",
-    "2018/day22",
-    # this is really dumb but the z3 build isn't working for me right now, so just exclude 2018 day 23
-    # "2018/day23",
-    "2018/day24",
-    "2018/day25",
+    "2018/day*",
     "2019/day*",
     "2020/day*",
     "2021/day*",
     "2022/day*",
     "2023/day*",
 ]
+
+[workspace.dependencies]
+itertools = "0.12.1"
+nom = "7.1.3"

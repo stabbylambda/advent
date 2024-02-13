@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 common = { path = "../../common" }
 advent_2018_16 = { path = "../day16" }
-nom = "7"
+nom = { workspace = true }

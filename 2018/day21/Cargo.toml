@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 common = { path = "../../common" }
-advent_2018_19 = { path = "../day19"}
-nom = "7"
+advent_2018_19 = { path = "../day19" }
+nom = { workspace = true }

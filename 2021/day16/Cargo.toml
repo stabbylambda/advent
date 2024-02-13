@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 bitvec = "1.0.1"
 common = { path = "../../common" }
-nom = "7"
+nom = { workspace = true }

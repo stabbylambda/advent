@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 common = { path = "../../common" }
 intcode = { path = "../intcode" }
-nom = "7"
+nom = { workspace = true }

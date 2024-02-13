@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 common = { path = "../../common" }
-itertools = "0.12.0"
-nom = "7"
-rustworkx-core = "0.13.2"
+itertools = { workspace = true }
+nom = { workspace = true }
+rustworkx-core = "0.14.0"
