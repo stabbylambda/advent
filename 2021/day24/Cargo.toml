@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 common = { path = "../../common" }
-nom = "7"
+nom = { workspace = true }
 rayon = "1.8.0"
