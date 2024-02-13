@@ -11,4 +11,4 @@ intcode = { path = "../intcode" }
 itertools = { workspace = true }
 nom = { workspace = true }
 num-derive = "0.4.2"
-num-traits = "0.2.15"
+num-traits = "0.2.18"
