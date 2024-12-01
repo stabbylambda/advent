@@ -31,6 +31,9 @@
               modules = [
                 {
                   languages.rust.enable = true;
+                  packages = [
+                    pkgs.aoc-cli
+                  ];
                 }
               ];
             };
