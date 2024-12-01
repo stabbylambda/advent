@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-year=2023
+year=2024
 cd "$year"
 for i in {01..25}
 do
