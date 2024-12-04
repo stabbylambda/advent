@@ -136,8 +136,8 @@ sequential program was relatively fast even without it...and rayon is super easy
 */
 fn problem2(input: &Input, max_search_area: i64) -> i64 {
     let (x, y) = (0..max_search_area)
-        .into_par_iter()
-        .find_map_any(|row| {
+        .into_iter()
+        .find_map(|row| {
             // find the coverages on this particular row
             let coverages = input.get_coverages(row);
 
