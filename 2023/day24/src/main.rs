@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul, RangeInclusive};
+use std::ops::RangeInclusive;
 
 use nom::{
     bytes::complete::tag,
@@ -120,7 +120,7 @@ fn problem1(input: &Input) -> usize {
     count_future_xy_intersections(input, 200000000000000..=400000000000000)
 }
 
-fn problem2(input: &Input) -> i64 {
+fn problem2(_input: &Input) -> i64 {
     #[cfg(feature = "z3")]
     {
         let ctx = z3::Context::new(&z3::Config::new());
@@ -156,7 +156,7 @@ fn problem2(input: &Input) -> i64 {
 
 #[cfg(test)]
 mod test {
-    use crate::{count_future_xy_intersections, parse, problem2};
+    use crate::{count_future_xy_intersections, parse};
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
@@ -170,7 +170,7 @@ mod test {
     fn second() {
         let input = include_str!("../test.txt");
         let input = parse(input);
-        let result = problem2(&input);
+        let result = crate::problem2(&input);
         assert_eq!(result, 47)
     }
 }

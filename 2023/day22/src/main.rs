@@ -191,7 +191,7 @@ fn problem1(input: &Input) -> usize {
 
     holding_up
         .iter()
-        .filter(|(_brick, above)| above.iter().all(|a| sitting_on[&a].len() != 1))
+        .filter(|(_brick, above)| above.iter().all(|a| sitting_on[a].len() != 1))
         .count()
 }
 

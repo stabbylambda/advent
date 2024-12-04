@@ -155,7 +155,7 @@ impl Eris {
             (_, _) => vec![self.get_tile((level, y + 1, x))], // normal
         };
 
-        let neighbors = vec![
+        let neighbors = [
             top_neighbors,
             left_neighbors,
             right_neighbors,

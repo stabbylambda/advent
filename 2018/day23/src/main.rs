@@ -81,7 +81,7 @@ fn problem1(input: &Input) -> usize {
  *
  * https://www.forrestthewoods.com/blog/solving-advent-of-code-in-under-a-second/
 */
-fn problem2(input: &Input) -> u64 {
+fn problem2(_input: &Input) -> u64 {
     #[cfg(feature = "z3")]
     {
         fn abs_diff<'ctx>(ctx: &'ctx Context, a: &Int<'ctx>, b: &Int<'ctx>) -> Int<'ctx> {
@@ -148,7 +148,7 @@ fn problem2(input: &Input) -> u64 {
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::{parse, problem1};
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
@@ -162,7 +162,7 @@ mod test {
     fn second() {
         let input = include_str!("../test2.txt");
         let input = parse(input);
-        let result = problem2(&input);
+        let result = crate::problem2(&input);
         assert_eq!(result, 36);
     }
 }

@@ -47,11 +47,7 @@ impl PartialOrd for State {
 
 type GridIndex = usize;
 
-pub fn shortest_path(
-    adj_list: &Vec<Vec<Edge>>,
-    start: GridIndex,
-    goal: GridIndex,
-) -> Option<usize> {
+pub fn shortest_path(adj_list: &[Vec<Edge>], start: GridIndex, goal: GridIndex) -> Option<usize> {
     let mut dist: Vec<_> = (0..adj_list.len()).map(|_| usize::MAX).collect();
 
     let mut heap = BinaryHeap::new();
@@ -87,7 +83,7 @@ pub fn shortest_path(
     None
 }
 
-pub fn connected_components(input: &Vec<Vec<Edge>>) -> HashMap<usize, Vec<usize>> {
+pub fn connected_components(input: &[Vec<Edge>]) -> HashMap<usize, Vec<usize>> {
     let mut visited = vec![false; input.len()];
     let mut groups = HashMap::new();
 

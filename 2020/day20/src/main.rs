@@ -266,7 +266,7 @@ fn assemble_board(input: &Input) -> Vec<Vec<Tile>> {
         .collect()
 }
 
-fn flatten_image(board: &Vec<Vec<Tile>>) -> Tile {
+fn flatten_image(board: &[Vec<Tile>]) -> Tile {
     let side = board.len();
     // awful... vec vec vec vec
     let image: Vec<Vec<Vec<Vec<bool>>>> = board

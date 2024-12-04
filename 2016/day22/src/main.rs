@@ -132,7 +132,7 @@ fn problem2(input: &Input) -> usize {
     let grid = input
         .iter()
         .sorted()
-        .group_by(|n| n.y)
+        .chunk_by(|n| n.y)
         .into_iter()
         .map(|(_, v)| v.collect_vec())
         .collect_vec();

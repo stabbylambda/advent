@@ -15,9 +15,8 @@ fn problem1(input: Input) -> u64 {
     let ring = input.sqrt().ceil();
     let distance_to_center = ((ring - 1.0) / 2.0).ceil();
     let arm = (distance_to_center - input).abs() % ring;
-    let distance = (distance_to_center - 1.0 + arm) as u64;
 
-    distance.max(0)
+    (distance_to_center - 1.0 + arm) as u64
 }
 
 fn problem2(_input: Input) -> u32 {

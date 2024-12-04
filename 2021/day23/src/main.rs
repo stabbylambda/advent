@@ -1,8 +1,5 @@
 use itertools::Itertools;
-use std::{
-    collections::{BinaryHeap, HashMap},
-    usize, vec,
-};
+use std::collections::{BinaryHeap, HashMap};
 
 use nom::{
     branch::alt,
