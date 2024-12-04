@@ -120,8 +120,8 @@ pub struct AllNeighbors<'a, T: Copy> {
 }
 
 impl<'a, T: Copy> AllNeighbors<'a, T> {
-    pub fn to_vec(&self) -> Vec<MapSquare<T>> {
-        let v = vec![
+    pub fn to_all_vec(&self) -> Vec<Option<MapSquare<T>>> {
+        vec![
             self.north_west,
             self.north,
             self.north_east,
@@ -130,9 +130,11 @@ impl<'a, T: Copy> AllNeighbors<'a, T> {
             self.south_west,
             self.south,
             self.south_east,
-        ];
+        ]
+    }
 
-        v.into_iter().flatten().collect()
+    pub fn to_vec(&self) -> Vec<MapSquare<T>> {
+        self.to_all_vec().into_iter().flatten().collect()
     }
 }
 
