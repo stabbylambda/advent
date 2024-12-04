@@ -1,13 +1,10 @@
 use std::collections::{BTreeSet, VecDeque};
 
-use common::map::{Coord, Map};
-use nom::{
-    branch::alt,
-    character::complete::{char, newline},
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
+use common::{
+    grid::{Coord, Grid, HasNeighbors},
+    nom::parse_grid,
 };
+use nom::{branch::alt, character::complete::char, combinator::map, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -20,20 +17,14 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Map<Tile>;
+type Input = Grid<Tile>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(alt((
-                map(char('#'), |_| Tile::Rock),
-                map(char('.'), |_| Tile::Garden),
-                map(char('S'), |_| Tile::StartingPosition),
-            ))),
-        ),
-        Map::new,
-    )(input);
+    let result: IResult<&str, Input> = parse_grid(alt((
+        map(char('#'), |_| Tile::Rock),
+        map(char('.'), |_| Tile::Garden),
+        map(char('S'), |_| Tile::StartingPosition),
+    )))(input);
 
     result.unwrap().1
 }

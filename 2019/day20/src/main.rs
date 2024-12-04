@@ -2,13 +2,13 @@ use std::collections::{BTreeMap, BinaryHeap, HashMap};
 
 use common::{
     dijkstra::{shortest_path, Edge},
-    map::{Map, MapSquare},
+    grid::{Grid, GridSquare},
+    nom::parse_grid,
 };
 use nom::{
     branch::alt,
-    character::complete::{char, newline, one_of},
+    character::complete::{char, one_of},
     combinator::map,
-    multi::{many1, separated_list1},
     IResult,
 };
 
@@ -35,15 +35,12 @@ enum Tile {
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(alt((
-                map(char('#'), |_| Tile::Wall),
-                map(char('.'), |_| Tile::Space),
-                map(char(' '), |_| Tile::Void),
-                map(one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), Tile::Label),
-            ))),
-        ),
+        parse_grid(alt((
+            map(char('#'), |_| Tile::Wall),
+            map(char('.'), |_| Tile::Space),
+            map(char(' '), |_| Tile::Void),
+            map(one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), Tile::Label),
+        ))),
         PlutoMap::new,
     )(input);
 
@@ -55,15 +52,14 @@ struct PlutoMap {
 }
 
 impl PlutoMap {
-    fn new(input: Vec<Vec<Tile>>) -> Self {
-        let m = Map::new(input.to_vec());
-        let edges = PlutoMap::get_edges(&m);
-        let portals = PlutoMap::get_portals(&m);
+    fn new(input: Grid<Tile>) -> Self {
+        let edges = PlutoMap::get_edges(&input);
+        let portals = PlutoMap::get_portals(&input);
 
         PlutoMap { edges, portals }
     }
 
-    fn get_portals(map: &Map<Tile>) -> PortalMap {
+    fn get_portals(map: &Grid<Tile>) -> PortalMap {
         let mut portals: HashMap<PortalKey, Vec<PortalEndpoint>> = HashMap::new();
         for y in 0..map.height {
             for x in 0..map.width {
@@ -83,7 +79,7 @@ impl PlutoMap {
         PortalMap::new(portals)
     }
 
-    fn get_edges(maze: &Map<Tile>) -> Vec<Vec<Edge>> {
+    fn get_edges(maze: &Grid<Tile>) -> Vec<Vec<Edge>> {
         // Just construct a normal adjacency list, where walls, voids, and labels have no edges
         // we'll add in the portal edges later
         maze.into_iter()
@@ -105,7 +101,7 @@ impl PlutoMap {
             .collect()
     }
 
-    fn get_portal_info(tile: &MapSquare<Tile>) -> Option<(char, char, usize)> {
+    fn get_portal_info(tile: &GridSquare<Tile>) -> Option<(char, char, usize)> {
         // if this isn't a label, just quit
         let &Tile::Label(a) = tile.data else {
             return None;

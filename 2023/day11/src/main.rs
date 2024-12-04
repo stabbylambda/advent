@@ -2,16 +2,11 @@ use std::fmt::Debug;
 
 use common::{
     extensions::PointExt,
-    map::{Coord, Map},
+    grid::{Coord, Grid},
+    nom::parse_grid,
 };
 use itertools::Itertools;
-use nom::{
-    branch::alt,
-    character::complete::{char, newline},
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
-};
+use nom::{branch::alt, character::complete::char, combinator::map, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -24,19 +19,13 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Map<Tile>;
+type Input = Grid<Tile>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(alt((
-                map(char('.'), |_| Tile::Empty),
-                map(char('#'), |_| Tile::Galaxy),
-            ))),
-        ),
-        Map::new,
-    )(input);
+    let result: IResult<&str, Input> = parse_grid(alt((
+        map(char('.'), |_| Tile::Empty),
+        map(char('#'), |_| Tile::Galaxy),
+    )))(input);
 
     result.unwrap().1
 }
@@ -49,13 +38,13 @@ enum Tile {
 
 #[derive(Debug)]
 struct Universe {
-    map: Map<Tile>,
+    map: Grid<Tile>,
     row_costs: Vec<usize>,
     column_costs: Vec<usize>,
 }
 
 impl Universe {
-    fn new(map: Map<Tile>, expansion_amount: usize) -> Universe {
+    fn new(map: Grid<Tile>, expansion_amount: usize) -> Universe {
         // Expand any row that's all empty
         let row_costs = (0..map.height)
             .map(|y| {

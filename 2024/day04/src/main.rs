@@ -1,11 +1,8 @@
-use common::map::{Map, MapSquare};
-use nom::{
-    branch::alt,
-    character::complete::{char, newline},
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
+use common::{
+    grid::{Grid, GridSquare},
+    nom::parse_grid,
 };
+use nom::{branch::alt, character::complete::char, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -18,21 +15,17 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Map<char>;
+type Input = Grid<char>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(alt((char('X'), char('M'), char('A'), char('S')))),
-        ),
-        Map::new,
-    )(input);
+    let result: IResult<&str, Input> =
+        parse_grid(alt((char('X'), char('M'), char('A'), char('S'))))(input);
+
     result.unwrap().1
 }
 
 fn problem1(input: &Input) -> usize {
-    fn spells(x: &MapSquare<'_, char>, s: &str, dir: Option<usize>) -> usize {
+    fn spells(x: &GridSquare<'_, char>, s: &str, dir: Option<usize>) -> usize {
         match s.chars().next() {
             Some(c) if &c != x.data => 0,
             Some('S') if x.data == &'S' => 1,
@@ -56,7 +49,7 @@ fn problem1(input: &Input) -> usize {
 }
 
 fn problem2(input: &Input) -> usize {
-    fn get_corners(a: &MapSquare<char>) -> Option<String> {
+    fn get_corners(a: &GridSquare<char>) -> Option<String> {
         let n = a.all_neighbors();
         let a = a.data;
         let nw = n.north_west.map(|x| x.data);

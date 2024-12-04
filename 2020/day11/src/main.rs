@@ -1,13 +1,10 @@
 use std::fmt::Display;
 
-use common::map::{Map, MapSquare};
-use nom::{
-    branch::alt,
-    character::complete::{char, newline},
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
+use common::{
+    grid::{Grid, GridSquare},
+    nom::parse_grid,
 };
+use nom::{branch::alt, character::complete::char, combinator::map, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -20,7 +17,7 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Map<Tile>;
+type Input = Grid<Tile>;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Tile {
@@ -44,22 +41,16 @@ impl Display for Tile {
 }
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(alt((
-                map(char('#'), |_| Tile::Occupied),
-                map(char('L'), |_| Tile::Empty),
-                map(char('.'), |_| Tile::Floor),
-            ))),
-        ),
-        Map::new,
-    )(input);
+    let result: IResult<&str, Input> = parse_grid(alt((
+        map(char('#'), |_| Tile::Occupied),
+        map(char('L'), |_| Tile::Empty),
+        map(char('.'), |_| Tile::Floor),
+    )))(input);
 
     result.unwrap().1
 }
 
-fn tick1(map: &Map<Tile>) -> Map<Tile> {
+fn tick1(map: &Grid<Tile>) -> Grid<Tile> {
     let mut new_map = map.clone();
 
     for x in map.into_iter() {
@@ -87,9 +78,9 @@ This is, perhaps, the most ridiculous way to do this.
   - Find the maximum absolute distance to the edge of the area
   - For every delta from 1 to that maximum absolute distance, go out along each path and then find the first tile that is a seat
  */
-fn visible_neighbor_count(map: &Map<Tile>, (x, y): (usize, usize)) -> u32 {
-    let is_occupied = |s: &MapSquare<Tile>| s.data == &Tile::Occupied;
-    let is_seat = |s: &MapSquare<Tile>| matches!(s.data, Tile::Empty | Tile::Occupied);
+fn visible_neighbor_count(map: &Grid<Tile>, (x, y): (usize, usize)) -> u32 {
+    let is_occupied = |s: &GridSquare<Tile>| s.data == &Tile::Occupied;
+    let is_seat = |s: &GridSquare<Tile>| matches!(s.data, Tile::Empty | Tile::Occupied);
 
     let max_dx = x.max(x.abs_diff(map.width));
     let max_dy = y.max(y.abs_diff(map.height));
@@ -133,7 +124,7 @@ fn visible_neighbor_count(map: &Map<Tile>, (x, y): (usize, usize)) -> u32 {
         + south_west.filter(is_occupied).is_some() as u32
 }
 
-fn tick2(map: &Map<Tile>) -> Map<Tile> {
+fn tick2(map: &Grid<Tile>) -> Grid<Tile> {
     let mut new_map = map.clone();
 
     for s in map.into_iter() {
@@ -149,7 +140,7 @@ fn tick2(map: &Map<Tile>) -> Map<Tile> {
     new_map
 }
 
-fn simulate(input: &Input, f: impl Fn(&Map<Tile>) -> Map<Tile>) -> usize {
+fn simulate(input: &Input, f: impl Fn(&Grid<Tile>) -> Grid<Tile>) -> usize {
     let mut map = input.clone();
 
     loop {

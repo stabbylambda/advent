@@ -1,12 +1,8 @@
-use common::map::Map;
+use common::{grid::Grid, nom::parse_grid};
 use itertools::Itertools;
 use nom::{
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{char, newline},
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
+    branch::alt, bytes::complete::tag, character::complete::char, combinator::map,
+    multi::separated_list1, IResult,
 };
 
 fn main() {
@@ -20,16 +16,10 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Vec<Map<bool>>;
+type Input = Vec<Grid<bool>>;
 
 fn parse(input: &str) -> Input {
-    let image = map(
-        separated_list1(
-            newline,
-            many1(alt((map(char('.'), |_| false), map(char('#'), |_| true)))),
-        ),
-        Map::new,
-    );
+    let image = parse_grid(alt((map(char('.'), |_| false), map(char('#'), |_| true))));
     let result: IResult<&str, Input> = separated_list1(tag("\n\n"), image)(input);
 
     result.unwrap().1
@@ -50,7 +40,7 @@ impl Reflection {
     }
 }
 
-fn get_row_pair(map: &Map<bool>, index: usize, offset: usize) -> Option<(&Vec<bool>, &Vec<bool>)> {
+fn get_row_pair(map: &Grid<bool>, index: usize, offset: usize) -> Option<(&Vec<bool>, &Vec<bool>)> {
     let lower_idx = index.checked_sub(offset);
     let upper_idx = index.checked_add(offset + 1);
 
@@ -60,7 +50,7 @@ fn get_row_pair(map: &Map<bool>, index: usize, offset: usize) -> Option<(&Vec<bo
     lower.zip(upper)
 }
 
-fn find_reflections(map: &Map<bool>, f: impl Fn(usize) -> Reflection) -> Vec<Reflection> {
+fn find_reflections(map: &Grid<bool>, f: impl Fn(usize) -> Reflection) -> Vec<Reflection> {
     (0..map.height)
         .filter_map(|i| {
             // check this row and the next
@@ -90,7 +80,7 @@ fn find_reflections(map: &Map<bool>, f: impl Fn(usize) -> Reflection) -> Vec<Ref
         .collect_vec()
 }
 
-fn find_all_reflections(map: &Map<bool>) -> Vec<Reflection> {
+fn find_all_reflections(map: &Grid<bool>) -> Vec<Reflection> {
     vec![
         find_reflections(map, Reflection::Horizontal),
         find_reflections(&map.transpose(), Reflection::Vertical),
@@ -101,7 +91,7 @@ fn find_all_reflections(map: &Map<bool>) -> Vec<Reflection> {
 }
 
 /** For each square in the map, create a clone of the map where it's flipped */
-fn get_all_smudges(map: &Map<bool>) -> Vec<Map<bool>> {
+fn get_all_smudges(map: &Grid<bool>) -> Vec<Grid<bool>> {
     map.into_iter()
         .map(|x| {
             let mut m = map.clone();

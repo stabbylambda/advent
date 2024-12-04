@@ -1,14 +1,9 @@
 use common::{
-    map::{Map, MapSquare},
-    nom::single_digit,
+    grid::{Grid, GridSquare},
+    nom::{parse_grid, single_digit},
     orthogonal::Orthogonal,
 };
-use nom::{
-    character::complete::newline,
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
-};
+use nom::IResult;
 
 fn main() {
     let lines = include_str!("../test.txt");
@@ -23,16 +18,13 @@ fn main() {
 
 type Tree = u32;
 
-fn parse(lines: &str) -> Map<Tree> {
-    let parsed: IResult<&str, Map<Tree>> =
-        map(separated_list1(newline, many1(single_digit)), |trees| {
-            Map::new(trees)
-        })(lines);
+fn parse(lines: &str) -> Grid<Tree> {
+    let parsed: IResult<&str, Grid<Tree>> = parse_grid(single_digit)(lines);
 
     parsed.unwrap().1
 }
 
-fn problem1(map: &Map<Tree>) -> u32 {
+fn problem1(map: &Grid<Tree>) -> u32 {
     map.into_iter().fold(0, |acc, square| {
         let neighbors = map.orthogonal_neighbors(&square);
         let tree = square.data;
@@ -50,7 +42,7 @@ fn problem1(map: &Map<Tree>) -> u32 {
     })
 }
 
-fn view<'a>(height: &'a Tree, neighbors: Vec<MapSquare<'a, Tree>>) -> u32 {
+fn view<'a>(height: &'a Tree, neighbors: Vec<GridSquare<'a, Tree>>) -> u32 {
     let mut view = 0;
     for h in neighbors {
         view += 1;
@@ -62,7 +54,7 @@ fn view<'a>(height: &'a Tree, neighbors: Vec<MapSquare<'a, Tree>>) -> u32 {
     view
 }
 
-fn problem2(map: &Map<Tree>) -> u32 {
+fn problem2(map: &Grid<Tree>) -> u32 {
     map.into_iter()
         .map(|square| {
             let tree = square.data;

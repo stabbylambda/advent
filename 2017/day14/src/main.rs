@@ -1,7 +1,7 @@
 use advent_2017_10::hash_str;
 use common::{
     dijkstra::{connected_components, Edge},
-    map::Map,
+    grid::Grid,
 };
 
 fn main() {
@@ -21,7 +21,7 @@ fn problem1(input: &str) -> u32 {
         .sum()
 }
 
-fn get_edges(maze: &Map<bool>) -> Vec<Vec<Edge>> {
+fn get_edges(maze: &Grid<bool>) -> Vec<Vec<Edge>> {
     maze.into_iter()
         .map(|square| {
             // empty spaces have no edges
@@ -53,7 +53,7 @@ fn problem2(input: &str) -> usize {
         .collect();
 
     // now we need to get the connected components in the graph
-    let grid = Map::new(grid);
+    let grid = Grid::new(grid);
     let edges = get_edges(&grid);
     let connected = connected_components(&edges);
 

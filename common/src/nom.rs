@@ -1,14 +1,27 @@
+use std::ops::RangeFrom;
+
 use nom::{
     bytes::complete::{tag, take},
-    character::complete::{anychar, u32},
+    character::complete::{anychar, newline, u32},
     combinator::{map, map_opt},
     error::ParseError,
-    multi::many_till,
+    multi::{many1, many_till, separated_list1},
     sequence::separated_pair,
-    IResult, InputIter, InputLength, InputTake, Parser,
+    IResult, InputIter, InputLength, InputTake, Parser, Slice,
 };
 
-use crate::map::Coord;
+use crate::grid::{Coord, Grid};
+
+pub fn parse_grid<I, O, E: ParseError<I>, F: Parser<I, O, E>>(
+    f: F,
+) -> impl FnMut(I) -> IResult<I, Grid<O>, E>
+where
+    I: Clone + InputIter + InputLength + Slice<RangeFrom<usize>>,
+    O: Copy,
+    <I as nom::InputIter>::Item: nom::AsChar,
+{
+    map(separated_list1(newline, many1(f)), Grid::new)
+}
 
 pub fn drop_till<I, O, E: ParseError<I>, F>(parser: F) -> impl FnMut(I) -> IResult<I, O, E>
 where

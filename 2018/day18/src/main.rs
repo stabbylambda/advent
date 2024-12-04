@@ -3,14 +3,11 @@ use std::{
     fmt::{Debug, Display},
 };
 
-use common::map::Map;
-use nom::{
-    branch::alt,
-    character::complete::{char, newline},
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
+use common::{
+    grid::{Grid, HasNeighbors},
+    nom::parse_grid,
 };
+use nom::{branch::alt, character::complete::char, combinator::map, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -44,25 +41,19 @@ impl Display for Tile {
     }
 }
 
-type Input = Map<Tile>;
+type Input = Grid<Tile>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(alt((
-                map(char('.'), |_| Tile::Open),
-                map(char('|'), |_| Tile::Tree),
-                map(char('#'), |_| Tile::LumberYard),
-            ))),
-        ),
-        Map::new,
-    )(input);
+    let result: IResult<&str, Input> = parse_grid(alt((
+        map(char('.'), |_| Tile::Open),
+        map(char('|'), |_| Tile::Tree),
+        map(char('#'), |_| Tile::LumberYard),
+    )))(input);
 
     result.unwrap().1
 }
 
-fn tick(area: &Map<Tile>) -> Map<Tile> {
+fn tick(area: &Grid<Tile>) -> Grid<Tile> {
     let mut new_map = area.clone();
     for x in area.into_iter() {
         let neighbors = area.all_neighbors(x.coords);
@@ -90,7 +81,7 @@ fn tick(area: &Map<Tile>) -> Map<Tile> {
     new_map
 }
 
-fn score(area: &Map<Tile>) -> usize {
+fn score(area: &Grid<Tile>) -> usize {
     let tree_count = area.into_iter().filter(|x| x.data == &Tile::Tree).count();
     let lumber_count = area
         .into_iter()

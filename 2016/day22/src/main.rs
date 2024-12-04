@@ -3,7 +3,7 @@ use std::fmt::Display;
 
 use common::{
     dijkstra::{shortest_path, Edge},
-    map::Map,
+    grid::Grid,
 };
 use nom::{
     bytes::complete::tag,
@@ -101,7 +101,7 @@ fn problem1(input: &Input) -> usize {
         .count()
 }
 
-fn get_edges(maze: &Map<&Node>) -> Vec<Vec<Edge>> {
+fn get_edges(maze: &Grid<&Node>) -> Vec<Vec<Edge>> {
     maze.into_iter()
         .map(|square| {
             // large nodes are walls and have no edges
@@ -137,7 +137,7 @@ fn problem2(input: &Input) -> usize {
         .map(|(_, v)| v.collect_vec())
         .collect_vec();
 
-    let map = common::map::Map::new(grid);
+    let map = common::grid::Grid::new(grid);
 
     println!("========= Grid Visualization =========");
     map.print(|s| {

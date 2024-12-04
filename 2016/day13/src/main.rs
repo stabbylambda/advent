@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use common::{
     dijkstra::{shortest_path, Edge},
-    map::Map,
+    grid::Grid,
 };
 
 fn main() {
@@ -32,7 +32,7 @@ impl Input {
 }
 
 const PADDING: usize = 60;
-fn generate_maze(input: &Input) -> Map<bool> {
+fn generate_maze(input: &Input) -> Grid<bool> {
     let max_x = PADDING;
     let max_y = PADDING;
 
@@ -46,10 +46,10 @@ fn generate_maze(input: &Input) -> Map<bool> {
         });
     });
 
-    Map::new(result)
+    Grid::new(result)
 }
 
-fn print_maze(maze: &Map<bool>, seen: &HashSet<(usize, usize)>) {
+fn print_maze(maze: &Grid<bool>, seen: &HashSet<(usize, usize)>) {
     for (y, row) in maze.points.iter().enumerate() {
         for (x, cell) in row.iter().enumerate() {
             match cell {
@@ -62,7 +62,7 @@ fn print_maze(maze: &Map<bool>, seen: &HashSet<(usize, usize)>) {
     }
 }
 
-fn get_edges(maze: &Map<bool>) -> Vec<Vec<Edge>> {
+fn get_edges(maze: &Grid<bool>) -> Vec<Vec<Edge>> {
     maze.into_iter()
         .map(|square| {
             // walls have no edges

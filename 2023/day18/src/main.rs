@@ -1,4 +1,4 @@
-use common::map::Direction;
+use common::grid::CardinalDirection;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -20,7 +20,7 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input<'a> = Vec<(Direction, u32, &'a str)>;
+type Input<'a> = Vec<(CardinalDirection, u32, &'a str)>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
@@ -28,10 +28,10 @@ fn parse(input: &str) -> Input {
         tuple((
             terminated(
                 alt((
-                    map(char('U'), |_| Direction::North),
-                    map(char('D'), |_| Direction::South),
-                    map(char('L'), |_| Direction::West),
-                    map(char('R'), |_| Direction::East),
+                    map(char('U'), |_| CardinalDirection::North),
+                    map(char('D'), |_| CardinalDirection::South),
+                    map(char('L'), |_| CardinalDirection::West),
+                    map(char('R'), |_| CardinalDirection::East),
                 )),
                 tag(" "),
             ),
@@ -43,7 +43,7 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-fn generate_points(directions: &[(Direction, u32)]) -> (i64, Vec<(i64, i64)>) {
+fn generate_points(directions: &[(CardinalDirection, u32)]) -> (i64, Vec<(i64, i64)>) {
     let mut points: Vec<(i64, i64)> = vec![];
     let (mut x, mut y) = (0i64, 0i64);
     let mut length = 0i64;
@@ -54,10 +54,10 @@ fn generate_points(directions: &[(Direction, u32)]) -> (i64, Vec<(i64, i64)>) {
         length += d;
 
         (x, y) = match direction {
-            Direction::North => (x, y - d),
-            Direction::South => (x, y + d),
-            Direction::West => (x - d, y),
-            Direction::East => (x + d, y),
+            CardinalDirection::North => (x, y - d),
+            CardinalDirection::South => (x, y + d),
+            CardinalDirection::West => (x - d, y),
+            CardinalDirection::East => (x + d, y),
         };
 
         // push the vertex only
@@ -87,7 +87,7 @@ fn picks_theorem(area: i64, length: i64) -> i64 {
     area - length / 2 + 1
 }
 
-fn calculate_area(directions: &[(Direction, u32)]) -> i64 {
+fn calculate_area(directions: &[(CardinalDirection, u32)]) -> i64 {
     let (length, vertices) = generate_points(directions);
     let area = shoelace(&vertices);
     let inside = picks_theorem(area.abs(), length);
@@ -96,21 +96,21 @@ fn calculate_area(directions: &[(Direction, u32)]) -> i64 {
 }
 
 fn problem1(input: &Input) -> i64 {
-    let directions: Vec<(Direction, u32)> =
+    let directions: Vec<(CardinalDirection, u32)> =
         input.iter().map(|(dir, len, _)| (*dir, *len)).collect();
 
     calculate_area(&directions)
 }
 
 fn problem2(input: &Input) -> i64 {
-    let v: Vec<(Direction, u32)> = input
+    let v: Vec<(CardinalDirection, u32)> = input
         .iter()
         .map(|(_, _, hex)| {
             let dir = match hex.chars().nth(5) {
-                Some('0') => Direction::East,
-                Some('1') => Direction::South,
-                Some('2') => Direction::West,
-                Some('3') => Direction::North,
+                Some('0') => CardinalDirection::East,
+                Some('1') => CardinalDirection::South,
+                Some('2') => CardinalDirection::West,
+                Some('3') => CardinalDirection::North,
                 _ => unreachable!(),
             };
 

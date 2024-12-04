@@ -1,6 +1,6 @@
 use std::collections::{BinaryHeap, HashMap, HashSet};
 
-use common::map::Map;
+use common::grid::Grid;
 use intcode::Intcode;
 use itertools::{Itertools, MinMaxResult};
 use num_derive::{FromPrimitive, ToPrimitive};
@@ -61,7 +61,9 @@ impl Robot {
             BotDirections::East => (x + 1, y),
         };
 
-        let Some(move_result) = move_result else { return };
+        let Some(move_result) = move_result else {
+            return;
+        };
         self.last_output = Some((new_position, move_result));
         if let MoveResult::FoundGenerator | MoveResult::Moved = move_result {
             self.position = new_position;
@@ -144,9 +146,13 @@ fn problem1(input: &Input) -> (u32, TileMap) {
 
 fn problem2(map: TileMap) -> u32 {
     // create a map from the HashMap of points to Tiles
-    let MinMaxResult::MinMax(x_min, x_max) = map.0.keys().map(|x| x.0).minmax() else { panic!()};
-    let MinMaxResult::MinMax(y_min, y_max) = map.0.keys().map(|x| x.1).minmax() else { panic!()};
-    let map: Map<Tile> = Map::new(
+    let MinMaxResult::MinMax(x_min, x_max) = map.0.keys().map(|x| x.0).minmax() else {
+        panic!()
+    };
+    let MinMaxResult::MinMax(y_min, y_max) = map.0.keys().map(|x| x.1).minmax() else {
+        panic!()
+    };
+    let map: Grid<Tile> = Grid::new(
         (y_min..=y_max)
             .map(|y| {
                 (x_min..=x_max)
