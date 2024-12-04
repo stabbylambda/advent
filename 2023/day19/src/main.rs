@@ -119,7 +119,7 @@ impl<'a> Rule<'a> {
 
         // we only care about branches, not the fallthrough
         if let Rule::Branch(xmas, comp, val, _target) = self {
-            let attribute = &rp.attributes[&xmas];
+            let attribute = &rp.attributes[xmas];
             let val = *val as usize;
 
             let (accepted_range, rejected_range) = match comp {

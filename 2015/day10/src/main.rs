@@ -39,7 +39,7 @@ fn translate_digits(input: Vec<Digit>) -> Vec<u32> {
 fn group_digits(input: &[u32]) -> Vec<Digit> {
     input
         .iter()
-        .group_by(|x| **x)
+        .chunk_by(|x| **x)
         .into_iter()
         .map(|(digit, g)| {
             let count = g.count() as u32;

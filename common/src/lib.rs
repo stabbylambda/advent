@@ -31,7 +31,7 @@ pub fn digits(input: usize) -> Vec<u8> {
     v
 }
 
-pub fn transpose<T: Clone + Copy>(input: &Vec<Vec<T>>) -> Vec<Vec<T>> {
+pub fn transpose<T: Clone + Copy>(input: &[Vec<T>]) -> Vec<Vec<T>> {
     let width = input[0].len();
     // transpose the nested vec so we can examine each char index
     let mut i_t: Vec<Vec<T>> = vec![vec![]; width];

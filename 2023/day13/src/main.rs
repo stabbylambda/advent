@@ -64,9 +64,7 @@ fn find_reflections(map: &Map<bool>, f: impl Fn(usize) -> Reflection) -> Vec<Ref
     (0..map.height)
         .filter_map(|i| {
             // check this row and the next
-            let Some((a, b)) = get_row_pair(map, i, 0) else {
-                return None;
-            };
+            let (a, b) = get_row_pair(map, i, 0)?;
 
             // if they're not equal, bail
             if a != b {
