@@ -1,13 +1,9 @@
 use common::dijkstra::{shortest_path, Edge};
 
-use common::map::Map;
+use common::grid::Grid;
+use common::nom::parse_grid;
 use nom::{
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{newline, none_of},
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
+    branch::alt, bytes::complete::tag, character::complete::none_of, combinator::map, IResult,
 };
 
 fn main() {
@@ -52,24 +48,18 @@ impl Position {
 }
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Map<Position>> = map(
-        separated_list1(
-            newline,
-            many1(alt((
-                map(tag("S"), |_| Position::Start),
-                map(tag("E"), |_| Position::End),
-                map(none_of("\n"), Position::Normal),
-            ))),
-        ),
-        Map::new,
-    )(input);
+    let result: IResult<&str, Grid<Position>> = parse_grid(alt((
+        map(tag("S"), |_| Position::Start),
+        map(tag("E"), |_| Position::End),
+        map(none_of("\n"), Position::Normal),
+    )))(input);
 
     result.unwrap().1
 }
 
-type Input = Map<Position>;
+type Input = Grid<Position>;
 
-fn get_edges(map: &Map<Position>) -> Vec<Vec<Edge>> {
+fn get_edges(map: &Grid<Position>) -> Vec<Vec<Edge>> {
     map.into_iter()
         .map(|square| {
             square

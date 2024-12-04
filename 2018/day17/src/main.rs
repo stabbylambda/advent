@@ -1,4 +1,4 @@
-use common::map::{Coord, Map, Path};
+use common::grid::{Coord, Grid, Path};
 use nom::{
     bytes::complete::tag,
     character::complete::{anychar, newline, u32},
@@ -74,7 +74,7 @@ impl CaveCoord for Coord {
 }
 
 struct CaveMap {
-    map: Map<Tile>,
+    map: Grid<Tile>,
     source: Coord,
 
     min_y: usize,
@@ -109,7 +109,7 @@ impl CaveMap {
 
         // init the map with sand
         let tiles = vec![vec![Tile::Sand; width + 1]; height + 1];
-        let mut map = Map::new(tiles);
+        let mut map = Grid::new(tiles);
 
         // place all the clay
         for path in paths {

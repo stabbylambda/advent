@@ -1,14 +1,9 @@
 use common::{
     dijkstra::{shortest_path, Edge},
-    map::Map,
-    nom::single_digit,
+    grid::Grid,
+    nom::{parse_grid, single_digit},
 };
-use nom::{
-    character::complete::newline,
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
-};
+use nom::{combinator::map, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -25,11 +20,11 @@ fn main() {
 struct Input {
     start: usize,
     finish: usize,
-    map: Map<usize>,
+    map: Grid<usize>,
 }
 
 impl Input {
-    fn new(map: Map<usize>) -> Input {
+    fn new(map: Grid<usize>) -> Input {
         let start = map.get((0, 0)).get_grid_index();
         let finish = map.get((map.width - 1, map.height - 1)).get_grid_index();
 
@@ -37,7 +32,7 @@ impl Input {
     }
 }
 
-fn get_edges(map: &Map<usize>) -> Vec<Vec<Edge>> {
+fn get_edges(map: &Grid<usize>) -> Vec<Vec<Edge>> {
     map.into_iter()
         .map(|square| {
             square
@@ -54,11 +49,10 @@ fn get_edges(map: &Map<usize>) -> Vec<Vec<Edge>> {
 }
 
 fn parse(input: &str) -> Input {
-    let weights: IResult<&str, Vec<Vec<usize>>> =
-        separated_list1(newline, many1(map(single_digit, |x| x as usize)))(input);
+    let weights: IResult<&str, Input> =
+        map(parse_grid(map(single_digit, |x| x as usize)), Input::new)(input);
 
-    let map = Map::new(weights.unwrap().1);
-    Input::new(map)
+    weights.unwrap().1
 }
 
 fn problem1(input: &Input) -> usize {
@@ -66,7 +60,7 @@ fn problem1(input: &Input) -> usize {
     shortest_path(&edges, input.start, input.finish).unwrap()
 }
 
-fn multiply_map(map: &Map<usize>) -> Map<usize> {
+fn multiply_map(map: &Grid<usize>) -> Grid<usize> {
     let mut v = vec![vec![0; map.height * 5]; map.width * 5];
     for mx in 0..5 {
         for my in 0..5 {
@@ -81,7 +75,7 @@ fn multiply_map(map: &Map<usize>) -> Map<usize> {
             }
         }
     }
-    Map::new(v)
+    Grid::new(v)
 }
 
 fn problem2(input: &Input) -> usize {

@@ -1,19 +1,19 @@
-use crate::map::{Map, MapSquare};
+use crate::grid::{Grid, GridSquare};
 
 #[derive(Debug)]
 pub struct OrthogonalNeighbors<'a, T: Copy> {
-    pub north: Vec<MapSquare<'a, T>>,
-    pub south: Vec<MapSquare<'a, T>>,
-    pub east: Vec<MapSquare<'a, T>>,
-    pub west: Vec<MapSquare<'a, T>>,
+    pub north: Vec<GridSquare<'a, T>>,
+    pub south: Vec<GridSquare<'a, T>>,
+    pub east: Vec<GridSquare<'a, T>>,
+    pub west: Vec<GridSquare<'a, T>>,
 }
 
 pub trait Orthogonal<'a, T: Copy> {
-    fn orthogonal_neighbors(&'a self, square: &MapSquare<T>) -> OrthogonalNeighbors<'a, T>;
+    fn orthogonal_neighbors(&'a self, square: &GridSquare<T>) -> OrthogonalNeighbors<'a, T>;
 }
 
-impl<'a, T: Copy> Orthogonal<'a, T> for Map<T> {
-    fn orthogonal_neighbors(&'a self, square: &MapSquare<T>) -> OrthogonalNeighbors<'a, T> {
+impl<'a, T: Copy> Orthogonal<'a, T> for Grid<T> {
+    fn orthogonal_neighbors(&'a self, square: &GridSquare<T>) -> OrthogonalNeighbors<'a, T> {
         let (x, y) = square.coords;
 
         // check the vertical and horizontal from this square

@@ -4,16 +4,10 @@ use itertools::Itertools;
 
 use common::{
     dijkstra::{shortest_path, Edge},
-    map::Map,
+    grid::Grid,
+    nom::parse_grid,
 };
-use nom::{
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{newline, u32},
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
-};
+use nom::{branch::alt, bytes::complete::tag, character::complete::u32, combinator::map, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -26,7 +20,7 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Map<Tile>;
+type Input = Grid<Tile>;
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 enum Tile {
@@ -36,22 +30,16 @@ enum Tile {
 }
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(alt((
-                map(tag("#"), |_| Tile::Wall),
-                map(tag("."), |_| Tile::Space),
-                map(u32, Tile::Goal),
-            ))),
-        ),
-        |input| Map::new(input.to_vec()),
-    )(input);
+    let result: IResult<&str, Input> = parse_grid(alt((
+        map(tag("#"), |_| Tile::Wall),
+        map(tag("."), |_| Tile::Space),
+        map(u32, Tile::Goal),
+    )))(input);
 
     result.unwrap().1
 }
 
-fn get_edges(maze: &Map<Tile>) -> Vec<Vec<Edge>> {
+fn get_edges(maze: &Grid<Tile>) -> Vec<Vec<Edge>> {
     maze.into_iter()
         .map(|square| {
             // large nodes are walls and have no edges

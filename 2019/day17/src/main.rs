@@ -1,7 +1,8 @@
 use std::fmt::Display;
 
-use common::map::Map;
+use common::{grid::Grid, nom::parse_grid};
 use intcode::Intcode;
+use nom::{branch::alt, character::complete::char, combinator::map, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -46,27 +47,17 @@ impl Display for Tile {
     }
 }
 
-fn output_to_map(output: &[i64]) -> Map<Tile> {
+fn output_to_map(output: &[i64]) -> Grid<Tile> {
     let s: String = output.iter().map(|x| (*x as u8) as char).collect();
-    let v: Vec<Vec<Tile>> = s
-        .split('\n')
-        .map(|x| {
-            x.chars()
-                .map(|c| match c {
-                    '.' => Tile::Space,
-                    '#' => Tile::Scaffold,
-                    '^' => Tile::Robot(Direction::Up),
-                    '<' => Tile::Robot(Direction::Left),
-                    '>' => Tile::Robot(Direction::Right),
-                    'v' => Tile::Robot(Direction::Down),
-                    _ => unreachable!(),
-                })
-                .collect::<Vec<Tile>>()
-        })
-        .filter(|x| !x.is_empty())
-        .collect();
-
-    Map::new(v)
+    let g: IResult<&str, Grid<Tile>> = parse_grid(alt((
+        map(char('.'), |_| Tile::Space),
+        map(char('#'), |_| Tile::Scaffold),
+        map(char('^'), |_| Tile::Robot(Direction::Up)),
+        map(char('<'), |_| Tile::Robot(Direction::Left)),
+        map(char('>'), |_| Tile::Robot(Direction::Right)),
+        map(char('v'), |_| Tile::Robot(Direction::Down)),
+    )))(&s);
+    g.unwrap().1
 }
 
 fn problem1(input: &Input) -> usize {

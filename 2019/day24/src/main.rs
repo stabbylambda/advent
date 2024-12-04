@@ -1,13 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use common::map::Map;
-use nom::{
-    branch::alt,
-    character::complete::{char, newline},
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
-};
+use common::{grid::Grid, nom::parse_grid};
+use nom::{branch::alt, character::complete::char, combinator::map, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -20,19 +14,13 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Map<Tile>;
+type Input = Grid<Tile>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(alt((
-                map(char('#'), |_| Tile::Bug),
-                map(char('.'), |_| Tile::Space),
-            ))),
-        ),
-        Map::new,
-    )(input);
+    let result: IResult<&str, Input> = parse_grid(alt((
+        map(char('#'), |_| Tile::Bug),
+        map(char('.'), |_| Tile::Space),
+    )))(input);
 
     result.unwrap().1
 }
@@ -55,8 +43,8 @@ impl Tile {
     }
 }
 
-fn tick(map: &Map<Tile>) -> Map<Tile> {
-    let mut new_map = Map::new(vec![vec![Tile::Space; 5]; 5]);
+fn tick(map: &Grid<Tile>) -> Grid<Tile> {
+    let mut new_map = Grid::new(vec![vec![Tile::Space; 5]; 5]);
     for tile in map.into_iter() {
         let neighbor_bug_count = tile
             .neighbors()
@@ -71,7 +59,7 @@ fn tick(map: &Map<Tile>) -> Map<Tile> {
     new_map
 }
 
-fn biodiversity(map: &Map<Tile>) -> u32 {
+fn biodiversity(map: &Grid<Tile>) -> u32 {
     map.into_iter().enumerate().fold(0, |acc, (idx, x)| {
         let base = match x.data {
             Tile::Bug => 1,

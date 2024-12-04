@@ -1,14 +1,13 @@
 use std::collections::{HashMap, HashSet};
 
 use common::{
-    map::{Coord, Map, MapSquare},
-    nom::single_digit,
+    grid::{Coord, Grid, GridSquare},
+    nom::{parse_grid, single_digit},
 };
 use nom::{
     branch::alt,
-    character::complete::{char, newline, one_of},
+    character::complete::{char, one_of},
     combinator::map,
-    multi::{many1, separated_list1},
     IResult,
 };
 
@@ -35,15 +34,11 @@ type Input = HashMap<(char, Coord), Vec<PartNumber>>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(alt((
-                map(char('.'), |_| SchematicPart::Blank),
-                map(single_digit, SchematicPart::Number),
-                // there's definitely a better way to do this...maybe?
-                map(one_of("!@#$%^&*+-=/\\"), SchematicPart::Symbol),
-            ))),
-        ),
+        parse_grid(alt((
+            map(char('.'), |_| SchematicPart::Blank),
+            map(single_digit, SchematicPart::Number),
+            map(one_of("!@#$%^&*+-=/\\"), SchematicPart::Symbol),
+        ))),
         parse_schematic_parts,
     )(input);
 
@@ -51,7 +46,7 @@ fn parse(input: &str) -> Input {
 }
 
 /** Get all the neighbors (including diagonal) that are symbols */
-fn get_adjacent_symbols(x: &MapSquare<SchematicPart>) -> HashSet<(char, Coord)> {
+fn get_adjacent_symbols(x: &GridSquare<SchematicPart>) -> HashSet<(char, Coord)> {
     x.all_neighbors()
         .into_iter()
         .filter_map(|x| match x.data {
@@ -61,9 +56,7 @@ fn get_adjacent_symbols(x: &MapSquare<SchematicPart>) -> HashSet<(char, Coord)> 
         .collect()
 }
 
-fn parse_schematic_parts(input: Vec<Vec<SchematicPart>>) -> Input {
-    let input = Map::new(input);
-
+fn parse_schematic_parts(input: Grid<SchematicPart>) -> Input {
     // maintain a cache for all the coordinates we've examined
     let mut examined: Vec<Coord> = vec![];
 

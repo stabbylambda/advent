@@ -1,4 +1,4 @@
-use common::map::{Coord, Map, Path};
+use common::grid::{Coord, Grid, Path};
 use std::fmt::Debug;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -32,7 +32,7 @@ impl CaveCoord for Coord {
 }
 
 pub struct CaveMap {
-    pub map: Map<Tile>,
+    pub map: Grid<Tile>,
     pub source: Coord,
 }
 
@@ -66,7 +66,7 @@ impl CaveMap {
 
         // init the map with air
         let tiles = vec![vec![Tile::Air; width + 1]; height + 1];
-        let mut map = Map::new(tiles);
+        let mut map = Grid::new(tiles);
 
         // place all the rocks
         for path in paths {

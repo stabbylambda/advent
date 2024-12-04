@@ -4,15 +4,10 @@ use std::{
 };
 
 use common::{
-    map::{Coord, Direction, Map, MapSquare},
-    nom::single_digit,
+    grid::{CardinalDirection, Coord, Grid, GridSquare},
+    nom::{parse_grid, single_digit},
 };
-use nom::{
-    character::complete::newline,
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
-};
+use nom::IResult;
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -25,11 +20,10 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Map<u32>;
+type Input = Grid<u32>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> =
-        map(separated_list1(newline, many1(single_digit)), Map::new)(input);
+    let result: IResult<&str, Input> = parse_grid(single_digit)(input);
 
     result.unwrap().1
 }
@@ -39,11 +33,11 @@ struct State {
     heat_loss: u32,
     current: Coord,
     consecutive_steps: u32,
-    direction: Direction,
+    direction: CardinalDirection,
 }
 
 impl State {
-    fn new(square: MapSquare<u32>, direction: Direction, consecutive_steps: u32) -> Self {
+    fn new(square: GridSquare<u32>, direction: CardinalDirection, consecutive_steps: u32) -> Self {
         Self {
             current: square.coords,
             heat_loss: *square.data,
@@ -52,8 +46,8 @@ impl State {
         }
     }
 
-    fn get_eligible_directions(&self, min: u32, max: u32) -> Vec<Direction> {
-        use Direction::*;
+    fn get_eligible_directions(&self, min: u32, max: u32) -> Vec<CardinalDirection> {
+        use CardinalDirection::*;
         match self.direction {
             // if we're less than min, keep going
             x if self.consecutive_steps < min => vec![x],
@@ -73,8 +67,8 @@ impl State {
     fn to_cache_key(&self) -> CacheKey {
         // because we can't turn around, we can cut the cache key space in half by only considering vertical or horizontal directions
         let dt = match self.direction {
-            Direction::North | Direction::South => DirectionType::Vertical,
-            Direction::East | Direction::West => DirectionType::Horizontal,
+            CardinalDirection::North | CardinalDirection::South => DirectionType::Vertical,
+            CardinalDirection::East | CardinalDirection::West => DirectionType::Horizontal,
         };
         (self.current, dt, self.consecutive_steps)
     }
@@ -103,8 +97,8 @@ fn dijkstra(input: &Input, min: u32, max: u32) -> u32 {
     let mut queue: BinaryHeap<Reverse<State>> = BinaryHeap::new();
 
     // start by going south and east
-    let initial_east = State::new(input.get((1, 0)), Direction::East, 1);
-    let initial_south = State::new(input.get((0, 1)), Direction::South, 1);
+    let initial_east = State::new(input.get((1, 0)), CardinalDirection::East, 1);
+    let initial_south = State::new(input.get((0, 1)), CardinalDirection::South, 1);
 
     seen.insert(initial_east.to_cache_key(), 0);
     queue.push(Reverse(initial_east));

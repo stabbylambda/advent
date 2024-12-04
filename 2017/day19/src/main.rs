@@ -30,7 +30,7 @@ fn problem1(input: &Input) -> (String, u32) {
     let mut letters = vec![];
     let mut steps = 0;
 
-    let grid = common::map::Map::new(input.clone());
+    let grid = common::grid::Grid::new(input.clone());
 
     loop {
         match *grid.get((x, y)).data {

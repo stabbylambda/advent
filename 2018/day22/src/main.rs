@@ -3,7 +3,11 @@ use std::{
     fmt::Display,
 };
 
-use common::{extensions::PointExt, map::Map, nom::usize};
+use common::{
+    extensions::PointExt,
+    grid::{Grid, HasNeighbors},
+    nom::usize,
+};
 use nom::{
     bytes::complete::tag,
     character::complete::newline,
@@ -96,7 +100,7 @@ impl Cave {
         }
     }
 
-    fn create_map(&mut self, padding: usize) -> Map<RegionType> {
+    fn create_map(&mut self, padding: usize) -> Grid<RegionType> {
         self.explore(padding);
 
         let (tx, ty) = self.target;
@@ -108,7 +112,7 @@ impl Cave {
                 *cell = self.get_type((x, y));
             })
         });
-        Map::new(v)
+        Grid::new(v)
     }
 }
 

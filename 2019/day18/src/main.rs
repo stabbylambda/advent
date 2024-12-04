@@ -6,14 +6,10 @@ use std::{
 
 use common::{
     dijkstra::{shortest_path, Edge},
-    map::{Map, MapSquare},
+    grid::{Grid, GridSquare},
+    nom::parse_grid,
 };
-use nom::{
-    character::complete::{anychar, newline},
-    combinator::{map, map_opt},
-    multi::{many1, separated_list1},
-    IResult,
-};
+use nom::{character::complete::anychar, combinator::map_opt, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -27,7 +23,7 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 
-type Input = Map<Tile>;
+type Input = Grid<Tile>;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Tile {
@@ -55,26 +51,20 @@ impl Display for Tile {
 }
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(map_opt(anychar, |x| match x {
-                '@' => Some(Tile::Entrance),
-                '#' => Some(Tile::Wall),
-                '.' => Some(Tile::Space),
-                x if x.is_lowercase() => Some(Tile::Key(x)),
-                x if x.is_uppercase() => Some(Tile::Door(x.to_ascii_lowercase())),
-                _ => None,
-            })),
-        ),
-        Map::new,
-    )(input);
+    let result: IResult<&str, Input> = parse_grid(map_opt(anychar, |x| match x {
+        '@' => Some(Tile::Entrance),
+        '#' => Some(Tile::Wall),
+        '.' => Some(Tile::Space),
+        x if x.is_lowercase() => Some(Tile::Key(x)),
+        x if x.is_uppercase() => Some(Tile::Door(x.to_ascii_lowercase())),
+        _ => None,
+    }))(input);
 
     result.unwrap().1
 }
 
 // build an adjacency list for the map
-fn get_edges(maze: &Map<Tile>) -> Vec<Vec<Edge>> {
+fn get_edges(maze: &Grid<Tile>) -> Vec<Vec<Edge>> {
     let is_open = |t: &Tile| {
         match t {
             // walls have no edges
@@ -170,7 +160,7 @@ fn problem(input: &Input) -> usize {
         .into_iter()
         .filter_map(|x| (x.data == &Tile::Entrance).then_some(x.coords))
         .collect();
-    let keys: Vec<MapSquare<Tile>> = input
+    let keys: Vec<GridSquare<Tile>> = input
         .into_iter()
         .filter(|x| matches!(x.data, Tile::Key(..)))
         .collect();

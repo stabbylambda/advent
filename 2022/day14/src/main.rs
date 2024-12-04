@@ -1,5 +1,5 @@
 use cavemap::{CaveMap, Tile};
-use common::{map::Path, nom::coord};
+use common::{grid::Path, nom::coord};
 use nom::{
     bytes::complete::tag, character::complete::newline, combinator::map, multi::separated_list1,
     IResult,

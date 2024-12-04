@@ -1,13 +1,10 @@
 use std::fmt::Display;
 
-use common::map::{Map, MapSquare, Neighbors};
-use nom::{
-    branch::alt,
-    character::complete::{char, newline},
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
+use common::{
+    grid::{Grid, GridSquare, Neighbors},
+    nom::parse_grid,
 };
+use nom::{branch::alt, character::complete::char, combinator::map, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -20,25 +17,19 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Map<Tile>;
+type Input = Grid<Tile>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(alt((
-                map(char('|'), |_| Tile::Vertical),
-                map(char('-'), |_| Tile::Horizontal),
-                map(char('L'), |_| Tile::BottomLeft),
-                map(char('J'), |_| Tile::BottomRight),
-                map(char('7'), |_| Tile::TopRight),
-                map(char('F'), |_| Tile::TopLeft),
-                map(char('.'), |_| Tile::Ground),
-                map(char('S'), |_| Tile::StartingPosition),
-            ))),
-        ),
-        Map::new,
-    )(input);
+    let result: IResult<&str, Input> = parse_grid(alt((
+        map(char('|'), |_| Tile::Vertical),
+        map(char('-'), |_| Tile::Horizontal),
+        map(char('L'), |_| Tile::BottomLeft),
+        map(char('J'), |_| Tile::BottomRight),
+        map(char('7'), |_| Tile::TopRight),
+        map(char('F'), |_| Tile::TopLeft),
+        map(char('.'), |_| Tile::Ground),
+        map(char('S'), |_| Tile::StartingPosition),
+    )))(input);
 
     result.unwrap().1
 }
@@ -100,7 +91,7 @@ impl Display for Tile {
 }
 
 /**  figure out if this tile connects to its neighbors based on the neighboring tile type */
-fn connecting_neighbors<'a>(map_square: &MapSquare<'a, Tile>) -> Neighbors<'a, Tile> {
+fn connecting_neighbors<'a>(map_square: &GridSquare<'a, Tile>) -> Neighbors<'a, Tile> {
     let n = map_square.neighbors();
 
     match map_square.data {

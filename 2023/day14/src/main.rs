@@ -1,16 +1,10 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-use common::extensions::vecvec::VecVec;
+use common::{extensions::vecvec::VecVec, nom::parse_grid};
 
-use common::map::Map;
-use nom::{
-    branch::alt,
-    character::complete::{char, newline},
-    combinator::map,
-    multi::{many1, separated_list1},
-    IResult,
-};
+use common::grid::Grid;
+use nom::{branch::alt, character::complete::char, combinator::map, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -27,14 +21,11 @@ type Input = Platform;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = map(
-        separated_list1(
-            newline,
-            many1(alt((
-                map(char('#'), |_| Tile::CubeRock),
-                map(char('O'), |_| Tile::RoundedRock),
-                map(char('.'), |_| Tile::Empty),
-            ))),
-        ),
+        parse_grid(alt((
+            map(char('#'), |_| Tile::CubeRock),
+            map(char('O'), |_| Tile::RoundedRock),
+            map(char('.'), |_| Tile::Empty),
+        ))),
         Platform::new,
     )(input);
 
@@ -61,14 +52,14 @@ impl Debug for Tile {
 
 #[derive(Clone, Debug)]
 struct Platform {
-    platform: Map<Tile>,
+    platform: Grid<Tile>,
 }
 
 impl Platform {
-    fn new(v: Vec<Vec<Tile>>) -> Self {
+    fn new(g: Grid<Tile>) -> Self {
         Self {
             // rotate so that the end of each row is "north"
-            platform: Map::new(v.rotate()),
+            platform: g.rotate(),
         }
     }
 
@@ -81,7 +72,7 @@ impl Platform {
 
     fn rotate(&mut self) {
         let platform = self.platform.points.rotate();
-        self.platform = Map::new(platform);
+        self.platform = Grid::new(platform);
     }
 
     fn spin_cycle(&mut self) {

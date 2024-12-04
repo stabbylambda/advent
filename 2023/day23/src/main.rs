@@ -1,13 +1,10 @@
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap, VecDeque};
 
-use common::map::{Coord, Direction, Map};
-use nom::{
-    branch::alt,
-    character::complete::{char, newline},
-    combinator::map,
-    multi::{many1, separated_list0},
-    IResult,
+use common::{
+    grid::{CardinalDirection, Coord, Grid},
+    nom::parse_grid,
 };
+use nom::{branch::alt, character::complete::char, combinator::map, IResult};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -20,23 +17,17 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Map<Tile>;
+type Input = Grid<Tile>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = map(
-        separated_list0(
-            newline,
-            many1(alt((
-                map(char('#'), |_| Tile::Forest),
-                map(char('.'), |_| Tile::Path),
-                map(char('^'), |_| Tile::SlopeNorth),
-                map(char('v'), |_| Tile::SlopeSouth),
-                map(char('<'), |_| Tile::SlopeWest),
-                map(char('>'), |_| Tile::SlopeEast),
-            ))),
-        ),
-        Map::new,
-    )(input);
+    let result: IResult<&str, Input> = parse_grid(alt((
+        map(char('#'), |_| Tile::Forest),
+        map(char('.'), |_| Tile::Path),
+        map(char('^'), |_| Tile::SlopeNorth),
+        map(char('v'), |_| Tile::SlopeSouth),
+        map(char('<'), |_| Tile::SlopeWest),
+        map(char('>'), |_| Tile::SlopeEast),
+    )))(input);
 
     result.unwrap().1
 }
@@ -51,11 +42,11 @@ enum Tile {
     SlopeWest,
 }
 
-const DIRECTIONS: [Direction; 4] = [
-    Direction::North,
-    Direction::West,
-    Direction::East,
-    Direction::South,
+const DIRECTIONS: [CardinalDirection; 4] = [
+    CardinalDirection::North,
+    CardinalDirection::West,
+    CardinalDirection::East,
+    CardinalDirection::South,
 ];
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -78,7 +69,7 @@ impl State {
 
 fn get_longest_path<F>(input: &Input, valid: F) -> usize
 where
-    F: Copy + Fn(Tile, Direction, Tile) -> bool,
+    F: Copy + Fn(Tile, CardinalDirection, Tile) -> bool,
 {
     let start = (
         input
@@ -140,7 +131,7 @@ fn get_edges(
     input: &Input,
     start: Coord,
     intersections: &BTreeSet<(usize, usize)>,
-    valid: impl Fn(Tile, Direction, Tile) -> bool,
+    valid: impl Fn(Tile, CardinalDirection, Tile) -> bool,
 ) -> Vec<(Coord, usize)> {
     let mut results: Vec<(Coord, usize)> = vec![];
     let mut visited: BTreeSet<Coord> = BTreeSet::new();
@@ -199,15 +190,15 @@ fn problem1(input: &Input) -> usize {
         (_, _, Tile::Forest) => false,
 
         // can only go down the corresponding slope
-        (Tile::SlopeNorth, d, _) => d == Direction::North,
-        (Tile::SlopeSouth, d, _) => d == Direction::South,
-        (Tile::SlopeEast, d, _) => d == Direction::East,
+        (Tile::SlopeNorth, d, _) => d == CardinalDirection::North,
+        (Tile::SlopeSouth, d, _) => d == CardinalDirection::South,
+        (Tile::SlopeEast, d, _) => d == CardinalDirection::East,
 
         // can't go up the opposing slope
-        (_, Direction::North, Tile::SlopeSouth) => false,
-        (_, Direction::South, Tile::SlopeNorth) => false,
-        (_, Direction::East, Tile::SlopeWest) => false,
-        (_, Direction::West, Tile::SlopeEast) => false,
+        (_, CardinalDirection::North, Tile::SlopeSouth) => false,
+        (_, CardinalDirection::South, Tile::SlopeNorth) => false,
+        (_, CardinalDirection::East, Tile::SlopeWest) => false,
+        (_, CardinalDirection::West, Tile::SlopeEast) => false,
 
         _ => true,
     };
