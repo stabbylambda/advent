@@ -156,13 +156,13 @@ struct Path {
 fn find_path(input: &Input) -> Path {
     // figure out where we start
     let start = input
-        .into_iter()
+        .iter()
         .find(|x| x.data == &Tile::StartingPosition)
         .unwrap();
 
     // find both connecting neighbors and pick one to travel down
     let mut path = connecting_neighbors(&start)
-        .into_iter()
+        .iter()
         .map(|x| Path {
             from: vec![start.coords],
             current: x.coords,
@@ -179,7 +179,7 @@ fn find_path(input: &Input) -> Path {
 
         // pick the first neighbor we haven't been to
         if let Some(coords) = connecting_neighbors(&current)
-            .into_iter()
+            .iter()
             .find(|x| x.coords != *path.from.last().unwrap())
             .map(|x| x.coords)
         {

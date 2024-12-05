@@ -60,11 +60,10 @@ fn parse(input: &str) -> Input {
 type Input = Grid<Position>;
 
 fn get_edges(map: &Grid<Position>) -> Vec<Vec<Edge>> {
-    map.into_iter()
+    map.iter()
         .map(|square| {
             square
                 .neighbors()
-                .to_vec()
                 .iter()
                 .filter(|&neighbor| square.data.can_travel_to(neighbor.data))
                 .map(|neighbor| Edge::from_map_square(neighbor))
@@ -78,7 +77,7 @@ fn problem1(map: &Input) -> usize {
     let mut finish: usize = 0;
 
     // find both the start and finish squares
-    for square in map.into_iter() {
+    for square in map.iter() {
         match square.data {
             Position::Start => start = square.get_grid_index(),
             Position::End => finish = square.get_grid_index(),
@@ -92,7 +91,7 @@ fn problem1(map: &Input) -> usize {
 fn problem2(map: &Input) -> usize {
     // find the only finish square
     let mut finish: usize = 0;
-    for square in map.into_iter() {
+    for square in map.iter() {
         if let Position::End = square.data {
             finish = square.get_grid_index()
         }
@@ -100,7 +99,7 @@ fn problem2(map: &Input) -> usize {
 
     let edges = get_edges(map);
 
-    map.into_iter()
+    map.iter()
         // only take the potential starting locations
         .filter(|s| s.data.is_potential_start())
         // find the shortest paths from a to z

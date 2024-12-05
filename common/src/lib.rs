@@ -4,7 +4,6 @@ pub mod grid;
 pub mod heading;
 pub mod math;
 pub mod nom;
-pub mod orthogonal;
 pub mod program;
 pub mod union_find;
 

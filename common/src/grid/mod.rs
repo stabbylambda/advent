@@ -1,12 +1,13 @@
 use std::fmt::{Debug, Display};
 
-use crate::extensions::vecvec::VecVec;
 pub mod neighbors;
+pub mod orthogonal;
 pub mod path;
+
+use crate::extensions::vecvec::VecVec;
 pub use neighbors::{AllNeighbors, CardinalDirection, Direction, HasNeighbors, Neighbors};
 pub use path::Path;
 
-// This is my Map from last year
 #[derive(Clone)]
 pub struct Grid<T> {
     pub points: Vec<Vec<T>>,
@@ -15,7 +16,7 @@ pub struct Grid<T> {
 }
 pub type Coord = (usize, usize);
 
-impl<T: Copy> Grid<T> {
+impl<T> Grid<T> {
     pub fn new(points: Vec<Vec<T>>) -> Grid<T> {
         let height = points.len();
         let width = points[0].len();
@@ -31,31 +32,31 @@ impl<T: Copy> Grid<T> {
     }
 
     pub fn get_from_grid_index(&self, grid_index: usize) -> GridSquare<T> {
+        self.get_opt_from_grid_index(grid_index).unwrap()
+    }
+
+    pub fn get_opt_from_grid_index(&self, grid_index: usize) -> Option<GridSquare<T>> {
         let y = grid_index / self.width;
         let x = grid_index % self.width;
 
-        self.get((x, y))
+        self.get_opt((x, y))
+    }
+    pub fn get_opt(&self, (x, y): Coord) -> Option<GridSquare<T>> {
+        self.points.get(y).and_then(|row| {
+            row.get(x).map(|data| GridSquare {
+                map: self,
+                coords: (x, y),
+                data,
+            })
+        })
     }
 
-    pub fn get(&self, (x, y): Coord) -> GridSquare<T> {
-        let data = &self.points[y][x];
-        GridSquare {
-            map: self,
-            coords: (x, y),
-            data,
-        }
+    pub fn get(&self, c: Coord) -> GridSquare<T> {
+        self.get_opt(c).unwrap()
     }
 
     pub fn get_grid_index(&self, (x, y): Coord) -> usize {
         y * self.width + x
-    }
-
-    pub fn rotate(&self) -> Grid<T> {
-        Grid::new(self.points.rotate())
-    }
-
-    pub fn transpose(&self) -> Grid<T> {
-        Grid::new(self.points.transpose())
     }
 
     pub fn print<F>(&self, f: F)
@@ -75,22 +76,37 @@ impl<T: Copy> Grid<T> {
             println!();
         }
     }
+
+    pub fn iter(&self) -> GridIter<T> {
+        GridIter {
+            index: 0,
+            grid: self,
+        }
+    }
 }
 
-impl<'a, T: Copy> IntoIterator for &'a Grid<T> {
+impl<T: Copy> Grid<T> {
+    pub fn rotate(&self) -> Grid<T> {
+        Grid::new(self.points.rotate())
+    }
+
+    pub fn transpose(&self) -> Grid<T> {
+        Grid::new(self.points.transpose())
+    }
+}
+
+pub struct GridIter<'a, T: 'a> {
+    index: usize,
+    grid: &'a Grid<T>,
+}
+
+impl<'a, T: 'a> Iterator for GridIter<'a, T> {
     type Item = GridSquare<'a, T>;
 
-    type IntoIter = std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        (0..self.height)
-            .flat_map(|y| {
-                (0..self.width)
-                    .map(|x| self.get((x, y)))
-                    .collect::<Vec<GridSquare<'a, T>>>()
-            })
-            .collect::<Vec<GridSquare<'a, T>>>()
-            .into_iter()
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = self.grid.get_opt_from_grid_index(self.index);
+        self.index += 1;
+        next
     }
 }
 
@@ -127,13 +143,13 @@ where
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct GridSquare<'a, T: Copy> {
+pub struct GridSquare<'a, T> {
     map: &'a Grid<T>,
     pub coords: Coord,
     pub data: &'a T,
 }
 
-impl<'a, T: Copy> GridSquare<'a, T> {
+impl<'a, T> GridSquare<'a, T> {
     pub fn neighbors(&self) -> Neighbors<'a, T> {
         self.map.neighbors(self.coords)
     }

@@ -65,7 +65,7 @@ impl Platform {
 
     fn load(&self) -> usize {
         self.platform
-            .into_iter()
+            .iter()
             .filter_map(|square| (square.data == &Tile::RoundedRock).then_some(square.coords.0 + 1))
             .sum()
     }

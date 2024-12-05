@@ -72,7 +72,7 @@ fn get_edges(maze: &Grid<Tile>) -> Vec<Vec<Edge>> {
             _ => true,
         }
     };
-    maze.into_iter()
+    maze.iter()
         .map(|square| {
             // walls have no edges
             if !is_open(square.data) {
@@ -81,7 +81,6 @@ fn get_edges(maze: &Grid<Tile>) -> Vec<Vec<Edge>> {
 
             square
                 .neighbors()
-                .to_vec()
                 .iter()
                 .filter_map(|n| {
                     if !is_open(n.data) {
@@ -157,15 +156,15 @@ type Coord = (usize, usize);
 fn problem(input: &Input) -> usize {
     println!("{input}");
     let start: Vec<Coord> = input
-        .into_iter()
+        .iter()
         .filter_map(|x| (x.data == &Tile::Entrance).then_some(x.coords))
         .collect();
     let keys: Vec<GridSquare<Tile>> = input
-        .into_iter()
+        .iter()
         .filter(|x| matches!(x.data, Tile::Key(..)))
         .collect();
     let doors: Vec<(usize, char)> = input
-        .into_iter()
+        .iter()
         .filter_map(|x| match x.data {
             Tile::Door(c) => Some((x.get_grid_index(), *c)),
             _ => None,

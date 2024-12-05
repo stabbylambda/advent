@@ -55,11 +55,13 @@ fn parse(input: &str) -> Input {
 
 fn tick(area: &Grid<Tile>) -> Grid<Tile> {
     let mut new_map = area.clone();
-    for x in area.into_iter() {
+    for x in area.iter() {
         let neighbors = area.all_neighbors(x.coords);
-        let v = neighbors.to_vec();
-        let tree_count = v.iter().filter(|x| x.data == &Tile::Tree).count();
-        let lumber_count = v.iter().filter(|x| x.data == &Tile::LumberYard).count();
+        let tree_count = neighbors.iter().filter(|x| x.data == &Tile::Tree).count();
+        let lumber_count = neighbors
+            .iter()
+            .filter(|x| x.data == &Tile::LumberYard)
+            .count();
 
         let result = match x.data {
             // An open acre will become filled with trees if three or more adjacent acres contained trees.
@@ -82,11 +84,8 @@ fn tick(area: &Grid<Tile>) -> Grid<Tile> {
 }
 
 fn score(area: &Grid<Tile>) -> usize {
-    let tree_count = area.into_iter().filter(|x| x.data == &Tile::Tree).count();
-    let lumber_count = area
-        .into_iter()
-        .filter(|x| x.data == &Tile::LumberYard)
-        .count();
+    let tree_count = area.iter().filter(|x| x.data == &Tile::Tree).count();
+    let lumber_count = area.iter().filter(|x| x.data == &Tile::LumberYard).count();
 
     tree_count * lumber_count
 }

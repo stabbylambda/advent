@@ -163,13 +163,13 @@ fn get_edges(
 
 fn get_intersections(input: &Input, start: Coord, end: Coord) -> BTreeSet<(usize, usize)> {
     let mut intersections: BTreeSet<Coord> = input
-        .into_iter()
+        .iter()
         .filter(|x| x.data != &Tile::Forest)
         .filter_map(|x| {
             // we only care about non-forest tiles
             let valid_neighbors = x
                 .neighbors()
-                .into_iter()
+                .iter()
                 .filter(|x| x.data != &Tile::Forest)
                 .count();
 

@@ -164,7 +164,7 @@ fn problem2(map: TileMap) -> u32 {
 
     // find the coordinates of the generator
     let start = map
-        .into_iter()
+        .iter()
         .find_map(|x| (*x.data == Tile::Generator).then_some(x.coords))
         .unwrap();
 
@@ -179,7 +179,7 @@ fn problem2(map: TileMap) -> u32 {
     while let Some((depth, current)) = queue.pop() {
         let neighbors = map.get(current).neighbors();
         let adjacent_spaces = neighbors
-            .into_iter()
+            .iter()
             .filter(|x| *x.data == Tile::Space)
             // insert each into the map and only keep the ones we haven't been to yet
             .filter(|x| visited.insert(x.coords))

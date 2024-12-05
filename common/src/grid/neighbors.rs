@@ -1,3 +1,5 @@
+use std::iter;
+
 use super::{Coord, Grid, GridSquare};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -20,12 +22,12 @@ pub enum Direction {
     SouthEast,
 }
 
-pub trait HasNeighbors<T: Copy> {
+pub trait HasNeighbors<T> {
     fn neighbors(&self, c: Coord) -> Neighbors<T>;
     fn all_neighbors(&self, c: Coord) -> AllNeighbors<T>;
 }
 
-impl<T: Copy> HasNeighbors<T> for Grid<T> {
+impl<T> HasNeighbors<T> for Grid<T> {
     fn neighbors(&self, (x, y): Coord) -> Neighbors<T> {
         let all = self.all_neighbors((x, y));
 
@@ -63,42 +65,38 @@ impl<T: Copy> HasNeighbors<T> for Grid<T> {
     }
 }
 
-pub struct Neighbors<'a, T: Copy> {
+pub struct Neighbors<'a, T> {
     pub north: Option<GridSquare<'a, T>>,
     pub south: Option<GridSquare<'a, T>>,
     pub east: Option<GridSquare<'a, T>>,
     pub west: Option<GridSquare<'a, T>>,
 }
 
-impl<'a, T: Copy> Neighbors<'a, T> {
-    pub fn get(&self, direction: CardinalDirection) -> Option<GridSquare<T>> {
+impl<'a, T> Neighbors<'a, T> {
+    pub fn get(&self, direction: CardinalDirection) -> &Option<GridSquare<T>> {
         match direction {
-            CardinalDirection::North => self.north,
-            CardinalDirection::South => self.south,
-            CardinalDirection::East => self.east,
-            CardinalDirection::West => self.west,
+            CardinalDirection::North => &self.north,
+            CardinalDirection::South => &self.south,
+            CardinalDirection::East => &self.east,
+            CardinalDirection::West => &self.west,
         }
     }
-}
 
-impl<'a, T: Copy> Neighbors<'a, T> {
-    pub fn to_vec(&self) -> Vec<GridSquare<T>> {
-        let v = vec![self.north, self.west, self.east, self.south];
+    /// Iterate the orthogonal neighbors. Includes neighbors that are "off the grid" as `None`
+    pub fn iter_all(&self) -> impl Iterator<Item = &Option<GridSquare<'a, T>>> {
+        iter::once(&self.north)
+            .chain(iter::once(&self.west))
+            .chain(iter::once(&self.east))
+            .chain(iter::once(&self.south))
+    }
 
-        v.into_iter().flatten().collect()
+    /// Iterate the orthogonal neighbors. Only includes neighbors that exist
+    pub fn iter(&self) -> impl Iterator<Item = &GridSquare<'a, T>> {
+        self.iter_all().flatten()
     }
 }
 
-impl<'a, T: Copy> IntoIterator for &'a Neighbors<'a, T> {
-    type Item = GridSquare<'a, T>;
-
-    type IntoIter = std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.to_vec().into_iter()
-    }
-}
-pub struct AllNeighbors<'a, T: Copy> {
+pub struct AllNeighbors<'a, T> {
     pub north: Option<GridSquare<'a, T>>,
     pub south: Option<GridSquare<'a, T>>,
     pub east: Option<GridSquare<'a, T>>,
@@ -110,43 +108,21 @@ pub struct AllNeighbors<'a, T: Copy> {
     pub south_west: Option<GridSquare<'a, T>>,
 }
 
-impl<'a, T: Copy> AllNeighbors<'a, T> {
-    pub fn get(&self, direction: Direction) -> Option<GridSquare<T>> {
-        match direction {
-            Direction::North => self.north,
-            Direction::South => self.south,
-            Direction::East => self.east,
-            Direction::West => self.west,
-            Direction::NorthWest => self.north_west,
-            Direction::NorthEast => self.north_east,
-            Direction::SouthWest => self.south_west,
-            Direction::SouthEast => self.south_east,
-        }
-    }
-    pub fn to_all_vec(&self) -> Vec<Option<GridSquare<T>>> {
-        vec![
-            self.north_west,
-            self.north,
-            self.north_east,
-            self.west,
-            self.east,
-            self.south_west,
-            self.south,
-            self.south_east,
-        ]
+impl<'a, T> AllNeighbors<'a, T> {
+    /// Iterate the neighbors. Includes neighbors that are "off the grid" as `None`
+    pub fn iter_all(&self) -> impl Iterator<Item = &Option<GridSquare<'a, T>>> {
+        iter::once(&self.north_west)
+            .chain(iter::once(&self.north))
+            .chain(iter::once(&self.north_east))
+            .chain(iter::once(&self.west))
+            .chain(iter::once(&self.east))
+            .chain(iter::once(&self.south_west))
+            .chain(iter::once(&self.south))
+            .chain(iter::once(&self.south_east))
     }
 
-    pub fn to_vec(&self) -> Vec<GridSquare<T>> {
-        self.to_all_vec().into_iter().flatten().collect()
-    }
-}
-
-impl<'a, T: Copy> IntoIterator for &'a AllNeighbors<'a, T> {
-    type Item = GridSquare<'a, T>;
-
-    type IntoIter = std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.to_vec().into_iter()
+    /// Iterate the neighbors. Only includes neighbors that exist
+    pub fn iter(&self) -> impl Iterator<Item = &GridSquare<'a, T>> {
+        self.iter_all().flatten()
     }
 }
