@@ -102,7 +102,7 @@ fn problem1(input: &Input) -> usize {
 }
 
 fn get_edges(maze: &Grid<&Node>) -> Vec<Vec<Edge>> {
-    maze.into_iter()
+    maze.iter()
         .map(|square| {
             // large nodes are walls and have no edges
             if square.data.size > 100 {
@@ -111,7 +111,6 @@ fn get_edges(maze: &Grid<&Node>) -> Vec<Vec<Edge>> {
 
             square
                 .neighbors()
-                .to_vec()
                 .iter()
                 .filter_map(|n| {
                     if n.data.size > 100 {

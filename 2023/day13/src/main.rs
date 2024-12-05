@@ -92,7 +92,7 @@ fn find_all_reflections(map: &Grid<bool>) -> Vec<Reflection> {
 
 /** For each square in the map, create a clone of the map where it's flipped */
 fn get_all_smudges(map: &Grid<bool>) -> Vec<Grid<bool>> {
-    map.into_iter()
+    map.iter()
         .map(|x| {
             let mut m = map.clone();
             m.set(x.coords, !x.data);

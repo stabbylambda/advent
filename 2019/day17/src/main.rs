@@ -65,10 +65,9 @@ fn problem1(input: &Input) -> usize {
     program.execute();
     let m = output_to_map(&program.output);
 
-    m.into_iter()
+    m.iter()
         .filter(|x| {
-            x.data == &Tile::Scaffold
-                && x.neighbors().into_iter().all(|n| n.data == &Tile::Scaffold)
+            x.data == &Tile::Scaffold && x.neighbors().iter().all(|n| n.data == &Tile::Scaffold)
         })
         .map(|x| x.coords.0 * x.coords.1)
         .sum()

@@ -48,7 +48,7 @@ fn parse(input: &str) -> Input {
 /** Get all the neighbors (including diagonal) that are symbols */
 fn get_adjacent_symbols(x: &GridSquare<SchematicPart>) -> HashSet<(char, Coord)> {
     x.all_neighbors()
-        .into_iter()
+        .iter()
         .filter_map(|x| match x.data {
             SchematicPart::Symbol(c) => Some((*c, x.coords)),
             _ => None,
@@ -63,7 +63,7 @@ fn parse_schematic_parts(input: Grid<SchematicPart>) -> Input {
     // We ultimately want a list of adjacent numbers for each individual symbol
     let mut adjacencies: Input = HashMap::new();
 
-    for x in &input {
+    for x in input.iter() {
         // have we already been here?
         if examined.contains(&x.coords) {
             continue;

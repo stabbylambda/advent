@@ -53,11 +53,11 @@ fn parse(input: &str) -> Input {
 fn tick1(map: &Grid<Tile>) -> Grid<Tile> {
     let mut new_map = map.clone();
 
-    for x in map.into_iter() {
+    for x in map.iter() {
         // count all the neighbors
         let occupied_neighbors = x
             .all_neighbors()
-            .into_iter()
+            .iter()
             .filter(|x| *x.data == Tile::Occupied)
             .count();
 
@@ -127,7 +127,7 @@ fn visible_neighbor_count(map: &Grid<Tile>, (x, y): (usize, usize)) -> u32 {
 fn tick2(map: &Grid<Tile>) -> Grid<Tile> {
     let mut new_map = map.clone();
 
-    for s in map.into_iter() {
+    for s in map.iter() {
         let occupied_neighbors = visible_neighbor_count(map, s.coords);
         let new_seat = match s.data {
             Tile::Empty if occupied_neighbors == 0 => Tile::Occupied,
@@ -146,10 +146,7 @@ fn simulate(input: &Input, f: impl Fn(&Grid<Tile>) -> Grid<Tile>) -> usize {
     loop {
         let new_map = f(&map);
         if new_map.points == map.points {
-            return new_map
-                .into_iter()
-                .filter(|x| *x.data == Tile::Occupied)
-                .count();
+            return new_map.iter().filter(|x| *x.data == Tile::Occupied).count();
         } else {
             map = new_map;
         }

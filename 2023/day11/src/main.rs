@@ -80,7 +80,7 @@ impl Universe {
 
     fn get_galaxy_coordinates(&self) -> Vec<(usize, usize)> {
         self.map
-            .into_iter()
+            .iter()
             .filter_map(|x| (*x.data == Tile::Galaxy).then_some(x.coords))
             .collect_vec()
     }

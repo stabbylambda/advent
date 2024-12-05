@@ -82,7 +82,7 @@ impl PlutoMap {
     fn get_edges(maze: &Grid<Tile>) -> Vec<Vec<Edge>> {
         // Just construct a normal adjacency list, where walls, voids, and labels have no edges
         // we'll add in the portal edges later
-        maze.into_iter()
+        maze.iter()
             .map(|square| {
                 if square.data != &Tile::Space {
                     return vec![];
@@ -90,7 +90,6 @@ impl PlutoMap {
 
                 square
                     .neighbors()
-                    .to_vec()
                     .iter()
                     .filter_map(|n| match n.data {
                         Tile::Space => Some(Edge::from_map_square(n)),
@@ -109,11 +108,11 @@ impl PlutoMap {
 
         let neighbors = tile.neighbors();
         // now find the neighboring label and space
-        let label_neighbor = neighbors.into_iter().find_map(|x| match x.data {
+        let label_neighbor = neighbors.iter().find_map(|x| match x.data {
             Tile::Label(b) => Some(*b),
             _ => None,
         });
-        let space_neighbor = neighbors.into_iter().find_map(|x| match x.data {
+        let space_neighbor = neighbors.iter().find_map(|x| match x.data {
             Tile::Space => Some(x.get_grid_index()),
             _ => None,
         });

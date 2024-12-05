@@ -185,7 +185,7 @@ fn problem(input: &Input) -> (usize, usize) {
 
     let bounded: Vec<Tile> = map
         .map
-        .into_iter()
+        .iter()
         .filter_map(|x| (map.min_y <= x.coords.1 && x.coords.1 <= map.max_y).then_some(*x.data))
         .collect();
 

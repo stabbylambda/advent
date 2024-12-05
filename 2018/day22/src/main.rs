@@ -310,7 +310,7 @@ fn problem2(input: &Input) -> usize {
             queue.push(switch_tool);
         }
 
-        for neighbor in map.neighbors(state.position).to_vec() {
+        for neighbor in map.neighbors(state.position).iter() {
             if let Some(new_position) = state.move_to(neighbor.coords, *neighbor.data) {
                 queue.push(new_position);
             }

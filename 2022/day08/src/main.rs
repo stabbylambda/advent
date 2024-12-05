@@ -1,7 +1,6 @@
 use common::{
-    grid::{Grid, GridSquare},
+    grid::{orthogonal::Orthogonal, Grid, GridSquare},
     nom::{parse_grid, single_digit},
-    orthogonal::Orthogonal,
 };
 use nom::IResult;
 
@@ -25,7 +24,7 @@ fn parse(lines: &str) -> Grid<Tree> {
 }
 
 fn problem1(map: &Grid<Tree>) -> u32 {
-    map.into_iter().fold(0, |acc, square| {
+    map.iter().fold(0, |acc, square| {
         let neighbors = map.orthogonal_neighbors(&square);
         let tree = square.data;
 
@@ -55,7 +54,7 @@ fn view<'a>(height: &'a Tree, neighbors: Vec<GridSquare<'a, Tree>>) -> u32 {
 }
 
 fn problem2(map: &Grid<Tree>) -> u32 {
-    map.into_iter()
+    map.iter()
         .map(|square| {
             let tree = square.data;
             let neighbors = map.orthogonal_neighbors(&square);

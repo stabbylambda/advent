@@ -40,7 +40,7 @@ fn parse(input: &str) -> Input {
 }
 
 fn get_edges(maze: &Grid<Tile>) -> Vec<Vec<Edge>> {
-    maze.into_iter()
+    maze.iter()
         .map(|square| {
             // large nodes are walls and have no edges
             if square.data == &Tile::Wall {
@@ -49,7 +49,6 @@ fn get_edges(maze: &Grid<Tile>) -> Vec<Vec<Edge>> {
 
             square
                 .neighbors()
-                .to_vec()
                 .iter()
                 .filter_map(|n| {
                     if n.data == &Tile::Wall {
@@ -67,7 +66,7 @@ fn problem(m: &Input, back_to_start: bool) -> usize {
     let edges = get_edges(m);
 
     let points: Vec<(u32, usize)> = m
-        .into_iter()
+        .iter()
         .filter_map(|s| match s.data {
             Tile::Wall => None,
             Tile::Space => None,

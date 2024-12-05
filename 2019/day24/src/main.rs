@@ -45,10 +45,10 @@ impl Tile {
 
 fn tick(map: &Grid<Tile>) -> Grid<Tile> {
     let mut new_map = Grid::new(vec![vec![Tile::Space; 5]; 5]);
-    for tile in map.into_iter() {
+    for tile in map.iter() {
         let neighbor_bug_count = tile
             .neighbors()
-            .into_iter()
+            .iter()
             .filter(|x| matches!(x.data, Tile::Bug))
             .count();
 
@@ -60,7 +60,7 @@ fn tick(map: &Grid<Tile>) -> Grid<Tile> {
 }
 
 fn biodiversity(map: &Grid<Tile>) -> u32 {
-    map.into_iter().enumerate().fold(0, |acc, (idx, x)| {
+    map.iter().enumerate().fold(0, |acc, (idx, x)| {
         let base = match x.data {
             Tile::Bug => 1,
             Tile::Space => 0,
@@ -94,7 +94,7 @@ impl Eris {
     fn new(input: &Input) -> Self {
         let initial = input.clone();
         let tiles: BTreeMap<ErisCoord, Tile> = initial
-            .into_iter()
+            .iter()
             .map(|t| {
                 let data = if t.coords == (2, 2) {
                     Tile::Level

@@ -44,7 +44,7 @@ struct State {
 
 fn problem1(input: &Input, step_goal: u32) -> usize {
     let starting_position = input
-        .into_iter()
+        .iter()
         .find_map(|x| (x.data == &Tile::StartingPosition).then_some(x.coords))
         .unwrap();
 
@@ -66,7 +66,7 @@ fn problem1(input: &Input, step_goal: u32) -> usize {
 
         for n in input
             .neighbors(state.position)
-            .into_iter()
+            .iter()
             .filter(|x| x.data != &Tile::Rock)
         {
             let state = State {
@@ -114,7 +114,7 @@ impl Ord for InfiniteState {
 
 fn find_cycles(input: &Input, step_goal: usize) -> Vec<usize> {
     let starting_position = input
-        .into_iter()
+        .iter()
         .find_map(|x| (x.data == &Tile::StartingPosition).then_some(x.coords))
         .map(|(x, y)| (x as isize, y as isize))
         .unwrap();

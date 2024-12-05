@@ -31,8 +31,7 @@ fn problem1(input: &Input) -> usize {
             Some('S') if x.data == &'S' => 1,
             _ => {
                 let n = x.all_neighbors();
-                n.to_all_vec()
-                    .iter()
+                n.iter_all()
                     .enumerate()
                     .filter(|(d, _)| match dir {
                         // if we're going in a direction, we have to keep going
@@ -45,7 +44,7 @@ fn problem1(input: &Input) -> usize {
             }
         }
     }
-    input.into_iter().map(|x| spells(&x, "XMAS", None)).sum()
+    input.iter().map(|x| spells(&x, "XMAS", None)).sum()
 }
 
 fn problem2(input: &Input) -> usize {
@@ -63,7 +62,7 @@ fn problem2(input: &Input) -> usize {
         })
     }
     input
-        .into_iter()
+        .iter()
         .flat_map(|a| get_corners(&a))
         .filter(|x| matches!(x.as_str(), "MSASM" | "MMASS" | "SMAMS" | "SSAMM"))
         .count()

@@ -1,18 +1,18 @@
 use crate::grid::{Grid, GridSquare};
 
 #[derive(Debug)]
-pub struct OrthogonalNeighbors<'a, T: Copy> {
+pub struct OrthogonalNeighbors<'a, T> {
     pub north: Vec<GridSquare<'a, T>>,
     pub south: Vec<GridSquare<'a, T>>,
     pub east: Vec<GridSquare<'a, T>>,
     pub west: Vec<GridSquare<'a, T>>,
 }
 
-pub trait Orthogonal<'a, T: Copy> {
+pub trait Orthogonal<'a, T> {
     fn orthogonal_neighbors(&'a self, square: &GridSquare<T>) -> OrthogonalNeighbors<'a, T>;
 }
 
-impl<'a, T: Copy> Orthogonal<'a, T> for Grid<T> {
+impl<'a, T> Orthogonal<'a, T> for Grid<T> {
     fn orthogonal_neighbors(&'a self, square: &GridSquare<T>) -> OrthogonalNeighbors<'a, T> {
         let (x, y) = square.coords;
 

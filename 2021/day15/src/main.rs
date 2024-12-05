@@ -33,11 +33,10 @@ impl Input {
 }
 
 fn get_edges(map: &Grid<usize>) -> Vec<Vec<Edge>> {
-    map.into_iter()
+    map.iter()
         .map(|square| {
             square
                 .neighbors()
-                .to_vec()
                 .iter()
                 .map(|n| Edge {
                     node: n.get_grid_index(),

@@ -120,7 +120,7 @@ fn problem1(input: &Input) -> usize {
 
 fn problem2(input: &Input) -> usize {
     input
-        .into_iter()
+        .iter()
         .flat_map(|t| {
             let c @ (x, y) = t.coords;
             let top = y == 0;

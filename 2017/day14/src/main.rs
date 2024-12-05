@@ -22,7 +22,7 @@ fn problem1(input: &str) -> u32 {
 }
 
 fn get_edges(maze: &Grid<bool>) -> Vec<Vec<Edge>> {
-    maze.into_iter()
+    maze.iter()
         .map(|square| {
             // empty spaces have no edges
             if !square.data {
@@ -31,7 +31,6 @@ fn get_edges(maze: &Grid<bool>) -> Vec<Vec<Edge>> {
 
             square
                 .neighbors()
-                .to_vec()
                 .iter()
                 .filter_map(|n| {
                     if !n.data {
