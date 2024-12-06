@@ -1,11 +1,13 @@
 use std::fmt::{Debug, Display};
 
+pub mod direction;
 pub mod neighbors;
 pub mod orthogonal;
 pub mod path;
 
 use crate::extensions::vecvec::VecVec;
-pub use neighbors::{AllNeighbors, CardinalDirection, Direction, HasNeighbors, Neighbors};
+pub use direction::CardinalDirection;
+pub use neighbors::{AllNeighbors, Direction, HasNeighbors, Neighbors};
 pub use path::Path;
 
 #[derive(Clone)]
@@ -41,6 +43,7 @@ impl<T> Grid<T> {
 
         self.get_opt((x, y))
     }
+
     pub fn get_opt(&self, (x, y): Coord) -> Option<GridSquare<T>> {
         self.points.get(y).and_then(|row| {
             row.get(x).map(|data| GridSquare {
@@ -49,6 +52,10 @@ impl<T> Grid<T> {
                 data,
             })
         })
+    }
+
+    pub fn get_neighbor(&self, c: Coord, dir: CardinalDirection) -> Option<GridSquare<T>> {
+        self.get_opt(c).and_then(|x| x.get_neighbor(dir))
     }
 
     pub fn get(&self, c: Coord) -> GridSquare<T> {
@@ -150,6 +157,15 @@ pub struct GridSquare<'a, T> {
 }
 
 impl<'a, T> GridSquare<'a, T> {
+    pub fn get_neighbor(&self, dir: CardinalDirection) -> Option<GridSquare<'a, T>> {
+        let neighbors = self.neighbors();
+        match dir {
+            CardinalDirection::North => neighbors.north,
+            CardinalDirection::South => neighbors.south,
+            CardinalDirection::East => neighbors.east,
+            CardinalDirection::West => neighbors.west,
+        }
+    }
     pub fn neighbors(&self) -> Neighbors<'a, T> {
         self.map.neighbors(self.coords)
     }

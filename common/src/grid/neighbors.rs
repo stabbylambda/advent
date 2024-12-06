@@ -1,14 +1,6 @@
 use std::iter;
 
-use super::{Coord, Grid, GridSquare};
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum CardinalDirection {
-    North,
-    South,
-    East,
-    West,
-}
+use super::{direction::CardinalDirection, Coord, Grid, GridSquare};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Direction {
