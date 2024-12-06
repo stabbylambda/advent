@@ -4,7 +4,7 @@ use std::{
 };
 
 use common::{
-    grid::{CardinalDirection, Coord, Grid},
+    grid::{CardinalDirection, Grid, Position},
     nom::parse_grid,
 };
 use nom::{branch::alt, character::complete::char, combinator::map, IResult};
@@ -43,33 +43,6 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-struct Position(Coord, CardinalDirection);
-
-impl Position {
-    fn new(c: Coord) -> Self {
-        Position(c, CardinalDirection::North)
-    }
-    fn turn(&self) -> Self {
-        let &Position((x, y), d) = self;
-        let d = d.turn_right();
-
-        Position((x, y), d)
-    }
-
-    fn step(&self) -> Self {
-        let &Position((x, y), d) = self;
-        let c = match d {
-            CardinalDirection::North => (x, y - 1),
-            CardinalDirection::South => (x, y + 1),
-            CardinalDirection::East => (x + 1, y),
-            CardinalDirection::West => (x - 1, y),
-        };
-
-        Position(c, d)
-    }
-}
-
 enum WalkResult {
     Leave(VecDeque<Position>),
     Loop,
@@ -83,7 +56,7 @@ fn walk(grid: &Grid<Tile>) -> WalkResult {
 
     while let Some(next) = grid.get_neighbor(position.0, position.1) {
         if next.data == &Tile::Obstruction {
-            position = position.turn();
+            position = position.turn_right();
             if !turns.insert(position) {
                 // we've turned here before, so we're in a loop
                 return WalkResult::Loop;
@@ -100,7 +73,9 @@ fn walk(grid: &Grid<Tile>) -> WalkResult {
 fn get_start(input: &Input) -> Position {
     input
         .iter()
-        .find_map(|x| (x.data == &Tile::Guard).then_some(Position::new(x.coords)))
+        .find_map(|x| {
+            (x.data == &Tile::Guard).then_some(Position::new(x.coords, CardinalDirection::North))
+        })
         .unwrap()
 }
 

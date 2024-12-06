@@ -4,11 +4,13 @@ pub mod direction;
 pub mod neighbors;
 pub mod orthogonal;
 pub mod path;
+pub mod position;
 
 use crate::extensions::vecvec::VecVec;
 pub use direction::CardinalDirection;
 pub use neighbors::{AllNeighbors, Direction, HasNeighbors, Neighbors};
 pub use path::Path;
+pub use position::Position;
 
 #[derive(Clone)]
 pub struct Grid<T> {
