@@ -1,7 +1,4 @@
-use std::{
-    collections::{BTreeSet, VecDeque},
-    time::Instant,
-};
+use std::{collections::BTreeSet, time::Instant};
 
 use common::{
     grid::{CardinalDirection, Grid, Position},
@@ -44,15 +41,15 @@ fn parse(input: &str) -> Input {
 }
 
 enum WalkResult {
-    Leave(VecDeque<Position>),
+    Leave(Vec<Position>),
     Loop,
 }
 
 fn walk(grid: &Grid<Tile>) -> WalkResult {
     let mut position = get_start(grid);
-    let mut visited: VecDeque<_> = VecDeque::new();
+    let mut visited: Vec<_> = vec![];
     let mut turns: BTreeSet<_> = BTreeSet::new();
-    visited.push_front(position);
+    visited.push(position);
 
     while let Some(next) = grid.get_neighbor(position.0, position.1) {
         if next.data == &Tile::Obstruction {
@@ -63,7 +60,7 @@ fn walk(grid: &Grid<Tile>) -> WalkResult {
             }
         } else {
             position = position.step();
-            visited.push_front(position);
+            visited.push(position);
         }
     }
 
