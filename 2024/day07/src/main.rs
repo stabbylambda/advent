@@ -67,22 +67,21 @@ fn is_valid(test_value: &u64, numbers: &[u64], allow_concat: bool) -> bool {
     false
 }
 
-fn problem1(input: &Input) -> u64 {
+fn calibration(input: &Input, allow_concat: bool) -> u64 {
     input
         .iter()
         .filter_map(|(test_value, elements)| {
-            is_valid(test_value, elements, false).then_some(test_value)
+            is_valid(test_value, elements, allow_concat).then_some(test_value)
         })
         .sum()
 }
 
+fn problem1(input: &Input) -> u64 {
+    calibration(input, false)
+}
+
 fn problem2(input: &Input) -> u64 {
-    input
-        .iter()
-        .filter_map(|(test_value, elements)| {
-            is_valid(test_value, elements, true).then_some(test_value)
-        })
-        .sum()
+    calibration(input, true)
 }
 #[cfg(test)]
 mod test {
