@@ -36,16 +36,9 @@ fn parse(input: &str) -> Input {
 
 /// concat two numbers (e.g. concat_numbers(123, 45) == 12345)
 fn concat_numbers(a: u64, b: u64) -> u64 {
-    // figure out how many digits are in b by constantly dividing by 10 until we hit 0
-    let mut x = b;
-    let mut c = 0;
-    while x != 0 {
-        x /= 10;
-        c += 1;
-    }
-
+    let exp = (b as f64).log10().ceil() as u32;
     // multiple a by 10^c to "shift" it over so we can concat with b by adding
-    a * 10_u64.pow(c) + b
+    a * 10_u64.pow(exp) + b
 }
 
 fn is_valid(test_value: &u64, numbers: &[u64], allow_concat: bool) -> bool {
