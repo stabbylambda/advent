@@ -37,8 +37,8 @@ fn parse(input: &str) -> Input {
 }
 
 // only keep the ones in the bounds of the map
-fn check_bounds(&(x, y): &(isize, isize), input: &Input) -> Option<(isize, isize)> {
-    (x >= 0 && y >= 0 && x < input.width as isize && y < input.height as isize).then_some((x, y))
+fn check_bounds(&(x, y): &(isize, isize), input: &Input) -> bool {
+    x >= 0 && y >= 0 && x < input.width as isize && y < input.height as isize
 }
 
 fn count_antinodes(input: &Input, range: RangeInclusive<isize>) -> usize {
@@ -56,27 +56,17 @@ fn count_antinodes(input: &Input, range: RangeInclusive<isize>) -> usize {
         .map(|pair| (pair[0], pair[1]))
         .flat_map(|((ax, ay), (bx, by))| {
             let (delta_x, delta_y) = (bx - ax, by - ay);
-            let mut result = vec![];
 
-            // generate all the antinodes along the line
-            for mul in range.clone() {
-                let c = (ax - (mul * delta_x), ay - (mul * delta_y));
-                let d = (bx + (mul * delta_x), by + (mul * delta_y));
+            // generate all the antinodes along the line (in one direction,
+            // the other will be handled by the other permutation)
+            let result: Vec<_> = range
+                .clone()
+                .map(|mul| (ax - (mul * delta_x), ay - (mul * delta_y)))
+                .filter(|c| check_bounds(c, input))
+                .collect();
 
-                let c = check_bounds(&c, input);
-                let d = check_bounds(&d, input);
-
-                result.push(c);
-                result.push(d);
-
-                // Terminate when both nodes are outside the bounds of the map
-                if c.is_none() && d.is_none() {
-                    break;
-                }
-            }
             result
         })
-        .flatten()
         .unique()
         .count()
 }
