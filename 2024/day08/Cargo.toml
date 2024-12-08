@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 common = { path = "../../common" }
 nom = { workspace = true }
+itertools = { workspace = true }
