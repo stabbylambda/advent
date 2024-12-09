@@ -18,75 +18,42 @@ fn main() {
     println!("problem 2 score: {score} in {d:?}");
 }
 
-type Input = Vec<u64>;
+type Input = (VecDeque<File>, VecDeque<FreeSpace>);
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = many1(map(single_digit, |x| x as u64))(input);
+    let result: IResult<&str, Input> = map(many1(map(single_digit, |x| x as u64)), |input| {
+        let mut at_index = 0;
+        let mut id = 0;
+        let mut files: VecDeque<File> = VecDeque::new();
+        let mut free: VecDeque<FreeSpace> = VecDeque::new();
+        for (i, &size) in input.iter().enumerate() {
+            if i % 2 == 0 {
+                files.push_back(File { id, size, at_index });
+                id += 1;
+            } else {
+                free.push_back(FreeSpace { size, at_index });
+            }
+
+            at_index += size;
+        }
+
+        (files, free)
+    })(input);
 
     result.unwrap().1
 }
 
 #[derive(Clone, Copy, Debug)]
-struct ChunkedFile {
-    id: u64,
-    remaining: u64,
-}
-
-fn problem1(input: &Input) -> u64 {
-    let mut files: VecDeque<ChunkedFile> = input
-        .iter()
-        .step_by(2)
-        .enumerate()
-        .map(|(idx, x)| ChunkedFile {
-            id: idx as u64,
-            remaining: *x,
-        })
-        .collect();
-
-    let mut free: VecDeque<u64> = input.iter().skip(1).step_by(2).copied().collect();
-
-    let mut reading_file = true;
-    let mut i = 0;
-    let mut checksum = 0;
-    while !files.is_empty() {
-        if reading_file {
-            // read a whole file in and figure out its checksum based on where it is
-            if let Some(whole_file) = files.pop_front() {
-                for _ in 0..whole_file.remaining {
-                    checksum += whole_file.id * i;
-                    i += 1;
-                }
-
-                reading_file = false;
-            }
-        } else {
-            // start taking chunks from files on the back of the list
-            if let Some(free_space) = free.pop_front() {
-                for _ in 0..free_space {
-                    if let Some(mut chunk_file) = files.pop_back() {
-                        checksum += chunk_file.id * i;
-                        chunk_file.remaining -= 1;
-
-                        if chunk_file.remaining > 0 {
-                            files.push_back(chunk_file);
-                        }
-                        i += 1;
-                    }
-                }
-
-                reading_file = true;
-            }
-        }
-    }
-
-    checksum
-}
-
-#[derive(Clone, Copy, Debug)]
-struct ContiguousFile {
+struct File {
     id: u64,
     size: u64,
     at_index: u64,
+}
+
+impl File {
+    fn checksum(&self) -> u64 {
+        (0..self.size).map(|i| self.id * (self.at_index + i)).sum()
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -95,48 +62,50 @@ struct FreeSpace {
     at_index: u64,
 }
 
-fn problem2(input: &Input) -> u64 {
-    let mut idx = 0;
-    let mut id = 0;
-    let mut files: Vec<ContiguousFile> = Vec::new();
-    let mut free: Vec<FreeSpace> = Vec::new();
-    for (i, x) in input.iter().enumerate() {
-        // files are odd
-        if i % 2 == 0 {
-            files.push(ContiguousFile {
-                id,
-                size: *x,
-                at_index: idx,
-            });
-            id += 1;
-            idx += *x;
-        } else {
-            // free space is even, just increment the index
-            free.push(FreeSpace {
-                size: *x,
-                at_index: idx,
-            });
-            idx += x;
-        }
-    }
+fn defrag(input: &Input, mut predicate: impl FnMut(&FreeSpace, &File) -> bool) -> u64 {
+    let (mut files, mut free) = input.clone();
 
-    for file in files.iter_mut().rev() {
+    let mut checksum = 0;
+    while let Some(mut file) = files.pop_back() {
         // find the first free space that is bigger and to the left of the file
-        if let Some(first_available) = free
+        let f = match free
             .iter_mut()
-            .find(|x| x.size >= file.size && x.at_index <= file.at_index)
+            .find(|x| predicate(x, &file) && x.at_index <= file.at_index)
         {
-            // update the file to be there, decrease the free space
-            file.at_index = first_available.at_index;
-            first_available.at_index += file.size;
-            first_available.size -= file.size;
-        }
+            Some(first_available) => {
+                // update the file to be there, decrease the free space
+                let chunks_to_move = file.size.min(first_available.size);
+                let chunk = File {
+                    id: file.id,
+                    size: chunks_to_move,
+                    at_index: first_available.at_index,
+                };
+
+                first_available.at_index += chunks_to_move;
+                first_available.size -= chunks_to_move;
+                file.size -= chunks_to_move;
+
+                if file.size > 0 {
+                    files.push_back(file);
+                }
+
+                chunk
+            }
+            None => file,
+        };
+
+        checksum += f.checksum();
     }
 
-    files
-        .iter()
-        .map(|f| (0..f.size).map(|i| f.id * (f.at_index + i)).sum::<u64>())
-        .sum()
+    checksum
+}
+
+fn problem1(input: &Input) -> u64 {
+    defrag(input, |free, _file| free.size > 0)
+}
+
+fn problem2(input: &Input) -> u64 {
+    defrag(input, |free, file| free.size >= file.size)
 }
 
 #[cfg(test)]
