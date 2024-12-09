@@ -1,14 +1,20 @@
+use std::time::Instant;
+
 use nom::IResult;
 
 fn main() {
     let input = include_str!("../input.txt");
-    let input = parse(&input);
+    let input = parse(input);
 
+    let i = Instant::now();
     let score = problem1(&input);
-    println!("problem 1 score: {score}");
+    let d = i.elapsed();
+    println!("problem 1 score: {score} in {d:?}");
 
+    let i = Instant::now();
     let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    let d = i.elapsed();
+    println!("problem 2 score: {score} in {d:?}");
 }
 
 type Input = Vec<u32>;
