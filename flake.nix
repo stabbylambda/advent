@@ -36,6 +36,7 @@
                   languages.rust.channel = "stable";
                   packages = [
                     pkgs.aoc-cli
+                    pkgs.hyperfine
                   ];
                 }
               ];
