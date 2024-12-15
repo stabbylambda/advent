@@ -37,30 +37,11 @@ fn main() {
 
 type Input = (Grid<Tile>, Vec<CardinalDirection>);
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-enum Tile {
-    Space,
-    Robot,
-    Wall,
-    Box,
-}
-
-impl Display for Tile {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Space => write!(f, "."),
-            Self::Robot => write!(f, "@"),
-            Self::Wall => write!(f, "#"),
-            Self::Box => write!(f, "O"),
-        }
-    }
-}
-
 fn parse(input: &str) -> Input {
     let tile = parse_grid(alt((
         map(char('@'), |_| Tile::Robot),
         map(char('.'), |_| Tile::Space),
-        map(char('O'), |_| Tile::Box),
+        map(char('O'), |_| Tile::SmallBox),
         map(char('#'), |_| Tile::Wall),
     )));
 
@@ -82,89 +63,8 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-fn simulate_moves(grid: &Grid<Tile>, robot: Coord, dir: CardinalDirection) -> Vec<(Coord, Tile)> {
-    // find the first free space in the direction we're moving
-    let mut queue = VecDeque::new();
-    queue.push_back((robot, Tile::Robot));
-
-    let mut result: Vec<(Coord, Tile)> = vec![];
-    while let Some((current, tile)) = queue.pop_front() {
-        // if there's no neighbor, we're off the grid (which is impossible, but whatever)
-        let Some(next) = grid.get_neighbor(current, dir) else {
-            continue;
-        };
-
-        match *next.data {
-            Tile::Space => {
-                result.push((next.coords, tile));
-            }
-            Tile::Wall => {
-                // we hit a wall, clear the result and the queue
-                result.clear();
-                queue.clear();
-            }
-            _ => {
-                result.push((current, *next.data));
-                queue.push_back((next.coords, *next.data));
-            }
-        }
-    }
-    result
-}
-
-fn problem1(input: &Input) -> usize {
-    let (mut grid, directions) = input.clone();
-    let mut robot = grid
-        .iter()
-        .find_map(|x| (x.data == &Tile::Robot).then_some(x.coords))
-        .unwrap();
-
-    for d in directions {
-        let (data, coords) = {
-            let n = grid.get_neighbor(robot, d).unwrap();
-            let data = n.data;
-            let coords = n.coords;
-
-            (*data, coords)
-        };
-
-        match data {
-            // if it's a free space, move into it
-            Tile::Space => {
-                grid.set(robot, Tile::Space);
-                grid.set(coords, Tile::Robot);
-                robot = coords;
-            }
-            // if it's a box, we need to figure out if it can move into a free space
-            // in that direction
-            Tile::Box => {
-                let mut moves = simulate_moves(&grid, robot, d);
-                if moves.is_empty() {
-                    continue;
-                }
-
-                while let Some((free_space, tile)) = moves.pop() {
-                    grid.set(free_space, tile);
-                }
-
-                grid.set(coords, Tile::Robot);
-                grid.set(robot, Tile::Space);
-                robot = coords;
-            }
-            // if it's anything else (wall or...robot?), do nothing
-            _ => {}
-        }
-    }
-
-    // get the gps of all the boxes
-    grid.iter()
-        .filter(|x| x.data == &Tile::Box)
-        .map(|x| x.coords.1 * 100 + x.coords.0)
-        .sum()
-}
-
 #[derive(Clone, Copy, Debug, PartialEq)]
-enum WideTile {
+enum Tile {
     Space,
     Robot,
     Wall,
@@ -173,7 +73,7 @@ enum WideTile {
     BoxRight,
 }
 
-impl Display for WideTile {
+impl Display for Tile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Space => write!(f, "."),
@@ -186,19 +86,20 @@ impl Display for WideTile {
     }
 }
 
-fn make_wide(grid: Grid<Tile>) -> Grid<WideTile> {
-    let wide_grid: Vec<Vec<WideTile>> = grid
+fn make_wide(grid: Grid<Tile>) -> Grid<Tile> {
+    let wide_grid: Vec<Vec<Tile>> = grid
         .points
         .into_iter()
         .map(|row| {
             row.into_iter()
                 .flat_map(|t| match t {
-                    Tile::Space => vec![WideTile::Space, WideTile::Space],
-                    Tile::Robot => vec![WideTile::Robot, WideTile::Space],
-                    Tile::Wall => vec![WideTile::Wall, WideTile::Wall],
-                    Tile::Box => vec![WideTile::BoxLeft, WideTile::BoxRight],
+                    Tile::Space => vec![Tile::Space, Tile::Space],
+                    Tile::Robot => vec![Tile::Robot, Tile::Space],
+                    Tile::Wall => vec![Tile::Wall, Tile::Wall],
+                    Tile::SmallBox => vec![Tile::BoxLeft, Tile::BoxRight],
+                    _ => unreachable!(),
                 })
-                .collect::<Vec<WideTile>>()
+                .collect::<Vec<Tile>>()
         })
         .collect();
 
@@ -206,15 +107,17 @@ fn make_wide(grid: Grid<Tile>) -> Grid<WideTile> {
 }
 
 fn simulate_moves_wide(
-    grid: &Grid<WideTile>,
+    grid: &Grid<Tile>,
     robot: Coord,
     dir: CardinalDirection,
-) -> BTreeMap<Coord, WideTile> {
+) -> BTreeMap<Coord, Tile> {
     // find the first free space in the direction we're moving
     let mut seen: BTreeSet<Coord> = BTreeSet::new();
-    let mut result: BTreeMap<Coord, WideTile> = BTreeMap::new();
+    let mut result: BTreeMap<Coord, Tile> = BTreeMap::new();
 
-    let mut queue = VecDeque::from([robot]);
+    let mut queue = VecDeque::new();
+    queue.push_back(robot);
+
     while let Some(current) = queue.pop_front() {
         // we've already looked at this point
         if !seen.insert(current) {
@@ -228,18 +131,18 @@ fn simulate_moves_wide(
 
         match *next.data {
             // we hit a wall, clear the result and the queue
-            WideTile::Wall => {
+            Tile::Wall => {
                 seen.clear();
                 queue.clear();
             }
-            WideTile::SmallBox => {
+            Tile::SmallBox => {
                 queue.push_back(next.coords);
             }
-            WideTile::BoxLeft => {
+            Tile::BoxLeft => {
                 queue.push_back(next.coords);
                 queue.push_back((next.coords.0 + 1, next.coords.1));
             }
-            WideTile::BoxRight => {
+            Tile::BoxRight => {
                 queue.push_back(next.coords);
                 queue.push_back((next.coords.0 - 1, next.coords.1));
             }
@@ -249,27 +152,28 @@ fn simulate_moves_wide(
 
     let boxes = seen
         .into_iter()
-        .sorted_by_key(|(x, y)| Reverse((x.abs_diff(robot.0), y.abs_diff(robot.1))));
-    for b in boxes {
-        let n = grid.get_neighbor(b, dir).unwrap();
-        let c = grid.get_opt(b).unwrap();
+        .sorted_by_key(|(x, y)| Reverse((x.abs_diff(robot.0), y.abs_diff(robot.1))))
+        .map(|b| {
+            let n = grid.get_neighbor(b, dir).unwrap();
+            let c = grid.get_opt(b).unwrap();
+            (n, c)
+        });
 
+    for (n, c) in boxes {
         result.insert(n.coords, *c.data);
-        result.insert(c.coords, WideTile::Space);
+        result.insert(c.coords, Tile::Space);
     }
 
     result
 }
 
-fn problem2(input: &Input) -> usize {
-    let (grid, directions) = input.clone();
-    let mut grid = make_wide(grid);
+fn execute_instructions(mut grid: Grid<Tile>, directions: &[CardinalDirection]) -> Grid<Tile> {
     let mut robot = grid
         .iter()
-        .find_map(|x| (x.data == &WideTile::Robot).then_some(x.coords))
+        .find_map(|x| (x.data == &Tile::Robot).then_some(x.coords))
         .unwrap();
 
-    for d in directions {
+    for &d in directions {
         let (data, coords) = {
             let n = grid.get_neighbor(robot, d).unwrap();
             let data = n.data;
@@ -280,14 +184,14 @@ fn problem2(input: &Input) -> usize {
 
         match data {
             // if it's a free space, move into it
-            WideTile::Space => {
-                grid.set(robot, WideTile::Space);
-                grid.set(coords, WideTile::Robot);
+            Tile::Space => {
+                grid.set(robot, Tile::Space);
+                grid.set(coords, Tile::Robot);
                 robot = coords;
             }
             // if it's a box, we need to figure out if it can move into a free space
             // in that direction
-            WideTile::BoxLeft | WideTile::BoxRight => {
+            Tile::SmallBox | Tile::BoxLeft | Tile::BoxRight => {
                 let moves = simulate_moves_wide(&grid, robot, d);
                 if moves.is_empty() {
                     continue;
@@ -297,18 +201,36 @@ fn problem2(input: &Input) -> usize {
                     grid.set(free_space, tile);
                 }
 
-                grid.set(coords, WideTile::Robot);
-                grid.set(robot, WideTile::Space);
+                grid.set(coords, Tile::Robot);
+                grid.set(robot, Tile::Space);
                 robot = coords;
             }
             // if it's anything else (wall or...robot?), do nothing
             _ => {}
         }
     }
+    grid
+}
+
+fn problem1(input: &Input) -> usize {
+    let (grid, directions) = input.clone();
+    let grid = execute_instructions(grid, &directions);
 
     // get the gps of all the boxes
     grid.iter()
-        .filter(|x| x.data == &WideTile::BoxLeft)
+        .filter(|x| x.data == &Tile::SmallBox)
+        .map(|x| x.coords.1 * 100 + x.coords.0)
+        .sum()
+}
+
+fn problem2(input: &Input) -> usize {
+    let (grid, directions) = input.clone();
+    let grid = make_wide(grid);
+    let grid = execute_instructions(grid, &directions);
+
+    // get the gps of all the boxes
+    grid.iter()
+        .filter(|x| x.data == &Tile::BoxLeft)
         .map(|x| x.coords.1 * 100 + x.coords.0)
         .sum()
 }
