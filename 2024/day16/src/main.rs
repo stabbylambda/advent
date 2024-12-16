@@ -1,6 +1,7 @@
 use std::{
-    collections::{BTreeSet, BinaryHeap},
+    collections::{BTreeMap, BTreeSet, BinaryHeap},
     time::Instant,
+    usize,
 };
 
 use common::{
@@ -108,40 +109,43 @@ impl Ord for State {
     }
 }
 
-fn problem1(input: &Input) -> usize {
+fn solve(input: &Input) -> State {
     let position = input
         .iter()
         .find_map(|x| (x.data == &Tile::Start).then_some(x.coords))
         .unwrap();
 
-    let start = State::new(position);
-
-    let mut seen: BTreeSet<(Coord, CardinalDirection)> = BTreeSet::new();
-
-    let mut queue = BinaryHeap::new();
-    queue.push(start);
-
+    let mut seen: BTreeMap<(Coord, CardinalDirection), usize> = BTreeMap::new();
+    let mut queue = BinaryHeap::from_iter([State::new(position)]);
     let mut best: Option<State> = None;
     while let Some(current) = queue.pop() {
         let square = input.get(current.position);
 
-        // have we already been here?
-        if !seen.insert((current.position, current.facing)) {
-            continue;
-        }
-
         // don't continue if we're already over a previous best
         if let Some(previous_best) = &best {
             if current.cost > previous_best.cost {
-                continue;
+                break;
             }
+        }
+
+        // have we already been here?
+        let previous = seen
+            .entry((current.position, current.facing))
+            .or_insert(usize::MAX);
+
+        if *previous < current.cost {
+            continue;
+        } else {
+            *previous = current.cost;
         }
 
         // did we hit an end?
         if square.data == &Tile::End {
-            if let Some(previous_best) = &best {
-                // we already have a previous best that's better than this
-                if previous_best.cost != current.cost {
+            if let Some(previous_best) = &mut best {
+                if previous_best.cost == current.cost {
+                    previous_best.tiles.extend(&current.tiles);
+                    continue;
+                } else {
                     continue;
                 }
             } else {
@@ -155,11 +159,19 @@ fn problem1(input: &Input) -> usize {
         }
     }
 
-    best.unwrap().cost
+    best.unwrap()
 }
 
-fn problem2(_input: &Input) -> u32 {
-    todo!()
+fn problem1(input: &Input) -> usize {
+    solve(input).cost
+}
+
+fn problem2(input: &Input) -> usize {
+    solve(input)
+        .tiles
+        .into_iter()
+        .collect::<BTreeSet<_>>()
+        .len()
 }
 
 #[cfg(test)]
@@ -180,12 +192,19 @@ mod test {
         let result = problem1(&input);
         assert_eq!(result, 11048)
     }
+    #[test]
+    fn second_small() {
+        let input = include_str!("../test_small.txt");
+        let input = parse(input);
+        let result = problem2(&input);
+        assert_eq!(result, 45)
+    }
 
     #[test]
-    fn second() {
+    fn second_large() {
         let input = include_str!("../test.txt");
-        let input = parse(&input);
+        let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 64)
     }
 }
