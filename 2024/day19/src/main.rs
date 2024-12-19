@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use nom::{
     bytes::complete::tag,
     character::complete::{alpha1, newline},
@@ -6,7 +5,7 @@ use nom::{
     sequence::separated_pair,
     IResult,
 };
-use std::{collections::HashMap, mem, time::Instant};
+use std::{collections::HashMap, time::Instant};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -35,38 +34,41 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
-fn is_valid<'a>(towel: &'a str, designs: &[&str], memo: &mut HashMap<&'a str, bool>) -> bool {
+fn count_combos<'a>(towel: &'a str, designs: &[&str], memo: &mut HashMap<&'a str, u64>) -> u64 {
     if let Some(valid) = memo.get(towel) {
         return *valid;
     }
 
-    designs.iter().any(|design| {
-        towel
-            .strip_prefix(design)
-            .map(|rest| {
-                let valid = is_valid(rest, designs, memo);
-                memo.insert(rest, valid);
-                valid
-            })
-            .unwrap_or_default()
-    })
+    designs
+        .iter()
+        .flat_map(|design| towel.strip_prefix(design))
+        .map(|rest| {
+            let valid = count_combos(rest, designs, memo);
+            memo.insert(rest, valid);
+            valid
+        })
+        .sum()
 }
 
-fn problem1(input: &Input) -> usize {
+fn solve(input: &Input) -> Vec<u64> {
     let (designs, towels) = input;
 
     // start a dynamic programming cache with the empty string being valid
-    let mut memo: HashMap<&str, bool> = HashMap::new();
-    memo.insert("", true);
+    let mut memo: HashMap<&str, u64> = HashMap::new();
+    memo.insert("", 1);
 
     towels
         .iter()
-        .filter(|x| is_valid(x, &designs[..], &mut memo))
-        .count()
+        .map(|x| count_combos(x, &designs[..], &mut memo))
+        .collect()
+}
+
+fn problem1(input: &Input) -> usize {
+    solve(input).iter().filter(|x| **x > 0).count()
 }
 
 fn problem2(input: &Input) -> u64 {
-    todo!()
+    solve(input).iter().sum()
 }
 
 #[cfg(test)]
@@ -81,11 +83,10 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn second() {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 16)
     }
 }
