@@ -66,21 +66,18 @@ fn get_base_costs(input: &Input) -> BTreeMap<Coord, u64> {
     base_cost
 }
 
-fn get_all_saved_two(input: &Input) -> BTreeMap<u64, u64> {
+fn get_all_saved(input: &Input, mut f: impl FnMut(u64) -> bool) -> BTreeMap<u64, u64> {
     let base_costs = get_base_costs(input);
     let mut all_saved = BTreeMap::new();
 
     for (start, start_cost) in &base_costs {
         for (end, end_cost) in &base_costs {
             let dist = start.manhattan(end) as u64;
-            if dist == 2 {
+            if f(dist) {
                 if let Some(saved) = start_cost.checked_sub(*end_cost) {
                     let key = saved - dist;
                     if key > 0 {
-                        all_saved
-                            .entry(saved - dist)
-                            .and_modify(|x| *x += 1)
-                            .or_insert(1);
+                        all_saved.entry(key).and_modify(|x| *x += 1).or_insert(1);
                     }
                 }
             }
@@ -90,36 +87,13 @@ fn get_all_saved_two(input: &Input) -> BTreeMap<u64, u64> {
     all_saved
 }
 
-fn get_all_saved_twenty(input: &Input) -> BTreeMap<u64, u64> {
-    let base_costs = get_base_costs(input);
-    let mut all_saved = BTreeMap::new();
-
-    for (start, start_cost) in &base_costs {
-        for (end, end_cost) in &base_costs {
-            let dist = start.manhattan(end) as u64;
-            if dist <= 20 {
-                if let Some(saved) = start_cost.checked_sub(*end_cost) {
-                    let key = saved - dist;
-                    if key >= 50 {
-                        all_saved
-                            .entry(saved - dist)
-                            .and_modify(|x| *x += 1)
-                            .or_insert(1);
-                    }
-                }
-            }
-        }
-    }
-
-    all_saved
-}
 fn problem1(input: &Input) -> u64 {
-    let all_saved = get_all_saved_two(input);
+    let all_saved = get_all_saved(input, |x| x == 2);
     all_saved.iter().filter(|x| x.0 >= &100).map(|x| x.1).sum()
 }
 
 fn problem2(input: &Input) -> u64 {
-    let all_saved = get_all_saved_twenty(input);
+    let all_saved = get_all_saved(input, |x| x <= 20);
     all_saved.iter().filter(|x| x.0 >= &100).map(|x| x.1).sum()
 }
 
@@ -127,12 +101,12 @@ fn problem2(input: &Input) -> u64 {
 mod test {
     use std::collections::BTreeMap;
 
-    use crate::{get_all_saved_twenty, get_all_saved_two, parse};
+    use crate::{get_all_saved, parse};
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
         let input = parse(input);
-        let all_saved = get_all_saved_two(&input);
+        let all_saved = get_all_saved(&input, |x| x == 2);
         let expected = BTreeMap::from_iter([
             (2, 14),
             (4, 14),
@@ -153,7 +127,8 @@ mod test {
     fn second() {
         let input = include_str!("../test.txt");
         let input = parse(input);
-        let result = get_all_saved_twenty(&input);
+        let result = get_all_saved(&input, |x| x <= 20);
+        let result: BTreeMap<_, _> = result.into_iter().filter(|x| x.0 >= 50).collect();
         assert_eq!(
             result,
             BTreeMap::from_iter([
