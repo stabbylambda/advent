@@ -110,10 +110,7 @@ impl Ord for State {
 }
 
 fn solve(input: &Input) -> State {
-    let position = input
-        .iter()
-        .find_map(|x| (x.data == &Tile::Start).then_some(x.coords))
-        .unwrap();
+    let position = input.find(Tile::Start).map(|x| x.coords).unwrap();
 
     let mut seen: BTreeMap<(Coord, CardinalDirection), usize> = BTreeMap::new();
     let mut queue = BinaryHeap::from_iter([State::new(position)]);

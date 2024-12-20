@@ -104,6 +104,16 @@ impl<T: Copy> Grid<T> {
     }
 }
 
+impl<T> Grid<T>
+where
+    T: Eq,
+{
+    // find the first instance of `data`
+    pub fn find(&self, data: T) -> Option<GridSquare<T>> {
+        self.iter().find(|x| *x.data == data)
+    }
+}
+
 pub struct GridIter<'a, T: 'a> {
     index: usize,
     grid: &'a Grid<T>,
