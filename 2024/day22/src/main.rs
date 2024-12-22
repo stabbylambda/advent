@@ -28,13 +28,31 @@ fn parse(input: &str) -> Input {
     result.unwrap().1
 }
 
+fn mix(secret: u64, value: u64) -> u64 {
+    secret ^ value
+}
+fn prune(secret: u64) -> u64 {
+    secret % 16777216
+}
+
+fn next(current: u64) -> u64 {
+    let current = mix(current, current * 64);
+    let current = prune(current);
+    let current = mix(current, current / 32);
+    let current = prune(current);
+    let current = mix(current, current * 2048);
+
+    prune(current)
+}
+
 fn problem1(input: &Input) -> u64 {
-    dbg!(input);
-    todo!()
+    input
+        .iter()
+        .map(|buyer| (0..2000).fold(*buyer, |acc, _| next(acc)))
+        .sum()
 }
 
 fn problem2(input: &Input) -> u64 {
-    dbg!(input);
     todo!()
 }
 
@@ -42,12 +60,11 @@ fn problem2(input: &Input) -> u64 {
 mod test {
     use crate::{parse, problem1, problem2};
     #[test]
-    #[ignore]
     fn first() {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 37327623)
     }
 
     #[test]
@@ -59,4 +76,3 @@ mod test {
         assert_eq!(result, 0)
     }
 }
-
