@@ -2,15 +2,15 @@ use itertools::Itertools;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{alpha1, alphanumeric1, newline, u64},
+    character::complete::{alphanumeric1, newline, u64},
     combinator::map,
     multi::separated_list1,
     sequence::{separated_pair, terminated, tuple},
     IResult,
 };
 use std::{
-    cmp::Reverse,
-    collections::{HashMap, VecDeque},
+    collections::{HashMap, HashSet, VecDeque},
+    fmt::Display,
     time::Instant,
 };
 
@@ -31,19 +31,49 @@ fn main() {
 
 type Input<'a> = (HashMap<&'a str, u64>, Vec<Gate<'a>>);
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum GateKind {
     And,
     Or,
     Xor,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct Gate<'a> {
     input1: &'a str,
     input2: &'a str,
     kind: GateKind,
     output: &'a str,
+}
+
+impl<'a> Gate<'a> {
+    fn is_lsb(&self) -> bool {
+        (self.input1 == "x00" || self.input1 == "y00")
+            || (self.input2 == "x00" || self.input2 == "y00")
+    }
+
+    fn is_inner_gate(&self) -> bool {
+        let i1 = ['x', 'y', 'z'].contains(&self.input1.chars().next().unwrap());
+        let i2 = ['x', 'y', 'z'].contains(&self.input2.chars().next().unwrap());
+        let o = ['x', 'y', 'z'].contains(&self.output.chars().next().unwrap());
+
+        !i1 && !i2 && !o
+    }
+}
+
+impl Display for Gate<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let kind = match self.kind {
+            GateKind::And => "AND",
+            GateKind::Or => "OR",
+            GateKind::Xor => "XOR",
+        };
+        write!(
+            f,
+            "{} {} {} -> {}",
+            self.input1, kind, self.input2, self.output
+        )
+    }
 }
 
 fn parse(input: &str) -> Input {
@@ -103,6 +133,7 @@ fn problem1(input: &Input) -> u64 {
 
         wires.insert(gate.output, output);
 
+        // check if we have any z gates left
         if !gates.iter().any(|x| x.output.starts_with("z")) {
             break;
         }
@@ -118,13 +149,58 @@ fn problem1(input: &Input) -> u64 {
     result
 }
 
-fn problem2(input: &Input) -> u64 {
-    todo!()
+fn problem2(input: &Input) -> String {
+    let gates = &input.1;
+
+    let wrong_zout = gates
+        .iter()
+        .filter(|g| g.output.starts_with("z"))
+        .filter(|g| g.output != "z45")
+        .filter(|g| g.kind != GateKind::Xor)
+        .collect_vec();
+
+    let more_wrong_xors = gates
+        .iter()
+        .filter(|g| g.kind == GateKind::Xor)
+        .filter(|g| {
+            // check the subgates for the wrong pattern
+            let subgates_wrong = gates
+                .iter()
+                .filter(|sg| sg.kind == GateKind::Or)
+                .any(|sg| sg.input1 == g.output || sg.input2 == g.output);
+
+            g.is_inner_gate() || subgates_wrong
+        })
+        .collect_vec();
+
+    let wrong_ands = gates
+        .iter()
+        .filter(|g| !g.is_lsb())
+        .filter(|g| g.kind == GateKind::And)
+        .filter(|g| {
+            !gates
+                .iter()
+                .filter(|sg| sg.kind == GateKind::Or)
+                .any(|sg| sg.input1 == g.output || sg.input2 == g.output)
+        })
+        .collect_vec();
+
+    let mut swapped: HashSet<&Gate> = HashSet::new();
+    swapped.extend(&wrong_zout);
+    swapped.extend(&more_wrong_xors);
+    swapped.extend(&wrong_ands);
+
+    swapped
+        .iter()
+        .map(|g| g.output)
+        .sorted()
+        .join(",")
+        .to_string()
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{parse, problem1, problem2};
+    use crate::{parse, problem1};
     #[test]
     fn first() {
         let input = include_str!("../test.txt");
@@ -139,14 +215,5 @@ mod test {
         let input = parse(input);
         let result = problem1(&input);
         assert_eq!(result, 2024)
-    }
-
-    #[test]
-    #[ignore]
-    fn second() {
-        let input = include_str!("../test.txt");
-        let input = parse(input);
-        let result = problem2(&input);
-        assert_eq!(result, 0)
     }
 }
