@@ -9,4 +9,4 @@ edition = "2021"
 common = { path = "../../common" }
 itertools = { workspace = true }
 nom = { workspace = true }
-rustworkx-core = "0.14.0"
+rustworkx-core = "0.17.0"
