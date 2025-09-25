@@ -8,6 +8,6 @@ edition = "2021"
 [dependencies]
 common = { path = "../../common" }
 itertools = { workspace = true }
-nalgebra = "0.32.3"
+nalgebra = "0.34.0"
 ndarray = "0.15.6"
 nom = { workspace = true }
