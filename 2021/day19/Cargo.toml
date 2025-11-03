@@ -9,5 +9,5 @@ edition = "2021"
 common = { path = "../../common" }
 itertools = { workspace = true }
 nalgebra = "0.32.3"
-ndarray = "0.15.6"
+ndarray = "0.17.0"
 nom = { workspace = true }
