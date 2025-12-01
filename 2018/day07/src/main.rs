@@ -91,7 +91,7 @@ fn problem1(input: &Input) -> String {
         steps.push(next.to_string());
 
         // Find all edges from n -> m (it's easier to do this from the original list)
-        for (n, m) in input.iter().filter(|(n, _m)| (*n == next)) {
+        for (n, m) in input.iter().filter(|(n, _m)| *n == next) {
             // remove the edge
             if let Some(v) = graph.incoming.get_mut(m) {
                 v.remove(n);

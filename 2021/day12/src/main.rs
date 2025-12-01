@@ -35,7 +35,7 @@ struct GraphData<'a> {
     start: NodeIndex,
 }
 impl<'a> GraphData<'a> {
-    fn parse(input: &str) -> GraphData {
+    fn parse(input: &str) -> GraphData<'_> {
         let mut graph: UnGraph<Cave, ()> = Graph::new_undirected();
         let edges: Vec<(Cave, Cave)> = input
             .lines()

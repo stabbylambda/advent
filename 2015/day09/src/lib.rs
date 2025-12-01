@@ -18,7 +18,7 @@ pub struct Route<'a> {
     distance: u32,
 }
 
-pub fn parse(input: &str) -> Input {
+pub fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         map(

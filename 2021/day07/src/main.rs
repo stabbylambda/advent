@@ -62,7 +62,7 @@ impl CrabFleet {
         let mut values = self.crabs.clone();
         values.sort();
         let length = values.len();
-        if length % 2 == 0 {
+        if length.is_multiple_of(2) {
             let mid1 = values.get(length / 2).unwrap();
             let mid2 = values.get((length / 2) - 1).unwrap();
 

@@ -64,21 +64,21 @@ impl Input<'_> {
         separated_list0(tag(" "), Input::parse_crate)(s)
     }
 
-    fn invert_stacks(rows: Vec<Vec<Option<&str>>>) -> Vec<Stack> {
+    fn invert_stacks(rows: Vec<Vec<Option<&str>>>) -> Vec<Stack<'_>> {
         let stack_count = rows.first().unwrap().len();
         (0..stack_count)
             .map(|n| rows.iter().rev().filter_map(|row| row[n]).collect())
             .collect()
     }
 
-    fn parse_stacks(s: &str) -> IResult<&str, Vec<Stack>> {
+    fn parse_stacks(s: &str) -> IResult<&str, Vec<Stack<'_>>> {
         map(
             many0(terminated(Input::parse_row, newline)),
             Input::invert_stacks,
         )(s)
     }
 
-    fn parse(raw: &str) -> Input {
+    fn parse(raw: &str) -> Input<'_> {
         map(
             separated_pair(
                 Input::parse_stacks,

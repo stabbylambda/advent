@@ -73,7 +73,7 @@ impl Pattern {
 
     fn divide(&self) -> Vec<Vec<Pattern>> {
         let size = self.size();
-        let step = if size % 2 == 0 { 2 } else { 3 };
+        let step = if size.is_multiple_of(2) { 2 } else { 3 };
 
         // I guarantee there's a nicer way to do this...but I can't think of it right now
         (0..size)

@@ -39,11 +39,11 @@ enum Gate<'a> {
 
 type Input<'a> = HashMap<&'a str, Gate<'a>>;
 
-fn data(input: &str) -> IResult<&str, Data> {
+fn data(input: &str) -> IResult<&str, Data<'_>> {
     alt((map(nom_i32, Data::Constant), map(alpha1, Data::Wire)))(input)
 }
 
-fn gate(input: &str) -> IResult<&str, Gate> {
+fn gate(input: &str) -> IResult<&str, Gate<'_>> {
     alt((
         map(separated_pair(data, tag(" AND "), data), Gate::And),
         map(separated_pair(data, tag(" OR "), data), Gate::Or),
@@ -54,7 +54,7 @@ fn gate(input: &str) -> IResult<&str, Gate> {
     ))(input)
 }
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Vec<(&str, Gate)>> = separated_list1(
         newline,
         map(separated_pair(gate, tag(" -> "), alpha1), |(gate, wire)| {

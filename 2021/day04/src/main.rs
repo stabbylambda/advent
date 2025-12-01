@@ -76,14 +76,14 @@ impl Board {
                 .map(|x| x.parse::<i32>().unwrap())
                 .collect();
 
-            for col in 0..5 {
+            (0..5).for_each(|col| {
                 let value = columns.get(col).unwrap().to_owned();
                 let cell = Cell {
                     value,
                     marked: false,
                 };
                 cells[row][col] = cell;
-            }
+            });
         }
         Board { cells, done: false }
     }
@@ -232,11 +232,13 @@ fn winner() {
 
 #[test]
 fn score() {
-    let b = Board::new(&["14 21 17 24  4",
+    let b = Board::new(&[
+        "14 21 17 24  4",
         "10 16 15  9 19",
         "18  8 23 26 20",
         "22 11 13  6  5",
-        " 2  0 12  3  7"]);
+        " 2  0 12  3  7",
+    ]);
 
     let draws = vec![7, 4, 9, 5, 11, 17, 23, 2, 0, 14, 21, 24];
     let mut bingo = Bingo {

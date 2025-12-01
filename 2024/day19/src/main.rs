@@ -24,7 +24,7 @@ fn main() {
 
 type Input<'a> = (Vec<&'a str>, Vec<&'a str>);
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> = separated_pair(
         separated_list1(tag(", "), alpha1),
         tag("\n\n"),

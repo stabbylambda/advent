@@ -51,9 +51,9 @@ fn get_neighbors(x: usize, y: usize) -> Vec<(usize, usize)> {
 fn step(input: &mut [Vec<u32>]) -> u32 {
     // first increment every octopus
     (0..10).for_each(|y| {
-        for x in 0..10 {
+        (0..10).for_each(|x| {
             input[y][x] += 1;
-        }
+        })
     });
 
     let mut total_flashes = 0;
@@ -80,11 +80,11 @@ fn step(input: &mut [Vec<u32>]) -> u32 {
 
     //now reset if they've been flashed
     (0..10).for_each(|y| {
-        for x in 0..10 {
+        (0..10).for_each(|x| {
             if input[y][x] == u32::MAX {
                 input[y][x] = 0;
             }
-        }
+        })
     });
 
     total_flashes

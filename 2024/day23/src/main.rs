@@ -29,7 +29,7 @@ fn main() {
 
 type Input<'a> = Vec<(&'a str, &'a str)>;
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         separated_pair(take(2usize), char('-'), take(2usize)),

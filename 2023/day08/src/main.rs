@@ -23,7 +23,7 @@ fn main() {
 
 type Input<'a> = Document<'a>;
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let instructions = many1(alt((
         map(char('L'), |_| Direction::Left),
         map(char('R'), |_| Direction::Right),

@@ -22,7 +22,7 @@ fn main() {
 fn parse_range(s: &str) -> IResult<&str, RangeInclusive<u32>> {
     map(
         separated_pair(nom_u32, char('-'), nom_u32),
-        |(start, end)| (start..=end),
+        |(start, end)| start..=end,
     )(s)
 }
 #[derive(Debug)]

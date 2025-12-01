@@ -1,7 +1,6 @@
 use std::{
     collections::{BTreeMap, BTreeSet, BinaryHeap},
     time::Instant,
-    usize,
 };
 
 use common::{

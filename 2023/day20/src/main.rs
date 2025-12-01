@@ -29,7 +29,7 @@ fn main() {
 
 type Input<'a> = BTreeMap<&'a str, (ModuleIdentifier, Vec<&'a str>)>;
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> = map(
         separated_list1(
             newline,

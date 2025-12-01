@@ -23,7 +23,7 @@ fn main() {
 
 type Input<'a> = (Workflows<'a>, Vec<Part>);
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let workflows = map(
         separated_list1(
             newline,
@@ -83,7 +83,7 @@ enum Rule<'a> {
 }
 
 impl<'a> Rule<'a> {
-    fn parse(input: &str) -> IResult<&str, Rule> {
+    fn parse(input: &str) -> IResult<&str, Rule<'_>> {
         alt((
             map(
                 tuple((

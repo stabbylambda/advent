@@ -23,7 +23,7 @@ fn main() {
 
 type Input<'a> = HashMap<&'a str, (u64, Vec<(u64, &'a str)>)>;
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let ingredient = |s| separated_pair(u64, tag(" "), alpha1)(s);
     let rule = |s| {
         separated_pair(

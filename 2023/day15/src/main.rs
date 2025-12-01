@@ -23,7 +23,7 @@ fn main() {
 
 type Input<'a> = Vec<Step<'a>>;
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> = separated_list1(
         tag(","),
         alt((

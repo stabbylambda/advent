@@ -76,7 +76,7 @@ impl Display for Gate<'_> {
     }
 }
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let gate = |s| {
         map(
             tuple((

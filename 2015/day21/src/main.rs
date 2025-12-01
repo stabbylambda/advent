@@ -68,7 +68,7 @@ struct Item<'a> {
     armor: i32,
 }
 impl<'a> Item<'a> {
-    const fn new(name: &str, cost: i32, damage: i32, armor: i32) -> Item {
+    const fn new(name: &str, cost: i32, damage: i32, armor: i32) -> Item<'_> {
         Item {
             name,
             cost,

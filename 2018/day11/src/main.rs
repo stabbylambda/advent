@@ -29,11 +29,9 @@ fn create_summed_area_table(serial_number: i32) -> Vec<Vec<i32>> {
     for y in 0..300 {
         for x in 0..300 {
             let p = power_level(serial_number, (x + 1, y + 1));
-            let prev_y = (y > 0).then(|| cells[y - 1][x]).unwrap_or_default();
-            let prev_x = (x > 0).then(|| cells[y][x - 1]).unwrap_or_default();
-            let prev_xy = (x > 0 && y > 0)
-                .then(|| cells[y - 1][x - 1])
-                .unwrap_or_default();
+            let prev_y = if y > 0 { cells[y - 1][x] } else { Default::default() };
+            let prev_x = if x > 0 { cells[y][x - 1] } else { Default::default() };
+            let prev_xy = if x > 0 && y > 0 { cells[y - 1][x - 1] } else { Default::default() };
 
             cells[y][x] = p + prev_y + prev_x - prev_xy;
         }

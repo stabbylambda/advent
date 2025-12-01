@@ -31,7 +31,7 @@ fn sensors_tripped(input: &Input, start: u32) -> Vec<(u32, u32)> {
         .iter()
         .filter_map(|&(t, depth)| {
             let cycle = 2 * (depth - 1);
-            ((start + t) % cycle == 0).then_some((t, depth))
+            (start + t).is_multiple_of(cycle).then_some((t, depth))
         })
         .collect()
 }

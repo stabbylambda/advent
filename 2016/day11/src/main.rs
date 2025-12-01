@@ -140,7 +140,7 @@ impl Elevator {
             .iter()
             .powerset()
             .filter(|x| x.len() == 1 || x.len() == 2)
-            .map(|v| (v.iter().map(|&x| x.clone()).collect_vec()))
+            .map(|v| v.iter().map(|&x| x.clone()).collect_vec())
             .cartesian_product(vec![true, false])
             .collect_vec()
     }
