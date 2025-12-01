@@ -4,7 +4,7 @@ use nom::{
     character::complete::{i32, newline},
     combinator::map,
     multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -35,7 +35,7 @@ fn parse(input: &str) -> Input {
         map(separated_list1(tag(","), i32), |x| {
             Point((x[0], x[1], x[2], x[3]))
         }),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

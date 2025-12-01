@@ -5,8 +5,8 @@ use nom::{
     character::complete::{newline, space1, u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, preceded, terminated, tuple},
-    IResult,
+    sequence::{delimited, preceded, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -52,7 +52,7 @@ impl Card {
 
 fn parse(input: &str) -> Input {
     let card = map(
-        tuple((
+        (
             terminated(
                 delimited(terminated(tag("Card"), space1), u32, tag(":")),
                 space1,
@@ -62,11 +62,11 @@ fn parse(input: &str) -> Input {
                 preceded(space1, terminated(tag("|"), space1)),
             ),
             separated_list1(space1, u32),
-        )),
+        ),
         |(id, winning, have)| Card { id, winning, have },
     );
 
-    let result: IResult<&str, Input> = separated_list1(newline, card)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, card).parse(input);
 
     result.unwrap().1
 }

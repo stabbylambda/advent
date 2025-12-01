@@ -5,7 +5,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -28,7 +28,7 @@ fn parse(input: &str) -> Input {
             left: x,
             right: y,
         }),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

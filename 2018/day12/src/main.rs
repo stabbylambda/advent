@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::{many1, separated_list1},
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -22,8 +22,8 @@ fn main() {
 type Input = (Vec<bool>, HashMap<Vec<bool>, bool>);
 
 fn parse(input: &str) -> Input {
-    let plant = |s| alt((map(char('#'), |_| true), map(char('.'), |_| false)))(s);
-    let plants = |s| many1(plant)(s);
+    let plant = |s| alt((map(char('#'), |_| true), map(char('.'), |_| false))).parse(s);
+    let plants = |s| many1(plant).parse(s);
 
     let result: IResult<&str, Input> = separated_pair(
         preceded(tag("initial state: "), plants),
@@ -32,7 +32,7 @@ fn parse(input: &str) -> Input {
             separated_list1(newline, separated_pair(plants, tag(" => "), plant)),
             |x| x.iter().cloned().collect(),
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use nom::{bytes::complete::tag, character::complete::u32, multi::separated_list1, IResult};
+use nom::{bytes::complete::tag, character::complete::u32, multi::separated_list1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -16,7 +16,7 @@ fn main() {
 type Input = Vec<u32>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(tag(","), u32)(input);
+    let result: IResult<&str, Input> = separated_list1(tag(","), u32).parse(input);
 
     result.unwrap().1
 }

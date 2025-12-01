@@ -6,7 +6,7 @@ use common::{
     nom::parse_grid,
 };
 use itertools::Itertools;
-use nom::{branch::alt, character::complete::char, combinator::map, IResult};
+use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -25,7 +25,7 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = parse_grid(alt((
         map(char('.'), |_| Tile::Empty),
         map(char('#'), |_| Tile::Galaxy),
-    )))(input);
+    ))).parse(input);
 
     result.unwrap().1
 }

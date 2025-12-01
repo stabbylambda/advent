@@ -2,7 +2,7 @@ use common::{
     grid::{Grid, GridSquare},
     nom::parse_grid,
 };
-use nom::{branch::alt, character::complete::char, IResult};
+use nom::{branch::alt, character::complete::char, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -19,7 +19,7 @@ type Input = Grid<char>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        parse_grid(alt((char('X'), char('M'), char('A'), char('S'))))(input);
+        parse_grid(alt((char('X'), char('M'), char('A'), char('S')))).parse(input);
 
     result.unwrap().1
 }

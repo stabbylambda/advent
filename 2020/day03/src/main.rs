@@ -2,7 +2,7 @@ use nom::{
     branch::alt,
     character::complete::{char, newline},
     multi::{many1, separated_list1},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -20,7 +20,7 @@ type Input = Vec<Vec<char>>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        separated_list1(newline, many1(alt((char('#'), char('.')))))(input);
+        separated_list1(newline, many1(alt((char('#'), char('.'))))).parse(input);
 
     result.unwrap().1
 }

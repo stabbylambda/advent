@@ -7,7 +7,7 @@ use nom::combinator::map;
 use nom::multi::separated_list1;
 use nom::{
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 use crate::{Input, Valve};
@@ -16,7 +16,7 @@ fn parse_valve(input: &str) -> IResult<&str, (&str, u32)> {
         preceded(tag("Valve "), alpha1),
         tag(" has flow rate="),
         nom_u32,
-    )(input)
+    ).parse(input)
 }
 
 fn parse_adjacent(input: &str) -> IResult<&str, Vec<&str>> {
@@ -26,7 +26,7 @@ fn parse_adjacent(input: &str) -> IResult<&str, Vec<&str>> {
             tag("tunnel leads to valve "),
         )),
         separated_list1(tag(", "), alpha1),
-    )(input)
+    ).parse(input)
 }
 
 pub(crate) fn parse(input: &str) -> Input {
@@ -60,7 +60,7 @@ pub(crate) fn parse(input: &str) -> Input {
 
             crate::Caves::new(valves, indexes["AA"])
         },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

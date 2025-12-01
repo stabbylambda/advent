@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::{many1, separated_list1},
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -22,9 +22,9 @@ fn main() {
 type Input = (Vec<bool>, Vec<Vec<bool>>);
 
 fn parse(input: &str) -> Input {
-    let pixels = |s| many1(alt((map(char('#'), |_| true), map(char('.'), |_| false))))(s);
+    let pixels = |s| many1(alt((map(char('#'), |_| true), map(char('.'), |_| false)))).parse(s);
     let result: IResult<&str, Input> =
-        separated_pair(pixels, tag("\n\n"), separated_list1(newline, pixels))(input);
+        separated_pair(pixels, tag("\n\n"), separated_list1(newline, pixels)).parse(input);
 
     result.unwrap().1
 }

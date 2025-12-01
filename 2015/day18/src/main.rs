@@ -4,7 +4,7 @@ use nom::{
     character::complete::{char, newline},
     combinator::map,
     multi::{many1, separated_list1},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -45,7 +45,7 @@ fn parse(input: &str, steps: usize) -> Input {
             many1(alt((map(char('.'), |_| false), map(char('#'), |_| true)))),
         ),
         |x| to_array(steps, x),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

@@ -6,8 +6,8 @@ use nom::{
     character::complete::{alpha1, char, newline, u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, preceded, separated_pair, tuple},
-    IResult,
+    sequence::{delimited, preceded, separated_pair},
+    IResult, Parser,
 };
 
 fn main() {
@@ -27,17 +27,17 @@ fn parse(input: &str) -> Input<'_> {
     let workflows = map(
         separated_list1(
             newline,
-            tuple((
+            (
                 alpha1,
                 delimited(tag("{"), separated_list1(tag(","), Rule::parse), tag("}")),
-            )),
+            ),
         ),
         Workflows::new,
     );
 
     let parts = separated_list1(newline, Part::parse);
 
-    let result: IResult<&str, Input> = separated_pair(workflows, tag("\n\n"), parts)(input);
+    let result: IResult<&str, Input> = separated_pair(workflows, tag("\n\n"), parts).parse(input);
 
     result.unwrap().1
 }
@@ -57,7 +57,7 @@ impl Xmas {
             map(char('m'), |_| Xmas::M),
             map(char('a'), |_| Xmas::A),
             map(char('s'), |_| Xmas::S),
-        ))(input)
+        )).parse(input)
     }
 }
 
@@ -72,7 +72,7 @@ impl Comparison {
         alt((
             map(char('>'), |_| Comparison::Greater),
             map(char('<'), |_| Comparison::Less),
-        ))(input)
+        )).parse(input)
     }
 }
 
@@ -86,16 +86,16 @@ impl<'a> Rule<'a> {
     fn parse(input: &str) -> IResult<&str, Rule<'_>> {
         alt((
             map(
-                tuple((
+                (
                     Xmas::parse,
                     Comparison::parse,
                     u32,
                     preceded(tag(":"), alpha1),
-                )),
+                ),
                 |(xmas, comp, num, result)| Rule::Branch(xmas, comp, num, result),
             ),
             map(alpha1, |x: &str| Rule::Fallthrough(x)),
-        ))(input)
+        )).parse(input)
     }
 
     fn evaluate_part(&self, part: &Part) -> Option<&str> {
@@ -172,7 +172,7 @@ impl Part {
                 tag("}"),
             ),
             Part::new,
-        )(input)
+        ).parse(input)
     }
 
     fn rating(&self) -> u32 {

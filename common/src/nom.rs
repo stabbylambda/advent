@@ -1,5 +1,3 @@
-use std::ops::RangeFrom;
-
 use nom::{
     bytes::complete::{tag, take},
     character::complete::{anychar, newline, u32},
@@ -7,40 +5,41 @@ use nom::{
     error::ParseError,
     multi::{many1, many_till, separated_list1},
     sequence::separated_pair,
-    IResult, InputIter, InputLength, InputTake, Parser, Slice,
+    IResult, Input, Parser,
 };
 
 use crate::grid::{Coord, Grid};
 
-pub fn parse_grid<I, O, E: ParseError<I>, F: Parser<I, O, E>>(
+pub fn parse_grid<I, O, E: ParseError<I>, F: Parser<I, Output = O, Error = E>>(
     f: F,
-) -> impl FnMut(I) -> IResult<I, Grid<O>, E>
+) -> impl Parser<I, Output = Grid<O>, Error = E>
 where
-    I: Clone + InputIter + InputLength + Slice<RangeFrom<usize>>,
+    I: Clone + Input,
     O: Copy,
-    <I as nom::InputIter>::Item: nom::AsChar,
+    <I as nom::Input>::Item: nom::AsChar,
 {
     map(separated_list1(newline, many1(f)), Grid::new)
 }
 
-pub fn drop_till<I, O, E: ParseError<I>, F>(parser: F) -> impl FnMut(I) -> IResult<I, O, E>
+pub fn drop_till<I, O, E: ParseError<I>, F>(parser: F) -> impl Parser<I, Output = O, Error = E>
 where
-    I: Clone + InputLength + InputTake + InputIter,
-    F: Parser<I, O, E>,
+    I: Clone + Input,
+    F: Parser<I, Output = O, Error = E>,
 {
     map(many_till(take(1u8), parser), |(_, matched)| matched)
 }
 
 pub fn single_digit(s: &str) -> IResult<&str, u32> {
-    map_opt(anychar, |c| c.to_digit(10))(s)
+    map_opt(anychar, |c| c.to_digit(10)).parse(s)
 }
 
 pub fn coord(s: &str) -> IResult<&str, Coord> {
     map(separated_pair(u32, tag(","), u32), |(x, y)| {
         (x as usize, y as usize)
-    })(s)
+    })
+    .parse(s)
 }
 
 pub fn usize(s: &str) -> IResult<&str, usize> {
-    map(u32, |x| x as usize)(s)
+    map(u32, |x| x as usize).parse(s)
 }

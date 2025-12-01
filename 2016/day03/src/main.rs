@@ -1,8 +1,8 @@
 use nom::{
     character::complete::{multispace0, newline, u32},
     multi::separated_list1,
-    sequence::{preceded, tuple},
-    IResult,
+    sequence::preceded,
+    IResult, Parser,
 };
 
 fn main() {
@@ -21,12 +21,12 @@ type Input = Vec<(u32, u32, u32)>;
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
         newline,
-        tuple((
+        (
             preceded(multispace0, u32),
             preceded(multispace0, u32),
             preceded(multispace0, u32),
-        )),
-    )(input);
+        ),
+    ).parse(input);
 
     result.unwrap().1
 }

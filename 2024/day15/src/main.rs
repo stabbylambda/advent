@@ -17,7 +17,7 @@ use nom::{
     combinator::map,
     multi::{many1, separated_list1},
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -58,7 +58,7 @@ fn parse(input: &str) -> Input {
         |x| x.into_iter().flatten().collect::<Vec<CardinalDirection>>(),
     );
 
-    let result: IResult<&str, Input> = separated_pair(tile, tag("\n\n"), directions)(input);
+    let result: IResult<&str, Input> = separated_pair(tile, tag("\n\n"), directions).parse(input);
 
     result.unwrap().1
 }

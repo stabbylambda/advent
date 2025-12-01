@@ -4,7 +4,7 @@ use nom::{
     character::complete::{char, newline},
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 use std::{
     cmp::Reverse,
@@ -33,7 +33,7 @@ fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         separated_pair(take(2usize), char('-'), take(2usize)),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

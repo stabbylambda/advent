@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{delimited, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -33,9 +33,9 @@ fn parse(input: &str) -> Input {
                 map(separated_list1(newline, usize), VecDeque::from_iter),
             ),
             |(_id, hand)| hand,
-        )(s)
+        ).parse(s)
     };
-    let result: IResult<&str, Input> = separated_pair(hand, tag("\n\n"), hand)(input);
+    let result: IResult<&str, Input> = separated_pair(hand, tag("\n\n"), hand).parse(input);
 
     result.unwrap().1
 }

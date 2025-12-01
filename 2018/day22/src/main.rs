@@ -13,7 +13,7 @@ use nom::{
     character::complete::newline,
     combinator::map,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -37,7 +37,7 @@ fn parse(input: &str) -> Input {
             preceded(tag("target: "), separated_pair(usize, tag(","), usize)),
         ),
         |(depth, target)| Cave::new(depth, target),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

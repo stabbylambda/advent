@@ -10,8 +10,8 @@ use nom::{
     character::complete::newline,
     combinator::{map, map_res},
     multi::separated_list1,
-    sequence::{terminated, tuple},
-    IResult,
+    sequence::terminated,
+    IResult, Parser,
 };
 
 fn main() {
@@ -76,45 +76,58 @@ impl Instruction {
 }
 
 fn parse(input: &str) -> Input {
-    let out = |s| instruction1("out", value, Instruction::Transmit)(s);
-    let tgl = |s| instruction1("tgl", value, Instruction::Toggle)(s);
-    let skip = |s| instruction0("skip", Instruction::Skip)(s);
-    let inc = |s| instruction1("inc", register, Instruction::Increment)(s);
-    let dec = |s| instruction1("dec", register, Instruction::Decrement)(s);
-    let cpy = |s| instruction2("cpy", value, register, Instruction::Copy)(s);
-    let jnz = |s| instruction2("jnz", value, value, Instruction::JumpNotZero)(s);
+    let out = |s| instruction1("out", value, Instruction::Transmit).parse(s);
+    let tgl = |s| instruction1("tgl", value, Instruction::Toggle).parse(s);
+    let skip = |s| instruction0("skip", Instruction::Skip).parse(s);
+    let inc = |s| instruction1("inc", register, Instruction::Increment).parse(s);
+    let dec = |s| instruction1("dec", register, Instruction::Decrement).parse(s);
+    let cpy = |s| instruction2("cpy", value, register, Instruction::Copy).parse(s);
+    let jnz = |s| instruction2("jnz", value, value, Instruction::JumpNotZero).parse(s);
 
     // this parser is able to recognize the pattern that is multiplication, if it fails, we'll just get the deoptimized
     // code
     let optimized_mul = |s| {
         map_res(
-            tuple((
+            (
                 terminated(cpy, newline),
                 terminated(inc, newline),
                 terminated(dec, newline),
                 terminated(jnz, newline),
                 terminated(dec, newline),
                 jnz,
-            )),
+            ),
             |(x0, x1, x2, x3, x4, x5)| {
-                let Instruction::Copy(op1, temp1_1) = x0 else {panic!()};
-                let Instruction::Increment(store) = x1 else {panic!()};
-                let Instruction::Decrement(temp1_2) = x2 else {panic!()};
-                let Instruction::JumpNotZero(Value::Register(temp1_3), _dec) = x3 else {panic!()};
-                let Instruction::Decrement(op2_1) = x4 else {panic!()};
-                let Instruction::JumpNotZero(Value::Register(op2_2), _dec) = x5 else {panic!()};
+                let Instruction::Copy(op1, temp1_1) = x0 else {
+                    panic!()
+                };
+                let Instruction::Increment(store) = x1 else {
+                    panic!()
+                };
+                let Instruction::Decrement(temp1_2) = x2 else {
+                    panic!()
+                };
+                let Instruction::JumpNotZero(Value::Register(temp1_3), _dec) = x3 else {
+                    panic!()
+                };
+                let Instruction::Decrement(op2_1) = x4 else {
+                    panic!()
+                };
+                let Instruction::JumpNotZero(Value::Register(op2_2), _dec) = x5 else {
+                    panic!()
+                };
 
                 if temp1_1 == temp1_2 && temp1_2 == temp1_3 && op2_1 == op2_2 {
                     Ok(Instruction::Multiply(store, op1, Value::Register(op2_1)))
                 } else {
-                    Err(nom::Err::Error("Multiply not optimizable"))
+                    Err("Multiply not optimizable")
                 }
             },
-        )(s)
+        )
+        .parse(s)
     };
 
     let ops = alt((skip, optimized_mul, tgl, inc, dec, cpy, jnz, out));
-    let result: IResult<&str, Input> = map(separated_list1(newline, ops), Input::new)(input);
+    let result: IResult<&str, Input> = map(separated_list1(newline, ops), Input::new).parse(input);
 
     result.unwrap().1
 }

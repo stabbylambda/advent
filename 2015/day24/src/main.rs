@@ -2,7 +2,7 @@ use itertools::Itertools;
 use nom::{
     character::complete::{newline, u64 as nom_u64},
     multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -19,7 +19,7 @@ fn main() {
 type Input = Vec<u64>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(newline, nom_u64)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, nom_u64).parse(input);
 
     result.unwrap().1
 }

@@ -3,8 +3,8 @@ use nom::{
     character::complete::{i64, newline, u64},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, preceded, separated_pair, terminated, tuple},
-    IResult,
+    sequence::{delimited, preceded, separated_pair, terminated},
+    IResult, Parser,
 };
 
 #[cfg(feature = "z3")]
@@ -48,7 +48,7 @@ fn parse(input: &str) -> Input {
             separated_pair(
                 delimited(
                     tag("pos=<"),
-                    tuple((terminated(i64, tag(",")), terminated(i64, tag(",")), i64)),
+                    (terminated(i64, tag(",")), terminated(i64, tag(",")), i64),
                     tag(">"),
                 ),
                 tag(", "),
@@ -56,7 +56,7 @@ fn parse(input: &str) -> Input {
             ),
             |(position, radius)| Nanobot { position, radius },
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

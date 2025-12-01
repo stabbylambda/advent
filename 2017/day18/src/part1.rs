@@ -5,7 +5,7 @@ use common::program::{
     registers::{Register, Value},
     Program,
 };
-use nom::{branch::alt, character::complete::newline, multi::separated_list1, IResult};
+use nom::{branch::alt, character::complete::newline, multi::separated_list1, IResult, Parser};
 
 type Input = Vec<Instruction>;
 #[derive(Debug, Clone, Copy)]
@@ -44,7 +44,7 @@ fn parse(input: &str) -> Input {
         instruction2("jgz", value, value, Instruction::JumpGreaterThanZero),
     ));
 
-    let result: IResult<&str, Input> = separated_list1(newline, ops)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, ops).parse(input);
 
     result.unwrap().1
 }

@@ -10,7 +10,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{delimited, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -154,7 +154,7 @@ fn parse(input: &str) -> Input {
             ),
             |(id, beacons)| Scanner::new(id, beacons),
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

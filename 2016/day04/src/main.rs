@@ -4,8 +4,8 @@ use nom::{
     character::complete::{alpha1, anychar, char, newline, u32},
     combinator::map,
     multi::{count, separated_list1},
-    sequence::{delimited, preceded, tuple},
-    IResult,
+    sequence::{delimited, preceded},
+    IResult, Parser,
 };
 
 fn main() {
@@ -67,25 +67,25 @@ impl Room {
 }
 
 fn checksum(input: &str) -> IResult<&str, Vec<char>> {
-    delimited(char('['), count(anychar, 5), char(']'))(input)
+    delimited(char('['), count(anychar, 5), char(']')).parse(input)
 }
 
 fn name(input: &str) -> IResult<&str, String> {
-    map(separated_list1(char('-'), alpha1), |x| x.join(" "))(input)
+    map(separated_list1(char('-'), alpha1), |x| x.join(" ")).parse(input)
 }
 
 fn parse(input: &str) -> Input {
     let sector_id = preceded(char('-'), u32);
 
     let room = map(
-        tuple((name, sector_id, checksum)),
+        (name, sector_id, checksum),
         |(name, sector_id, checksum)| Room {
             name,
             sector_id,
             checksum,
         },
     );
-    let result: IResult<&str, Input> = separated_list1(newline, room)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, room).parse(input);
 
     result.unwrap().1
 }

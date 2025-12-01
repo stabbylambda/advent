@@ -5,8 +5,8 @@ use nom::{
     character::complete::{alphanumeric1, newline, u64},
     combinator::map,
     multi::separated_list1,
-    sequence::{separated_pair, terminated, tuple},
-    IResult,
+    sequence::{separated_pair, terminated},
+    IResult, Parser,
 };
 use std::{
     collections::{HashMap, HashSet, VecDeque},
@@ -79,7 +79,7 @@ impl Display for Gate<'_> {
 fn parse(input: &str) -> Input<'_> {
     let gate = |s| {
         map(
-            tuple((
+            (
                 terminated(alphanumeric1, tag(" ")),
                 alt((
                     map(tag("AND "), |_| GateKind::And),
@@ -88,14 +88,14 @@ fn parse(input: &str) -> Input<'_> {
                 )),
                 terminated(alphanumeric1, tag(" -> ")),
                 alphanumeric1,
-            )),
+            ),
             |(input1, kind, input2, output)| Gate {
                 input1,
                 input2,
                 kind,
                 output,
             },
-        )(s)
+        ).parse(s)
     };
 
     let result: IResult<&str, Input> = separated_pair(
@@ -105,7 +105,7 @@ fn parse(input: &str) -> Input<'_> {
         ),
         tag("\n\n"),
         separated_list1(newline, gate),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

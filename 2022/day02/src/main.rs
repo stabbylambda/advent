@@ -3,7 +3,7 @@ use nom::{
     character::complete::{char, space1},
     combinator::map,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 fn main() {
     let lines = include_str!("../input.txt");
@@ -24,10 +24,10 @@ fn problem1(lines: &str) -> u32 {
                 map(alt((char('A'), char('X'))), |_| Hand::Rock),
                 map(alt((char('B'), char('Y'))), |_| Hand::Paper),
                 map(alt((char('C'), char('Z'))), |_| Hand::Scissors),
-            ))(s)
+            )).parse(s)
         }
 
-        separated_pair(get_hand, space1, get_hand)(s).unwrap().1
+        separated_pair(get_hand, space1, get_hand).parse(s).unwrap().1
     }
 
     lines
@@ -45,7 +45,7 @@ fn problem2(lines: &str) -> u32 {
             map(char('A'), |_| Hand::Rock),
             map(char('B'), |_| Hand::Paper),
             map(char('C'), |_| Hand::Scissors),
-        ))(s)
+        )).parse(s)
     }
 
     fn parse_strategy(s: &str) -> IResult<&str, Strategy> {
@@ -53,11 +53,11 @@ fn problem2(lines: &str) -> u32 {
             map(char('X'), |_| Strategy::Lose),
             map(char('Y'), |_| Strategy::Draw),
             map(char('Z'), |_| Strategy::Win),
-        ))(s)
+        )).parse(s)
     }
 
     fn get_hands(s: &str) -> (Hand, Strategy) {
-        separated_pair(parse_hand, space1, parse_strategy)(s)
+        separated_pair(parse_hand, space1, parse_strategy).parse(s)
             .unwrap()
             .1
     }

@@ -7,8 +7,8 @@ use nom::{
     character::complete::{newline, u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, separated_pair, terminated, tuple},
-    IResult,
+    sequence::{delimited, separated_pair, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -67,14 +67,14 @@ fn parse(input: &str) -> Input {
             input_a: x[1] as usize,
             input_b: x[2] as usize,
             output: x[3] as usize,
-        })(s)
+        }).parse(s)
     };
 
     let result: IResult<&str, Input> = separated_pair(
         separated_list1(
             tag("\n"),
             map(
-                tuple((
+                (
                     delimited(
                         tag("Before: ["),
                         separated_list1(tag(", "), usize),
@@ -86,7 +86,7 @@ fn parse(input: &str) -> Input {
                         separated_list1(tag(", "), usize),
                         tag("]\n"),
                     )),
-                )),
+                ),
                 |(before, instruction, after)| InstructionSample {
                     before,
                     instruction,
@@ -96,7 +96,7 @@ fn parse(input: &str) -> Input {
         ),
         tag("\n\n\n"),
         separated_list1(newline, instruction),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

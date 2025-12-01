@@ -1,5 +1,5 @@
 use common::nom::single_digit;
-use nom::{multi::many1, IResult};
+use nom::{multi::many1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -15,7 +15,7 @@ fn main() {
 type Input = Vec<u32>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = many1(single_digit)(input);
+    let result: IResult<&str, Input> = many1(single_digit).parse(input);
 
     result.unwrap().1
 }

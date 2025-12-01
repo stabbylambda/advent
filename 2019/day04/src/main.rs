@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use common::{digits, nom::usize};
-use nom::{bytes::complete::tag, sequence::separated_pair, IResult};
+use nom::{bytes::complete::tag, sequence::separated_pair, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -17,7 +17,7 @@ fn main() {
 type Input = (usize, usize);
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_pair(usize, tag("-"), usize)(input);
+    let result: IResult<&str, Input> = separated_pair(usize, tag("-"), usize).parse(input);
 
     result.unwrap().1
 }

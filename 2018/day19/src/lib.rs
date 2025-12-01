@@ -8,7 +8,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 pub struct ElfCode {
@@ -49,7 +49,7 @@ impl ElfCode {
                 ),
             ),
             |(bound, program)| ElfCode { bound, program },
-        )(input);
+        ).parse(input);
 
         result.unwrap().1
     }

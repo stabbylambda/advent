@@ -4,7 +4,7 @@ use common::program::{
     parsing::{instruction1, instruction2, register, value},
     registers::{Register, Value},
 };
-use nom::{branch::alt, character::complete::newline, multi::separated_list1, IResult};
+use nom::{branch::alt, character::complete::newline, multi::separated_list1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -51,7 +51,7 @@ fn parse(input: &str) -> Input {
         instruction2("eql", register, value, Instruction::Equal),
     ));
 
-    let result: IResult<&str, Input> = separated_list1(newline, ops)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, ops).parse(input);
 
     result.unwrap().1
 }

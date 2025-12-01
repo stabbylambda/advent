@@ -8,8 +8,8 @@ use nom::{
     character::complete::{alpha1, i64 as nom_i64, newline},
     combinator::{map, opt},
     multi::separated_list1,
-    sequence::{delimited, separated_pair, tuple},
-    IResult,
+    sequence::{delimited, separated_pair},
+    IResult, Parser,
 };
 
 fn main() {
@@ -82,7 +82,7 @@ impl Mul<i64> for &Ingredient {
 }
 
 fn component<'a>(name: &'a str) -> impl Fn(&'a str) -> IResult<&'a str, i64> {
-    move |input| delimited(tag(format!("{name} ").as_str()), nom_i64, opt(tag(", ")))(input)
+    move |input| delimited(tag(format!("{name} ").as_str()), nom_i64, opt(tag(", "))).parse(input)
 }
 
 fn parse(input: &str) -> Input {
@@ -90,13 +90,13 @@ fn parse(input: &str) -> Input {
         separated_pair(
             alpha1,
             tag(": "),
-            tuple((
+            (
                 component("capacity"),
                 component("durability"),
                 component("flavor"),
                 component("texture"),
                 component("calories"),
-            )),
+            ),
         ),
         |(_name, (capacity, durability, flavor, texture, calories))| Ingredient {
             capacity,
@@ -106,7 +106,7 @@ fn parse(input: &str) -> Input {
             calories,
         },
     );
-    let result: IResult<&str, Input> = separated_list1(newline, ingredient)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, ingredient).parse(input);
 
     result.unwrap().1
 }

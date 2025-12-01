@@ -5,8 +5,8 @@ use nom::{
     character::complete::{i64, newline},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, preceded, separated_pair, tuple},
-    IResult,
+    sequence::{delimited, preceded, separated_pair},
+    IResult, Parser,
 };
 
 fn main() {
@@ -23,22 +23,22 @@ fn main() {
 type Input = Vec<Step>;
 
 fn parse(input: &str) -> Input {
-    let range = |s| separated_pair(i64, tag(".."), i64)(s);
+    let range = |s| separated_pair(i64, tag(".."), i64).parse(s);
     let result: IResult<&str, Input> = separated_list1(
         newline,
         map(
-            tuple((
+            (
                 alt((map(tag("on "), |_| true), map(tag("off "), |_| false))),
                 delimited(tag("x="), range, tag(",")),
                 delimited(tag("y="), range, tag(",")),
                 preceded(tag("z="), range),
-            )),
+            ),
             |(on, x, y, z)| Step {
                 on,
                 cube: Cube { x, y, z },
             },
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

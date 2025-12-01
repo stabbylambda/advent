@@ -1,7 +1,7 @@
 use nom::{
     character::complete::{i64 as nom_i64, newline},
     multi::separated_list0,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -18,7 +18,7 @@ fn main() {
 type Input = Vec<i64>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list0(newline, nom_i64)(input);
+    let result: IResult<&str, Input> = separated_list0(newline, nom_i64).parse(input);
 
     result.unwrap().1
 }

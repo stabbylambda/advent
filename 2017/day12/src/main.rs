@@ -6,7 +6,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, terminated},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -27,7 +27,7 @@ fn parse(input: &str) -> Input {
             terminated(u32, tag(" <-> ")),
             separated_list1(tag(", "), map(usize, Edge::new)),
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{separated_pair, terminated},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -51,7 +51,7 @@ fn parse(input: &str) -> Input<'_> {
                 input.iter().map(|x| (x.0, x.1.clone())).collect();
             map
         },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

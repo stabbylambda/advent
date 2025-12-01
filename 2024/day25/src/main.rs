@@ -1,6 +1,6 @@
 use common::{grid::Grid, nom::parse_grid};
 use nom::{
-    branch::alt, bytes::complete::tag, character::complete::char, multi::separated_list1, IResult,
+    branch::alt, bytes::complete::tag, character::complete::char, multi::separated_list1, IResult, Parser,
 };
 use std::time::Instant;
 
@@ -18,7 +18,7 @@ type Input = Vec<Grid<char>>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        separated_list1(tag("\n\n"), parse_grid(alt((char('#'), char('.')))))(input);
+        separated_list1(tag("\n\n"), parse_grid(alt((char('#'), char('.'))))).parse(input);
 
     result.unwrap().1
 }

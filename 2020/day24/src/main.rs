@@ -6,7 +6,7 @@ use nom::{
     character::complete::newline,
     combinator::map,
     multi::{many1, separated_list1},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -33,7 +33,7 @@ fn parse(input: &str) -> Input {
             map(tag("e"), |_| (1, 0)),
             map(tag("w"), |_| (-1, 0)),
         ))),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

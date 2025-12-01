@@ -3,8 +3,7 @@ use nom::{
     character::complete::{char, newline},
     combinator::map,
     multi::{count, separated_list1},
-    sequence::tuple,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -71,15 +70,15 @@ fn parse(input: &str) -> Input {
             map(char('B'), |_| Direction::Back),
             map(char('L'), |_| Direction::Left),
             map(char('R'), |_| Direction::Right),
-        ))(s)
+        )).parse(s)
     };
     let result: IResult<&str, Input> = separated_list1(
         newline,
         map(
-            tuple((count(direction, 7), count(direction, 3))),
+            (count(direction, 7), count(direction, 3)),
             |(row, seat)| Ticket { row, seat },
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

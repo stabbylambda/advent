@@ -3,7 +3,7 @@ use nom::{
     character::complete::{char, i32, newline, space0},
     multi::separated_list1,
     sequence::{delimited, preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -22,7 +22,7 @@ fn parse(input: &str) -> Input {
             char('<'),
             separated_pair(preceded(space0, i32), tag(", "), preceded(space0, i32)),
             char('>'),
-        )(s)
+        ).parse(s)
     };
     let result: IResult<&str, Input> = separated_list1(
         newline,
@@ -31,7 +31,7 @@ fn parse(input: &str) -> Input {
             char(' '),
             preceded(tag("velocity="), angle_pair),
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

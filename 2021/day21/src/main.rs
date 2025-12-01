@@ -5,7 +5,7 @@ use nom::{
     character::complete::{newline, u64},
     combinator::map,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -30,9 +30,9 @@ fn parse(input: &str) -> Input {
                 u64,
             ),
             |(_id, position)| Player::new(position),
-        )(s)
+        ).parse(s)
     };
-    let result: IResult<&str, Input> = separated_pair(player, newline, player)(input);
+    let result: IResult<&str, Input> = separated_pair(player, newline, player).parse(input);
 
     result.unwrap().1
 }

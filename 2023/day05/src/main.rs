@@ -5,8 +5,8 @@ use nom::{
     character::complete::{newline, u64},
     combinator::map,
     multi::separated_list1,
-    sequence::{preceded, separated_pair, terminated, tuple},
-    IResult,
+    sequence::{preceded, separated_pair, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -30,10 +30,10 @@ fn parse(input: &str) -> Input {
     let almanac_maps = separated_list1(
         tag("\n\n"),
         map(
-            tuple((
+            (
                 terminated(take_until(" "), tag(" map:\n")),
                 separated_list1(newline, almanac_range),
-            )),
+            ),
             |(_name, ranges)| AlmanacMap { ranges },
         ),
     );
@@ -43,7 +43,7 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = map(
         separated_pair(seeds, tag("\n\n"), almanac_maps),
         |(seeds, maps)| Almanac { seeds, maps },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

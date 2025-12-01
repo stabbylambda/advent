@@ -10,8 +10,8 @@ use nom::{
     character::complete::{multispace1, newline, u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{preceded, separated_pair, terminated, tuple},
-    IResult,
+    sequence::{preceded, separated_pair, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -70,13 +70,13 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         map(
-            tuple((
+            (
                 terminated(name, multispace1),
                 terminated(terminated(u32, tag("T")), multispace1),
                 terminated(terminated(u32, tag("T")), multispace1),
                 terminated(terminated(u32, tag("T")), multispace1),
                 terminated(u32, tag("%")),
-            )),
+            ),
             |((x, y), size, used, avail, used_percent)| Node {
                 x,
                 y,
@@ -86,7 +86,7 @@ fn parse(input: &str) -> Input {
                 used_percent,
             },
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

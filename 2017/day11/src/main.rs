@@ -1,4 +1,4 @@
-use nom::{branch::alt, bytes::complete::tag, combinator::map, multi::separated_list1, IResult};
+use nom::{branch::alt, bytes::complete::tag, combinator::map, multi::separated_list1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -22,7 +22,7 @@ fn parse(input: &str) -> Input {
             map(tag("n"), |_| (1, 0)),
             map(tag("s"), |_| (-1, 0)),
         )),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

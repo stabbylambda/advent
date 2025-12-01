@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use common::{grid::Grid, nom::parse_grid};
-use nom::{branch::alt, character::complete::char, combinator::map, IResult};
+use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -20,7 +20,7 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = parse_grid(alt((
         map(char('#'), |_| Tile::Bug),
         map(char('.'), |_| Tile::Space),
-    )))(input);
+    ))).parse(input);
 
     result.unwrap().1
 }

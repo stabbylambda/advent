@@ -1,7 +1,7 @@
 use nom::{
     character::complete::{newline, u32},
     multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -35,7 +35,7 @@ fn recursive_fuel(mut mass: u32) -> u32 {
 }
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(newline, u32)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, u32).parse(input);
 
     result.unwrap().1
 }

@@ -5,7 +5,7 @@ use nom::{
     character::complete::{char, digit1},
     combinator::{map, map_res},
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -27,7 +27,7 @@ struct Range {
 }
 
 pub fn number(input: &str) -> IResult<&str, i32> {
-    map_res(digit1, |x: &str| x.parse::<i32>())(input)
+    map_res(digit1, |x: &str| x.parse::<i32>()).parse(input)
 }
 
 impl Range {
@@ -39,7 +39,7 @@ impl Range {
                 separated_pair(number, char(','), number),
             ),
             |((x1, y1), (x2, y2))| Range { x1, y1, x2, y2 },
-        )(s);
+        ).parse(s);
         result.unwrap().1
     }
 

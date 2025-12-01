@@ -3,7 +3,7 @@ use common::dijkstra::{shortest_path, Edge};
 use common::grid::Grid;
 use common::nom::parse_grid;
 use nom::{
-    branch::alt, bytes::complete::tag, character::complete::none_of, combinator::map, IResult,
+    branch::alt, bytes::complete::tag, character::complete::none_of, combinator::map, IResult, Parser,
 };
 
 fn main() {
@@ -52,7 +52,7 @@ fn parse(input: &str) -> Input {
         map(tag("S"), |_| Position::Start),
         map(tag("E"), |_| Position::End),
         map(none_of("\n"), Position::Normal),
-    )))(input);
+    ))).parse(input);
 
     result.unwrap().1
 }

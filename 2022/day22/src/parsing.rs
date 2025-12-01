@@ -6,7 +6,7 @@ use nom::{
     combinator::map,
     multi::{many1, separated_list1},
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 use crate::{Input, Instruction, Space};
@@ -22,7 +22,7 @@ pub(crate) fn parse_grid(input: &str) -> IResult<&str, Array2<Space>> {
             ))),
         ),
         to_array,
-    )(input)
+    ).parse(input)
 }
 
 pub(crate) fn parse_instructions(input: &str) -> IResult<&str, Vec<Instruction>> {
@@ -30,12 +30,12 @@ pub(crate) fn parse_instructions(input: &str) -> IResult<&str, Vec<Instruction>>
         map(nom_u32, Instruction::Walk),
         map(char('L'), |_| Instruction::TurnLeft),
         map(char('R'), |_| Instruction::TurnRight),
-    )))(input)
+    ))).parse(input)
 }
 
 pub(crate) fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        separated_pair(parse_grid, tag("\n\n"), parse_instructions)(input);
+        separated_pair(parse_grid, tag("\n\n"), parse_instructions).parse(input);
 
     result.unwrap().1
 }

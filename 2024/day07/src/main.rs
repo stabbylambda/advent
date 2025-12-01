@@ -5,7 +5,7 @@ use nom::{
     character::complete::{newline, u64},
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -29,7 +29,7 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         separated_pair(u64, tag(": "), separated_list1(tag(" "), u64)),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

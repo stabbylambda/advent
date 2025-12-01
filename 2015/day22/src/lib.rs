@@ -2,8 +2,8 @@ use nom::{
     bytes::complete::tag,
     character::complete::{i32 as nom_i32, newline},
     combinator::map,
-    sequence::{delimited, preceded, tuple},
-    IResult,
+    sequence::{delimited, preceded},
+    IResult, Parser,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -17,12 +17,13 @@ impl Boss {
     }
     pub fn parse(input: &str) -> Boss {
         let result: IResult<&str, Boss> = map(
-            tuple((
+            (
                 delimited(tag("Hit Points: "), nom_i32, newline),
                 preceded(tag("Damage: "), nom_i32),
-            )),
+            ),
             |(hit_points, damage)| Boss { hit_points, damage },
-        )(input);
+        )
+        .parse(input);
 
         result.unwrap().1
     }

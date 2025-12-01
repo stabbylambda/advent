@@ -1,5 +1,5 @@
 use advent_2017_10::{hash, SparseHash};
-use nom::{bytes::complete::tag, character::complete::u8, multi::separated_list1, IResult};
+use nom::{bytes::complete::tag, character::complete::u8, multi::separated_list1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -12,7 +12,7 @@ fn main() {
 }
 
 fn parse(input: &str) -> Vec<u8> {
-    let result: IResult<&str, Vec<u8>> = separated_list1(tag(","), u8)(input);
+    let result: IResult<&str, Vec<u8>> = separated_list1(tag(","), u8).parse(input);
 
     result.unwrap().1
 }

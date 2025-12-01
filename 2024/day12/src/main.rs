@@ -8,7 +8,7 @@ use common::{
     grid::{CardinalDirection, Coord, Grid},
     nom::parse_grid,
 };
-use nom::{character::complete::one_of, IResult};
+use nom::{character::complete::one_of, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -28,7 +28,7 @@ fn main() {
 type Input = Grid<char>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = parse_grid(one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))(input);
+    let result: IResult<&str, Input> = parse_grid(one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ")).parse(input);
 
     result.unwrap().1
 }

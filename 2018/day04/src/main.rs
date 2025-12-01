@@ -6,8 +6,8 @@ use nom::{
     character::complete::{char, newline, u16, u32, u8},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, separated_pair, terminated, tuple},
-    IResult,
+    sequence::{delimited, separated_pair, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -94,17 +94,18 @@ fn parse(input: &str) -> Input {
         map(
             delimited(
                 char('['),
-                tuple((
+                (
                     terminated(u16, char('-')),
                     terminated(u8, char('-')),
                     terminated(u8, char(' ')),
                     terminated(u8, char(':')),
                     u8,
-                )),
+                ),
                 char(']'),
             ),
             |(_year, _month, _day, hour, minute)| Date { hour, minute },
-        )(s)
+        )
+        .parse(s)
     };
 
     let begin_shift = |s| {
@@ -112,7 +113,8 @@ fn parse(input: &str) -> Input {
             date,
             char(' '),
             delimited(tag("Guard #"), u32, tag(" begins shift")),
-        )(s)
+        )
+        .parse(s)
     };
     let falls_asleep = terminated(date, tag(" falls asleep"));
     let wakes_up = terminated(date, tag(" wakes up"));
@@ -138,7 +140,8 @@ fn parse(input: &str) -> Input {
                 sleep_records: vec![],
             }),
         )),
-    )(&sorted);
+    )
+    .parse(&sorted);
 
     result.unwrap().1
 }

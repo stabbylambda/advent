@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use std::{collections::HashMap, time::Instant};
 
-use nom::{bytes::complete::tag, character::complete::u64, multi::separated_list1, IResult};
+use nom::{bytes::complete::tag, character::complete::u64, multi::separated_list1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -21,7 +21,7 @@ fn main() {
 type Input = Vec<u64>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(tag(" "), u64)(input);
+    let result: IResult<&str, Input> = separated_list1(tag(" "), u64).parse(input);
 
     result.unwrap().1
 }

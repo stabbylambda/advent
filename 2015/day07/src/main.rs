@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -40,7 +40,7 @@ enum Gate<'a> {
 type Input<'a> = HashMap<&'a str, Gate<'a>>;
 
 fn data(input: &str) -> IResult<&str, Data<'_>> {
-    alt((map(nom_i32, Data::Constant), map(alpha1, Data::Wire)))(input)
+    alt((map(nom_i32, Data::Constant), map(alpha1, Data::Wire))).parse(input)
 }
 
 fn gate(input: &str) -> IResult<&str, Gate<'_>> {
@@ -51,7 +51,7 @@ fn gate(input: &str) -> IResult<&str, Gate<'_>> {
         map(separated_pair(data, tag(" RSHIFT "), data), Gate::Rshift),
         map(preceded(tag("NOT "), data), Gate::Not),
         map(data, Gate::Constant),
-    ))(input)
+    )).parse(input)
 }
 
 fn parse(input: &str) -> Input<'_> {
@@ -60,7 +60,7 @@ fn parse(input: &str) -> Input<'_> {
         map(separated_pair(gate, tag(" -> "), alpha1), |(gate, wire)| {
             (wire, gate)
         }),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1.into_iter().collect()
 }

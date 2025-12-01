@@ -7,7 +7,7 @@ use common::{
     grid::{CardinalDirection, Coord, Grid, GridSquare},
     nom::{parse_grid, single_digit},
 };
-use nom::IResult;
+use nom::{IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -23,7 +23,7 @@ fn main() {
 type Input = Grid<u32>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = parse_grid(single_digit)(input);
+    let result: IResult<&str, Input> = parse_grid(single_digit).parse(input);
 
     result.unwrap().1
 }

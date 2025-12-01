@@ -5,7 +5,7 @@ use nom::{
     character::complete::{i64, newline},
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -23,7 +23,7 @@ type Input = Vec<Point>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        separated_list1(newline, separated_pair(i64, tag(", "), i64))(input);
+        separated_list1(newline, separated_pair(i64, tag(", "), i64)).parse(input);
 
     result.unwrap().1
 }

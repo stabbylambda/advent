@@ -7,7 +7,7 @@ use nom::{
     character::complete::{char, newline},
     combinator::map,
     multi::{many1, separated_list1},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -121,7 +121,7 @@ fn parse(input: &str) -> Input {
             many1(alt((map(char('#'), |_| true), map(char('.'), |_| false)))),
         ),
         Asteroids::new,
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

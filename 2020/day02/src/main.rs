@@ -3,8 +3,8 @@ use nom::{
     character::complete::{anychar, newline, not_line_ending},
     combinator::map,
     multi::separated_list1,
-    sequence::{separated_pair, terminated, tuple},
-    IResult,
+    sequence::{separated_pair, terminated},
+    IResult, Parser,
 };
 
 use common::nom::usize;
@@ -26,15 +26,15 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         separated_pair(
-            tuple((
+            (
                 terminated(usize, tag("-")),
                 terminated(usize, tag(" ")),
                 anychar,
-            )),
+            ),
             tag(": "),
             map(not_line_ending, |x: &str| x.to_string()),
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

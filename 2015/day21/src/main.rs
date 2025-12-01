@@ -5,8 +5,8 @@ use nom::{
     bytes::complete::tag,
     character::complete::{i32 as nom_i32, newline},
     combinator::map,
-    sequence::{delimited, preceded, tuple},
-    IResult,
+    sequence::{delimited, preceded},
+    IResult, Parser,
 };
 
 fn main() {
@@ -126,13 +126,13 @@ type Input = Entity;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = map(
-        tuple((
+        (
             delimited(tag("Hit Points: "), nom_i32, newline),
             delimited(tag("Damage: "), nom_i32, newline),
             preceded(tag("Armor: "), nom_i32),
-        )),
+        ),
         |(hp, dmg, armor)| Entity::new(hp, dmg, armor),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

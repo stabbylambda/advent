@@ -2,7 +2,7 @@ use std::vec;
 
 use nom::{
     branch::alt, bytes::complete::tag, character::complete::newline, combinator::map,
-    multi::separated_list1, sequence::preceded, IResult,
+    multi::separated_list1, sequence::preceded, IResult, Parser,
 };
 
 fn main() {
@@ -33,7 +33,7 @@ fn parse(input: &str) -> Input {
                 Instruction::AddX(x)
             }),
         )),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

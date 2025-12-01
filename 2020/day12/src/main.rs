@@ -9,7 +9,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::preceded,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -48,7 +48,7 @@ fn parse(input: &str) -> Input {
             map(preceded(char('R'), i32), Action::TurnRight),
             map(preceded(char('F'), i32), Action::GoForward),
         )),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

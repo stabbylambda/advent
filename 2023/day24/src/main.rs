@@ -6,7 +6,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 #[cfg(feature = "z3")]
 use z3::{
@@ -42,7 +42,7 @@ fn parse(input: &str) -> Input {
             ),
             |(position, velocity)| Hailstone { position, velocity },
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

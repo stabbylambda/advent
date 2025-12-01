@@ -7,8 +7,8 @@ use nom::{
     character::complete::{alpha1, i64 as nom_i64, newline},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, terminated, tuple},
-    IResult,
+    sequence::{delimited, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -29,7 +29,7 @@ fn parse(input: &str) -> Input<'_> {
         separated_list1(
             newline,
             map(
-                tuple((
+                (
                     terminated(alpha1, tag(" would ")),
                     alt((map(tag("gain "), |_| 1), map(tag("lose "), |_| -1))),
                     nom_i64,
@@ -38,12 +38,13 @@ fn parse(input: &str) -> Input<'_> {
                         alpha1,
                         tag("."),
                     ),
-                )),
+                ),
                 |(name, mul, num, other)| ((name, other), mul * num),
             ),
         ),
         |v| v.into_iter().collect(),
-    )(input);
+    )
+    .parse(input);
 
     result.unwrap().1
 }

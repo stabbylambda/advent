@@ -5,8 +5,8 @@ use nom::{
     character::complete::{alphanumeric1, char, newline, u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, terminated, tuple},
-    IResult,
+    sequence::{delimited, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -25,7 +25,7 @@ type Input<'a> = Vec<(CardinalDirection, u32, &'a str)>;
 fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> = separated_list1(
         newline,
-        tuple((
+        (
             terminated(
                 alt((
                     map(char('U'), |_| CardinalDirection::North),
@@ -37,8 +37,8 @@ fn parse(input: &str) -> Input<'_> {
             ),
             terminated(u32, tag(" ")),
             delimited(tag("(#"), alphanumeric1, tag(")")),
-        )),
-    )(input);
+        ),
+    ).parse(input);
 
     result.unwrap().1
 }

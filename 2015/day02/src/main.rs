@@ -2,7 +2,7 @@ use nom::{
     character::complete::{char, newline, u32 as nom_u32},
     combinator::map,
     multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -53,7 +53,7 @@ fn parse(input: &str) -> Input {
                 h: v[2],
             }
         }),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

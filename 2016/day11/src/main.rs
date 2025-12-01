@@ -7,8 +7,8 @@ use nom::{
     character::complete::alpha1,
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, tuple},
-    IResult,
+    sequence::delimited,
+    IResult, Parser,
 };
 
 fn main() {
@@ -57,13 +57,13 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = map(
         separated_list1(
             tag(".\n"),
-            map(tuple((floor_name, items)), |(name, items)| Floor {
+            map((floor_name, items), |(name, items)| Floor {
                 name: name.to_string(),
                 items,
             }),
         ),
         Elevator::new,
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

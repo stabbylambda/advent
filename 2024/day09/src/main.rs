@@ -1,7 +1,7 @@
 use std::{collections::VecDeque, time::Instant};
 
 use common::nom::single_digit;
-use nom::{combinator::map, multi::many1, IResult};
+use nom::{combinator::map, multi::many1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -38,7 +38,7 @@ fn parse(input: &str) -> Input {
         }
 
         (files, free)
-    })(input);
+    }).parse(input);
 
     result.unwrap().1
 }

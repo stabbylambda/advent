@@ -6,7 +6,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{pair, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -55,11 +55,11 @@ fn instruction(input: &str) -> IResult<&str, Instruction> {
             from: (from.0 as usize, from.1 as usize),
             to: (to.0 as usize, to.1 as usize),
         },
-    )(input)
+    ).parse(input)
 }
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(newline, instruction)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, instruction).parse(input);
 
     result.unwrap().1
 }

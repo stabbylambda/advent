@@ -10,7 +10,7 @@ use nom::{
     combinator::map,
     multi::{many1, separated_list1},
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 use std::{
     collections::{BinaryHeap, HashMap},
@@ -45,7 +45,7 @@ fn parse(input: &str) -> Input {
             map(single_digit, |x| NumericKeypad::Number(x as u64)),
             map(char('A'), |_| NumericKeypad::Accept),
         ))),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }
@@ -74,7 +74,7 @@ fn parse_keypads(input: &str) -> Keypads {
             ))),
             Keypad::new,
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

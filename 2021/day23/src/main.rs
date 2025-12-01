@@ -6,7 +6,7 @@ use nom::{
     character::complete::{char, newline, one_of},
     combinator::map,
     multi::{many1, separated_list0},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -47,7 +47,7 @@ fn parse(input: &str) -> Input {
 
             Amphipods::new(&amphipods)
         },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

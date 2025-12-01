@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -31,7 +31,7 @@ fn parse(input: &str) -> Input {
         ),
         tag("\n\n"),
         separated_list1(newline, map(separated_list1(tag(","), u32), Manual::new)),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

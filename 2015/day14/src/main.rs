@@ -4,8 +4,8 @@ use nom::{
     character::complete::{alpha0, newline, u32 as nom_u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, preceded, tuple},
-    IResult,
+    sequence::{delimited, preceded},
+    IResult, Parser,
 };
 
 fn main() {
@@ -44,7 +44,7 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         map(
-            tuple((
+            (
                 alpha0,
                 preceded(tag(" can fly "), nom_u32),
                 preceded(tag(" km/s for "), nom_u32),
@@ -53,14 +53,15 @@ fn parse(input: &str) -> Input {
                     nom_u32,
                     tag(" seconds."),
                 ),
-            )),
+            ),
             |(_name, speed, duration, rest)| Reindeer {
                 speed,
                 duration,
                 rest,
             },
         ),
-    )(input);
+    )
+    .parse(input);
 
     result.unwrap().1
 }

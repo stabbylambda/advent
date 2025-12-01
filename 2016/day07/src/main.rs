@@ -4,7 +4,7 @@ use nom::{
     combinator::map,
     multi::{many1, separated_list0},
     sequence::delimited,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -41,9 +41,7 @@ impl AddressPart {
 
     fn get_abas(&self) -> impl Iterator<Item = (&char, &char)> {
         self.chars().windows(3).filter_map(|x| {
-            let [a1, b, a2] = x else {
-                    return None
-                };
+            let [a1, b, a2] = x else { return None };
 
             (a1 == a2 && a1 != b).then_some((a1, b))
         })
@@ -85,7 +83,7 @@ impl Address {
     }
 
     fn parse(s: &str) -> IResult<&str, Self> {
-        let part = |x| map(alphanumeric1, |x: &str| x.chars().collect::<Vec<char>>())(x);
+        let part = |x| map(alphanumeric1, |x: &str| x.chars().collect::<Vec<char>>()).parse(x);
 
         map(
             many1(alt((
@@ -93,12 +91,13 @@ impl Address {
                 map(delimited(char('['), part, char(']')), AddressPart::Hypernet),
             ))),
             |parts| Address { parts },
-        )(s)
+        )
+        .parse(s)
     }
 }
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list0(newline, Address::parse)(input);
+    let result: IResult<&str, Input> = separated_list0(newline, Address::parse).parse(input);
     result.unwrap().1
 }
 

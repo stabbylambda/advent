@@ -2,7 +2,7 @@ use common::{grid::Grid, nom::parse_grid};
 use itertools::Itertools;
 use nom::{
     branch::alt, bytes::complete::tag, character::complete::char, combinator::map,
-    multi::separated_list1, IResult,
+    multi::separated_list1, IResult, Parser,
 };
 
 fn main() {
@@ -20,7 +20,7 @@ type Input = Vec<Grid<bool>>;
 
 fn parse(input: &str) -> Input {
     let image = parse_grid(alt((map(char('.'), |_| false), map(char('#'), |_| true))));
-    let result: IResult<&str, Input> = separated_list1(tag("\n\n"), image)(input);
+    let result: IResult<&str, Input> = separated_list1(tag("\n\n"), image).parse(input);
 
     result.unwrap().1
 }

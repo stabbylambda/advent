@@ -7,7 +7,7 @@ use nom::{
     branch::alt,
     character::complete::{anychar, char},
     combinator::{map, verify},
-    AsChar, IResult,
+    AsChar, IResult, Parser,
 };
 
 fn main() {
@@ -31,7 +31,7 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = parse_grid(alt((
         map(char('.'), |_| None),
         map(verify(anychar, |x| x.is_alphanum()), Some),
-    )))(input);
+    ))).parse(input);
 
     result.unwrap().1
 }

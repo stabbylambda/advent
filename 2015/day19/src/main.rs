@@ -6,7 +6,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -34,7 +34,7 @@ fn parse(input: &str) -> Input<'_> {
             alpha1,
         ),
         |(mappings, molecule)| Input { mappings, molecule },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

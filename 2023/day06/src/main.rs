@@ -4,7 +4,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair, terminated},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -39,7 +39,7 @@ fn parse_races(input: &str) -> Input {
                 .map(|(&time, &record)| Race { time, record })
                 .collect()
         },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

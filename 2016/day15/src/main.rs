@@ -4,8 +4,8 @@ use nom::{
     character::complete::{i64 as nom_i64, newline},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, preceded, tuple},
-    IResult,
+    sequence::{delimited, preceded},
+    IResult, Parser,
 };
 
 fn main() {
@@ -25,14 +25,14 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         map(
-            tuple((
+            (
                 preceded(tag("Disc #"), nom_i64),
                 delimited(tag(" has "), nom_i64, tag(" positions;")),
                 delimited(tag(" at time=0, it is at position "), nom_i64, tag(".")),
-            )),
+            ),
             |(_number, size, start)| Disc { size, start },
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

@@ -3,7 +3,7 @@ use nom::{
     character::complete::{newline, u32},
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -21,7 +21,7 @@ type Input = Vec<(u32, u32)>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        separated_list1(newline, separated_pair(u32, tag(": "), u32))(input);
+        separated_list1(newline, separated_pair(u32, tag(": "), u32)).parse(input);
 
     result.unwrap().1
 }

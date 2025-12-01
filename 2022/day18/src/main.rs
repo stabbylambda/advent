@@ -4,8 +4,8 @@ use nom::{
     bytes::complete::tag,
     character::complete::newline,
     multi::separated_list0,
-    sequence::{terminated, tuple},
-    IResult,
+    sequence::terminated,
+    IResult, Parser,
 };
 
 fn main() {
@@ -24,12 +24,13 @@ type Input = Vec<(usize, usize, usize)>;
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Vec<(usize, usize, usize)>> = separated_list0(
         newline,
-        tuple((
+        (
             terminated(usize, tag(",")),
             terminated(usize, tag(",")),
             usize,
-        )),
-    )(input);
+        ),
+    )
+    .parse(input);
 
     result.unwrap().1
 }

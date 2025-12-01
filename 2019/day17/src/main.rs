@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use common::{grid::Grid, nom::parse_grid};
 use intcode::Intcode;
-use nom::{branch::alt, character::complete::char, combinator::map, IResult};
+use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -56,7 +56,7 @@ fn output_to_map(output: &[i64]) -> Grid<Tile> {
         map(char('<'), |_| Tile::Robot(Direction::Left)),
         map(char('>'), |_| Tile::Robot(Direction::Right)),
         map(char('v'), |_| Tile::Robot(Direction::Down)),
-    )))(&s);
+    ))).parse(&s);
     g.unwrap().1
 }
 

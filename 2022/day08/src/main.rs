@@ -2,7 +2,7 @@ use common::{
     grid::{orthogonal::Orthogonal, Grid, GridSquare},
     nom::{parse_grid, single_digit},
 };
-use nom::IResult;
+use nom::{IResult, Parser};
 
 fn main() {
     let lines = include_str!("../test.txt");
@@ -18,7 +18,7 @@ fn main() {
 type Tree = u32;
 
 fn parse(lines: &str) -> Grid<Tree> {
-    let parsed: IResult<&str, Grid<Tree>> = parse_grid(single_digit)(lines);
+    let parsed: IResult<&str, Grid<Tree>> = parse_grid(single_digit).parse(lines);
 
     parsed.unwrap().1
 }

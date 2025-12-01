@@ -9,7 +9,7 @@ use common::{
     grid::{Grid, GridSquare},
     nom::parse_grid,
 };
-use nom::{character::complete::anychar, combinator::map_opt, IResult};
+use nom::{character::complete::anychar, combinator::map_opt, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -58,7 +58,7 @@ fn parse(input: &str) -> Input {
         x if x.is_lowercase() => Some(Tile::Key(x)),
         x if x.is_uppercase() => Some(Tile::Door(x.to_ascii_lowercase())),
         _ => None,
-    }))(input);
+    })).parse(input);
 
     result.unwrap().1
 }

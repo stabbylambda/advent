@@ -6,8 +6,8 @@ use nom::{
     character::complete::{newline, u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{preceded, separated_pair, tuple},
-    IResult,
+    sequence::{preceded, separated_pair},
+    IResult, Parser,
 };
 
 fn main() {
@@ -102,15 +102,15 @@ fn parse(input: &str) -> Input {
         alt((
             map(preceded(tag("output "), u32), Instruction::Output),
             map(preceded(tag("bot "), u32), Instruction::Bot),
-        ))(input)
+        )).parse(input)
     };
 
     let instructions = map(
-        tuple((
+        (
             preceded(tag("bot "), u32),
             preceded(tag(" gives low to "), instruction),
             preceded(tag(" and high to "), instruction),
-        )),
+        ),
         |(number, low, high)| {
             Setup::Bot(Bot {
                 number,
@@ -143,7 +143,7 @@ fn parse(input: &str) -> Input {
 
             bots
         },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

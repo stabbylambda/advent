@@ -8,7 +8,7 @@ use nom::{
     combinator::map,
     multi::{many1, separated_list1},
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -36,11 +36,11 @@ fn parse_record(s: &str) -> IResult<&str, SpringRecord> {
             separated_list1(tag(","), usize),
         ),
         |(springs, groups)| SpringRecord::new(springs, groups),
-    )(s)
+    ).parse(s)
 }
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(newline, parse_record)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, parse_record).parse(input);
 
     result.unwrap().1
 }
