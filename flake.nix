@@ -33,9 +33,9 @@
               modules = [
                 {
                   languages.rust.enable = true;
-                  languages.rust.channel = "stable";
                   packages = [
                     pkgs.aoc-cli
+                    pkgs.cargo-watch
                     pkgs.hyperfine
                   ];
                 }
