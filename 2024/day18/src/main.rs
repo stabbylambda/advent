@@ -46,7 +46,7 @@ fn get_edges(grid: &Grid<bool>) -> Vec<Vec<Edge>> {
             square
                 .neighbors()
                 .iter()
-                .filter(|&n| (*n.data))
+                .filter(|&n| *n.data)
                 .map(|n| Edge::from_map_square(n))
                 .collect()
         })

@@ -15,12 +15,12 @@ pub enum Direction {
 }
 
 pub trait HasNeighbors<T> {
-    fn neighbors(&self, c: Coord) -> Neighbors<T>;
-    fn all_neighbors(&self, c: Coord) -> AllNeighbors<T>;
+    fn neighbors(&self, c: Coord) -> Neighbors<'_, T>;
+    fn all_neighbors(&self, c: Coord) -> AllNeighbors<'_, T>;
 }
 
 impl<T> HasNeighbors<T> for Grid<T> {
-    fn neighbors(&self, (x, y): Coord) -> Neighbors<T> {
+    fn neighbors(&self, (x, y): Coord) -> Neighbors<'_, T> {
         let all = self.all_neighbors((x, y));
 
         Neighbors {
@@ -31,7 +31,7 @@ impl<T> HasNeighbors<T> for Grid<T> {
         }
     }
 
-    fn all_neighbors(&self, (x, y): Coord) -> AllNeighbors<T> {
+    fn all_neighbors(&self, (x, y): Coord) -> AllNeighbors<'_, T> {
         let north = (y > 0).then(|| self.get((x, y - 1)));
         let south = (y < self.height - 1).then(|| self.get((x, y + 1)));
         let west = (x > 0).then(|| self.get((x - 1, y)));
@@ -65,7 +65,7 @@ pub struct Neighbors<'a, T> {
 }
 
 impl<'a, T> Neighbors<'a, T> {
-    pub fn get(&self, direction: CardinalDirection) -> &Option<GridSquare<T>> {
+    pub fn get(&self, direction: CardinalDirection) -> &Option<GridSquare<'_, T>> {
         match direction {
             CardinalDirection::North => &self.north,
             CardinalDirection::South => &self.south,

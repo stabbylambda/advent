@@ -21,7 +21,7 @@ fn main() {
 
 type Input<'a> = Vec<&'a str>;
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     input.lines().collect()
 }
 

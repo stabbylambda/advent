@@ -9,7 +9,7 @@ use nom::{
     character::complete::{char, newline},
     combinator::map,
     multi::{many1, separated_list1},
-    sequence::{self, separated_pair},
+    sequence::separated_pair,
     IResult,
 };
 use std::{

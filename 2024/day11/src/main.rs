@@ -32,7 +32,7 @@ fn blink_single(stone: u64) -> Vec<u64> {
     }
 
     let digits = (stone as f64).log10().floor() as u64 + 1;
-    if digits % 2 == 0 {
+    if digits.is_multiple_of(2) {
         let half = 10_f64.powi((digits / 2) as i32);
         let left = stone / half as u64;
         let right = stone % half as u64;

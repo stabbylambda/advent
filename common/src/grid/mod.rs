@@ -35,18 +35,18 @@ impl<T> Grid<T> {
         self.points[y][x] = data;
     }
 
-    pub fn get_from_grid_index(&self, grid_index: usize) -> GridSquare<T> {
+    pub fn get_from_grid_index(&self, grid_index: usize) -> GridSquare<'_, T> {
         self.get_opt_from_grid_index(grid_index).unwrap()
     }
 
-    pub fn get_opt_from_grid_index(&self, grid_index: usize) -> Option<GridSquare<T>> {
+    pub fn get_opt_from_grid_index(&self, grid_index: usize) -> Option<GridSquare<'_, T>> {
         let y = grid_index / self.width;
         let x = grid_index % self.width;
 
         self.get_opt((x, y))
     }
 
-    pub fn get_opt(&self, (x, y): Coord) -> Option<GridSquare<T>> {
+    pub fn get_opt(&self, (x, y): Coord) -> Option<GridSquare<'_, T>> {
         self.points.get(y).and_then(|row| {
             row.get(x).map(|data| GridSquare {
                 map: self,
@@ -56,11 +56,11 @@ impl<T> Grid<T> {
         })
     }
 
-    pub fn get_neighbor(&self, c: Coord, dir: CardinalDirection) -> Option<GridSquare<T>> {
+    pub fn get_neighbor(&self, c: Coord, dir: CardinalDirection) -> Option<GridSquare<'_, T>> {
         self.get_opt(c).and_then(|x| x.get_neighbor(dir))
     }
 
-    pub fn get(&self, c: Coord) -> GridSquare<T> {
+    pub fn get(&self, c: Coord) -> GridSquare<'_, T> {
         self.get_opt(c).unwrap()
     }
 
@@ -86,7 +86,7 @@ impl<T> Grid<T> {
         }
     }
 
-    pub fn iter(&self) -> GridIter<T> {
+    pub fn iter(&self) -> GridIter<'_, T> {
         GridIter {
             index: 0,
             grid: self,
@@ -109,7 +109,7 @@ where
     T: Eq,
 {
     // find the first instance of `data`
-    pub fn find(&self, data: T) -> Option<GridSquare<T>> {
+    pub fn find(&self, data: T) -> Option<GridSquare<'_, T>> {
         self.iter().find(|x| *x.data == data)
     }
 }

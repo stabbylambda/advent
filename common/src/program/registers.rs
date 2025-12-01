@@ -57,7 +57,7 @@ impl Registers {
         self.registers.entry(c).and_modify(|c| *c = 0);
     }
 
-    pub fn entry(&mut self, c: char) -> std::collections::btree_map::Entry<char, i64> {
+    pub fn entry(&mut self, c: char) -> std::collections::btree_map::Entry<'_, char, i64> {
         self.registers.entry(c)
     }
 

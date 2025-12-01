@@ -176,7 +176,7 @@ impl Tower {
     }
 
     fn get_height(&self) -> usize {
-        (self.bits.len() - self.bits.trailing_zeros() + Tower::WIDTH - 1) / Tower::WIDTH
+        (self.bits.len() - self.bits.trailing_zeros()).div_ceil(Tower::WIDTH)
     }
 
     fn get_row_range(&self, row: usize) -> Range<usize> {

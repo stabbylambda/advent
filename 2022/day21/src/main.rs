@@ -46,7 +46,7 @@ impl<'a> MonkeyValue<'a> {
 
 type Input<'a> = Vec<(&'a str, MonkeyValue<'a>)>;
 
-fn monkey_value(input: &str) -> IResult<&str, MonkeyValue> {
+fn monkey_value(input: &str) -> IResult<&str, MonkeyValue<'_>> {
     alt((
         map(nom_i64, |x| MonkeyValue::Literal(Some(x))),
         map(separated_pair(alpha1, tag(" + "), alpha1), |(lhs, rhs)| {
@@ -64,7 +64,7 @@ fn monkey_value(input: &str) -> IResult<&str, MonkeyValue> {
     ))(input)
 }
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> =
         separated_list0(newline, separated_pair(alpha1, tag(": "), monkey_value))(input);
 

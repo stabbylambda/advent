@@ -69,10 +69,10 @@ impl Grid {
         let mut result = vec![vec![false; n]; self.height()];
 
         (0..self.height()).for_each(|y| {
-            for x in 0..n {
+            (0..n).for_each(|x| {
                 let mirror_x = self.width() - x - 1;
                 result[y][x] = self.grid[y][x] || self.grid[y][mirror_x];
-            }
+            })
         });
 
         self.grid = result;
@@ -82,10 +82,10 @@ impl Grid {
         let mut result = vec![vec![false; self.width()]; n];
 
         (0..n).for_each(|y| {
-            for x in 0..self.width() {
+            (0..self.width()).for_each(|x| {
                 let mirror_y = self.height() - y - 2;
                 result[y][x] = self.grid[y][x] || self.grid[mirror_y][x];
-            }
+            });
         });
 
         self.grid = result;

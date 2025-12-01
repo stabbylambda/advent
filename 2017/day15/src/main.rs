@@ -50,7 +50,7 @@ impl Iterator for Generator {
 
         match self.filter {
             None => Some(masked),
-            Some(x) if next % x == 0 => Some(masked),
+            Some(x) if next.is_multiple_of(x) => Some(masked),
             // the next doesn't match the filter, so keep calculating
             _ => self.next(),
         }

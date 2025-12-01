@@ -18,7 +18,7 @@ where
     let cap = (num as f64).sqrt() as u64;
 
     (1..cap).fold(0, |acc, d| {
-        if num % d != 0 {
+        if !num.is_multiple_of(d) {
             return acc;
         }
 

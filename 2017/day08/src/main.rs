@@ -77,7 +77,7 @@ impl<'a> Instruction<'a> {
     }
 }
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let action = alt((
         map(preceded(tag("inc "), i32), Action::Increment),
         map(preceded(tag("dec "), i32), Action::Decrement),

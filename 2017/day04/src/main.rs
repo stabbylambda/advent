@@ -20,7 +20,7 @@ fn main() {
 
 type Input<'a> = Vec<Vec<&'a str>>;
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> =
         separated_list1(newline, separated_list1(tag(" "), alpha1))(input);
 

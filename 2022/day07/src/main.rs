@@ -42,7 +42,7 @@ enum Listing<'a> {
 }
 
 impl<'a> Listing<'a> {
-    fn parse(s: &str) -> IResult<&str, Vec<Listing>> {
+    fn parse(s: &str) -> IResult<&str, Vec<Listing<'_>>> {
         separated_list1(
             line_ending,
             alt((
@@ -68,7 +68,7 @@ enum Command<'a> {
 }
 
 impl<'a> Command<'a> {
-    fn parse(s: &str) -> IResult<&str, Command> {
+    fn parse(s: &str) -> IResult<&str, Command<'_>> {
         preceded(
             tag("$ "),
             alt((
@@ -88,7 +88,7 @@ impl<'a> Command<'a> {
         )(s)
     }
 
-    fn parse_all(s: &str) -> Vec<Command> {
+    fn parse_all(s: &str) -> Vec<Command<'_>> {
         separated_list1(line_ending, Command::parse)(s).unwrap().1
     }
 }

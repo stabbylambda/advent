@@ -48,7 +48,7 @@ fn problem(input: &Input) -> String {
 
     // trim down to the amount we need to fill
     let mut v: Vec<char> = data.chars().take(input.length).collect();
-    while v.len() % 2 == 0 {
+    while v.len().is_multiple_of(2) {
         v = v
             .chunks(2)
             .map(|x| match (x[0], x[1]) {

@@ -37,7 +37,7 @@ impl Rucksack {
         self.compartment1.union(&self.compartment2).collect()
     }
 
-    fn get_badge<'a>(&'a self, other1: &'a Rucksack, other2: &'a Rucksack) -> &char {
+    fn get_badge<'a>(&'a self, other1: &'a Rucksack, other2: &'a Rucksack) -> &'a char {
         let s0: HashSet<_> = self.get_all_items();
         let s1: HashSet<_> = other1.get_all_items();
         let s2: HashSet<_> = other2.get_all_items();

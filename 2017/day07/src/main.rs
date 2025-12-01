@@ -72,7 +72,7 @@ impl<'a> Display for Program<'a> {
     }
 }
 
-fn parse(input: &str) -> Input {
+fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> = map(
         separated_list1(
             newline,

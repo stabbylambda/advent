@@ -3,6 +3,7 @@ pub trait VecVec<T: Clone + Copy> {
     fn transpose(&self) -> Vec<Vec<T>>;
 }
 
+#[allow(clippy::needless_range_loop)]
 impl<T: Clone + Copy> VecVec<T> for Vec<Vec<T>> {
     /** Rotate 90 degrees clockwise */
     fn rotate(&self) -> Vec<Vec<T>> {

@@ -155,6 +155,7 @@ fn display(positions: Vec<Knot>) {
         }
     }
 
+    #[allow(clippy::needless_range_loop)]
     for y in (0usize..size as usize).rev() {
         for x in 0usize..size as usize {
             match grid[y][x] {
