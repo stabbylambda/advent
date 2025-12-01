@@ -3,13 +3,14 @@ use nom::{
     bytes::complete::tag,
     character::complete::{anychar, char, i64},
     combinator::map,
-    sequence::{preceded, separated_pair, terminated, tuple},
-    IResult,
+    sequence::{preceded, separated_pair, terminated},
+    IResult, Parser,
 };
 
 use super::registers::{Register, Value};
 pub fn value(s: &str) -> IResult<&str, Value> {
-    alt((map(i64, Value::Literal), map(anychar, Value::Register)))(s)
+    alt((map(i64, Value::Literal), map(anychar, Value::Register)))
+    .parse(s)
 }
 
 pub fn register(s: &str) -> IResult<&str, Register> {
@@ -20,7 +21,7 @@ pub fn instruction0<'a, R>(name: &'a str, r: R) -> impl Fn(&'a str) -> IResult<&
 where
     R: Copy,
 {
-    move |s: &'a str| map(tag(name), |_| r)(s)
+    move |s: &'a str| map(tag(name), |_| r).parse(s)
 }
 
 pub fn instruction1<'a, X, X1, F, R>(
@@ -32,7 +33,7 @@ where
     X: Copy + Fn(&'a str) -> IResult<&'a str, X1>,
     F: Copy + Fn(X1) -> R,
 {
-    move |s: &'a str| preceded(terminated(tag(name), char(' ')), map(x, f))(s)
+    move |s: &'a str| preceded(terminated(tag(name), char(' ')), map(x, f)).parse(s)
 }
 
 pub fn instruction2<'a, X, X1, Y, Y1, F, R>(
@@ -50,7 +51,8 @@ where
         preceded(
             terminated(tag(name), char(' ')),
             map(separated_pair(x, char(' '), y), |(x, y)| f(x, y)),
-        )(s)
+        )
+        .parse(s)
     }
 }
 
@@ -71,9 +73,10 @@ where
         preceded(
             terminated(tag(name), char(' ')),
             map(
-                tuple((terminated(x, char(' ')), terminated(y, char(' ')), z)),
+                (terminated(x, char(' ')), terminated(y, char(' ')), z),
                 |(x, y, z)| f(x, y, z),
             ),
-        )(s)
+        )
+        .parse(s)
     }
 }

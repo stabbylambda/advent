@@ -2,7 +2,7 @@ use common::math::mod_pow;
 use nom::{
     character::complete::{newline, u64},
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -16,7 +16,7 @@ fn main() {
 type Input = (u64, u64);
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_pair(u64, newline, u64)(input);
+    let result: IResult<&str, Input> = separated_pair(u64, newline, u64).parse(input);
 
     result.unwrap().1
 }

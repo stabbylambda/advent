@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -40,7 +40,7 @@ enum Instruction {
 }
 
 fn parse(input: &str) -> Input {
-    let value = |s| alt((map(nom_i32, Value::Literal), map(anychar, Value::Register)))(s);
+    let value = |s| alt((map(nom_i32, Value::Literal), map(anychar, Value::Register))).parse(s);
 
     let result: IResult<&str, Input> = separated_list1(
         newline,
@@ -56,7 +56,7 @@ fn parse(input: &str) -> Input {
                 |(r, o)| Instruction::JumpNotZero(r, o),
             ),
         )),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

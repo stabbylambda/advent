@@ -6,8 +6,8 @@ use nom::{
     character::complete::{newline, u32},
     combinator::{map, opt},
     multi::separated_list1,
-    sequence::{delimited, preceded, terminated, tuple},
-    IResult,
+    sequence::{delimited, preceded, terminated},
+    IResult, Parser,
 };
 
 const PRESSURE_SENSITIVE :&str = "\n\n\n== Pressure-Sensitive Floor ==\nAnalyzing...\n\nDoors here lead:\n- east\n\nA loud, robotic voice says ";
@@ -60,7 +60,7 @@ impl Display for Door {
 }
 
 fn parse_pressure_sensor(s: &str) -> IResult<&str, (PressureSensorResult, Option<Room>)> {
-    tuple((
+    (
         preceded(
             tag(PRESSURE_SENSITIVE),
             alt((
@@ -80,7 +80,7 @@ fn parse_pressure_sensor(s: &str) -> IResult<&str, (PressureSensorResult, Option
             )),
         ),
         opt(parse_room),
-    ))(s)
+    ).parse(s)
 }
 
 fn parse_door(s: &str) -> IResult<&str, Door> {
@@ -89,12 +89,12 @@ fn parse_door(s: &str) -> IResult<&str, Door> {
         map(tag("south"), |_| Door::South),
         map(tag("east"), |_| Door::East),
         map(tag("west"), |_| Door::West),
-    ))(s)
+    )).parse(s)
 }
 
 fn parse_room(s: &str) -> IResult<&str, Room> {
     map(
-        tuple((
+        (
             delimited(
                 tag("\n\n\n== "),
                 map(take_until(" =="), |x: &str| x.to_string()),
@@ -109,7 +109,7 @@ fn parse_room(s: &str) -> IResult<&str, Room> {
                 tag("\n\nItems here:\n"),
                 separated_list1(newline, preceded(tag("- "), take_until("\n"))),
             )),
-        )),
+        ),
         |(name, _description, doors, items)| {
             let items = items.unwrap_or_default();
             Room {
@@ -118,7 +118,7 @@ fn parse_room(s: &str) -> IResult<&str, Room> {
                 items: items.iter().map(|x| x.to_string()).collect(),
             }
         },
-    )(s)
+    ).parse(s)
 }
 
 fn parse_take(s: &str) -> IResult<&str, String> {
@@ -126,14 +126,14 @@ fn parse_take(s: &str) -> IResult<&str, String> {
         tag("\nYou take the "),
         map(take_until("."), |x: &str| x.to_string()),
         tag(COMMAND),
-    )(s)
+    ).parse(s)
 }
 fn parse_drop(s: &str) -> IResult<&str, String> {
     delimited(
         tag("\nYou drop the "),
         map(take_until("."), |x: &str| x.to_string()),
         tag(COMMAND),
-    )(s)
+    ).parse(s)
 }
 
 pub fn parse_output(s: &str) -> IResult<&str, Output> {
@@ -142,7 +142,7 @@ pub fn parse_output(s: &str) -> IResult<&str, Output> {
         map(parse_room, Output::InspectRoom),
         map(parse_take, Output::TakeItem),
         map(parse_drop, Output::DropItem),
-    ))(s)
+    )).parse(s)
 }
 
 #[test]

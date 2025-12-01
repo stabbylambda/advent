@@ -5,7 +5,7 @@ use nom::{
     character::complete::{char, newline},
     combinator::map,
     multi::{many1, separated_list1},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -35,7 +35,7 @@ fn parse(input: &str) -> Input {
                 })
                 .collect()
         },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

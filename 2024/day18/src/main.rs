@@ -7,7 +7,7 @@ use nom::{
     character::complete::{char, newline},
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 use std::time::Instant;
 
@@ -30,7 +30,7 @@ type Input = Vec<Coord>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        separated_list1(newline, separated_pair(usize, char(','), usize))(input);
+        separated_list1(newline, separated_pair(usize, char(','), usize)).parse(input);
 
     result.unwrap().1
 }

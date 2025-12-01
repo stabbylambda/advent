@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::{count, separated_list1},
     sequence::{preceded, separated_pair, terminated},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -33,7 +33,7 @@ fn parse(input: &str) -> Input {
             ),
             Passport::new,
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }
@@ -46,15 +46,15 @@ fn parse_height(input: &str) -> IResult<&str, Height> {
     alt((
         map(terminated(u32, tag("cm")), Height::Cm),
         map(terminated(u32, tag("in")), Height::In),
-    ))(input)
+    )).parse(input)
 }
 
 fn parse_color(input: &str) -> IResult<&str, Vec<char>> {
-    preceded(tag("#"), count(one_of("0123456789abcdef"), 6))(input)
+    preceded(tag("#"), count(one_of("0123456789abcdef"), 6)).parse(input)
 }
 
 fn parse_pid(input: &str) -> IResult<&str, Vec<char>> {
-    count(one_of("0123456789"), 9)(input)
+    count(one_of("0123456789"), 9).parse(input)
 }
 
 #[derive(Debug)]

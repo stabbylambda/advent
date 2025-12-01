@@ -1,7 +1,7 @@
 use nom::{
     character::complete::{newline, space1, u32},
     multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -19,7 +19,7 @@ type Input = Vec<Vec<u32>>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        separated_list1(newline, separated_list1(space1, u32))(input);
+        separated_list1(newline, separated_list1(space1, u32)).parse(input);
 
     result.unwrap().1
 }

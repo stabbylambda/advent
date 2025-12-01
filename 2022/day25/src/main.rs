@@ -5,7 +5,7 @@ use nom::{
     character::complete::{char, newline},
     combinator::map,
     multi::{many1, separated_list1},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -73,10 +73,10 @@ impl Snafu {
                 map(char('='), |_| SnafuNumber::DoubleMinus),
             ))),
             |numbers| Snafu { numbers },
-        )(s)
+        ).parse(s)
     }
     fn parse_all(input: &str) -> Input {
-        let result: IResult<&str, Input> = separated_list1(newline, Snafu::parse)(input);
+        let result: IResult<&str, Input> = separated_list1(newline, Snafu::parse).parse(input);
         result.unwrap().1
     }
 }

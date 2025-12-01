@@ -9,8 +9,8 @@ use nom::{
     },
     combinator::map,
     multi::separated_list1,
-    sequence::{separated_pair, tuple},
-    IResult,
+    sequence::separated_pair,
+    IResult, Parser,
 };
 
 fn main() {
@@ -36,16 +36,16 @@ fn parse(input: &str) -> Input {
     let wire = |s| {
         separated_list1(
             tag(","),
-            map(tuple((one_of("UDLR"), u32)), |(dir, amount)| match dir {
+            map((one_of("UDLR"), u32), |(dir, amount)| match dir {
                 'U' => (Direction::Up, amount),
                 'D' => (Direction::Down, amount),
                 'L' => (Direction::Left, amount),
                 'R' => (Direction::Right, amount),
                 _ => unreachable!(),
             }),
-        )(s)
+        ).parse(s)
     };
-    let result: IResult<&str, Input> = separated_pair(wire, newline, wire)(input);
+    let result: IResult<&str, Input> = separated_pair(wire, newline, wire).parse(input);
 
     result.unwrap().1
 }

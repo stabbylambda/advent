@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 fn main() {
     let input = include_str!("../input.txt");
@@ -44,7 +44,7 @@ fn parse(input: &str) -> Input {
             tag(" "),
             nom_u32,
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

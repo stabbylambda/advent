@@ -5,7 +5,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::delimited,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -42,11 +42,11 @@ fn equation(s: &str) -> IResult<&str, Equation> {
                 EquationPart::SubEquation,
             ),
         )),
-    )(s)
+    ).parse(s)
 }
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(newline, equation)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, equation).parse(input);
 
     result.unwrap().1
 }

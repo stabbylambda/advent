@@ -4,8 +4,8 @@ use nom::{
     character::complete::{alpha1, i32, newline},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, preceded, terminated, tuple},
-    IResult,
+    sequence::{delimited, preceded, terminated},
+    IResult, Parser,
 };
 use registers::{Register, Registers};
 pub mod registers;
@@ -84,11 +84,11 @@ fn parse(input: &str) -> Input<'_> {
     ));
 
     let condition = map(
-        tuple((
+        (
             delimited(tag("if "), alpha1, tag(" ")),
             take_until1(" "),
             preceded(tag(" "), i32),
-        )),
+        ),
         |(register, cond, value)| {
             let kind = match cond {
                 "==" => ConditionType::Equal,
@@ -109,11 +109,11 @@ fn parse(input: &str) -> Input<'_> {
     );
 
     let instruction = map(
-        tuple((
+        (
             terminated(alpha1, tag(" ")),
             terminated(action, tag(" ")),
             condition,
-        )),
+        ),
         |(register, action, condition)| Instruction {
             register,
             action,
@@ -121,7 +121,7 @@ fn parse(input: &str) -> Input<'_> {
         },
     );
 
-    let result: IResult<&str, Input> = separated_list1(newline, instruction)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, instruction).parse(input);
 
     result.unwrap().1
 }

@@ -4,8 +4,8 @@ use nom::{
     character::complete::{anychar, newline, u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{separated_pair, terminated, tuple},
-    IResult,
+    sequence::{separated_pair, terminated},
+    IResult, Parser,
 };
 use std::fmt::Debug;
 
@@ -22,20 +22,20 @@ type Input = Vec<Path>;
 
 fn parse(input: &str) -> Input {
     let range = |s| {
-        tuple((
+        (
             terminated(anychar, tag("=")),
             terminated(u32, tag("..")),
             u32,
-        ))(s)
+        ).parse(s)
     };
-    let point = |s| separated_pair(anychar, tag("="), u32)(s);
+    let point = |s| separated_pair(anychar, tag("="), u32).parse(s);
 
     let result: IResult<&str, Input> = separated_list1(
         newline,
         map(separated_pair(point, tag(", "), range), |(point, range)| {
             Path::from_point_range(point, range)
         }),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

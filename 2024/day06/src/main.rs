@@ -4,7 +4,7 @@ use common::{
     grid::{CardinalDirection, Grid, Position},
     nom::parse_grid,
 };
-use nom::{branch::alt, character::complete::char, combinator::map, IResult};
+use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -35,7 +35,7 @@ fn parse(input: &str) -> Input {
         map(char('.'), |_| Tile::Space),
         map(char('^'), |_| Tile::Guard),
         map(char('#'), |_| Tile::Obstruction),
-    )))(input);
+    ))).parse(input);
 
     result.unwrap().1
 }

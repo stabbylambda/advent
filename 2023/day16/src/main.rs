@@ -1,7 +1,7 @@
 use std::collections::{BTreeSet, VecDeque};
 
 use common::{grid::Grid, nom::parse_grid};
-use nom::{branch::alt, character::complete::char, combinator::map, IResult};
+use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 use Direction::*;
 use Tile::*;
 
@@ -25,7 +25,7 @@ fn parse(input: &str) -> Input {
         map(char('\\'), |_| Tile::BackwardMirror),
         map(char('|'), |_| Tile::VerticalSplitter),
         map(char('-'), |_| Tile::HorizontalSplitter),
-    )))(input);
+    ))).parse(input);
 
     result.unwrap().1
 }

@@ -3,7 +3,7 @@ use common::{
     grid::{Coord, Grid},
     nom::parse_grid,
 };
-use nom::{branch::alt, character::complete::char, combinator::map, IResult};
+use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 use std::{
     collections::{BTreeMap, VecDeque},
     time::Instant,
@@ -32,7 +32,7 @@ fn parse(input: &str) -> Input {
         map(char('S'), |_| Tile::Start),
         map(char('E'), |_| Tile::End),
         map(char('#'), |_| Tile::Wall),
-    )))(input);
+    ))).parse(input);
 
     result.unwrap().1
 }

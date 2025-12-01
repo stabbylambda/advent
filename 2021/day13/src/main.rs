@@ -9,7 +9,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 fn main() {
     let lines = include_str!("../input.txt");
@@ -143,7 +143,7 @@ fn parse(s: &str) -> IResult<&str, Input> {
                 .collect();
             Input { grid, folds }
         },
-    )(s)
+    ).parse(s)
 }
 
 fn problem1(lines: &str) -> u32 {

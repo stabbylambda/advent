@@ -4,7 +4,7 @@ use nom::{
     branch::alt,
     character::complete::{anychar, i32},
     combinator::map,
-    IResult,
+    IResult, Parser,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -15,7 +15,7 @@ pub enum Value {
 
 impl Value {
     pub fn parse(s: &str) -> IResult<&str, Value> {
-        alt((map(i32, Value::Literal), map(anychar, Value::Register)))(s)
+        alt((map(i32, Value::Literal), map(anychar, Value::Register))).parse(s)
     }
 }
 

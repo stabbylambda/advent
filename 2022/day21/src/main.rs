@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list0,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -61,12 +61,12 @@ fn monkey_value(input: &str) -> IResult<&str, MonkeyValue<'_>> {
         map(separated_pair(alpha1, tag(" / "), alpha1), |(lhs, rhs)| {
             MonkeyValue::Divides(lhs, rhs)
         }),
-    ))(input)
+    )).parse(input)
 }
 
 fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> =
-        separated_list0(newline, separated_pair(alpha1, tag(": "), monkey_value))(input);
+        separated_list0(newline, separated_pair(alpha1, tag(": "), monkey_value)).parse(input);
 
     result.unwrap().1
 }

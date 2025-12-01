@@ -5,7 +5,7 @@ use nom::{
     combinator::{opt, value},
     multi::count,
     sequence::{delimited, preceded},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -38,7 +38,7 @@ fn escape(s: &str) -> IResult<&str, Option<String>> {
             )),
         )),
         char('"'),
-    )(s)
+    ).parse(s)
 }
 
 fn problem1(input: &Input) -> usize {

@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::preceded,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -40,7 +40,7 @@ fn parse(input: &str) -> Input {
             ),
             map(preceded(tag("cut "), i128), Technique::Cut),
         )),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

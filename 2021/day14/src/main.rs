@@ -3,8 +3,8 @@ use std::collections::BTreeMap;
 use nom::{
     bytes::complete::tag,
     character::complete::anychar,
-    sequence::{separated_pair, tuple},
-    IResult,
+    sequence::separated_pair,
+    IResult, Parser,
 };
 fn main() {
     let lines = include_str!("../input.txt");
@@ -36,7 +36,7 @@ fn parse(lines: &str) -> Input {
     }
 }
 fn parse_instruction(s: &str) -> IResult<&str, Instruction> {
-    separated_pair(tuple((anychar, anychar)), tag(" -> "), anychar)(s)
+    separated_pair((anychar, anychar), tag(" -> "), anychar).parse(s)
 }
 
 fn problem1(input: &Input) -> u64 {

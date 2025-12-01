@@ -6,7 +6,7 @@ use std::{
 
 use bitvec::{macros::internal::funty::Fundamental, prelude::*};
 
-use nom::{character::complete::anychar, combinator::map, multi::many1, IResult};
+use nom::{character::complete::anychar, combinator::map, multi::many1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -32,7 +32,7 @@ fn parse(input: &str) -> Input {
         '<' => Jet::Left,
         '>' => Jet::Right,
         _ => unreachable!(),
-    }))(input);
+    })).parse(input);
 
     result.unwrap().1
 }

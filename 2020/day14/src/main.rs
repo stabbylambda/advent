@@ -10,7 +10,7 @@ use nom::{
     combinator::map,
     multi::{many1, separated_list1},
     sequence::{delimited, preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -46,7 +46,7 @@ fn parse(input: &str) -> Input {
                 |(idx, value)| Instruction::Set(Address36(idx), Value36(value)),
             ),
         )),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

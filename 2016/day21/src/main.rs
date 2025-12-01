@@ -5,7 +5,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{delimited, preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -91,7 +91,7 @@ impl Instruction {
             rotate_based,
             reverse_positions,
             move_position,
-        ))(input)
+        )).parse(input)
     }
 
     fn execute(&self, cs: &mut Vec<char>) {
@@ -147,7 +147,7 @@ impl Instruction {
 
 fn parse(input: &str) -> Vec<Instruction> {
     let result: IResult<&str, Vec<Instruction>> =
-        separated_list1(newline, Instruction::parse)(input);
+        separated_list1(newline, Instruction::parse).parse(input);
     result.unwrap().1
 }
 

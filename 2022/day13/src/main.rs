@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list0,
     sequence::{delimited, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -74,14 +74,14 @@ fn parse_packet(input: &str) -> IResult<&str, Packet> {
             tag("]"),
         ),
         Packet::List,
-    )(input)
+    ).parse(input)
 }
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list0(
         tag("\n\n"),
         separated_pair(parse_packet, newline, parse_packet),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

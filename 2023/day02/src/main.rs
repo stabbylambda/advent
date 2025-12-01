@@ -5,7 +5,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair, terminated},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -84,7 +84,7 @@ fn hand(s: &str) -> IResult<&str, Hand> {
             )),
         ),
         Hand::new,
-    )(s)
+    ).parse(s)
 }
 
 fn parse(input: &str) -> Input {
@@ -98,7 +98,7 @@ fn parse(input: &str) -> Input {
             ),
             |(id, hands)| Game { id, hands },
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

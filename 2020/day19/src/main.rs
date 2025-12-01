@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{delimited, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -105,17 +105,17 @@ fn parse(input: &str) -> Input {
                 |(a, b)| Rule::Or(a, b),
             ),
             map(separated_list1(tag(" "), u32), Rule::String),
-        ))(s)
+        )).parse(s)
     }
 
     let rules = |s| {
         map(
             separated_list1(newline, separated_pair(u32, tag(": "), rule)),
             |x| x.into_iter().collect(),
-        )(s)
+        ).parse(s)
     };
-    let messages = |s| separated_list1(newline, map(take_until("\n"), |s: &str| s.to_string()))(s);
-    let result: IResult<&str, Input> = separated_pair(rules, tag("\n\n"), messages)(input);
+    let messages = |s| separated_list1(newline, map(take_until("\n"), |s: &str| s.to_string())).parse(s);
+    let result: IResult<&str, Input> = separated_pair(rules, tag("\n\n"), messages).parse(input);
 
     result.unwrap().1
 }

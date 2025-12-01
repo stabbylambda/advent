@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{delimited, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -123,7 +123,7 @@ impl Snailfish {
                 |(l, r)| Snailfish::Pair(Box::new(l), Box::new(r)),
             ),
             map(nom_u32, Snailfish::Literal),
-        ))(input)
+        )).parse(input)
     }
 
     fn magnitude(&self) -> u32 {
@@ -179,7 +179,7 @@ impl Sum for Snailfish {
 type Input = Vec<Snailfish>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(newline, Snailfish::parse)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, Snailfish::parse).parse(input);
 
     result.unwrap().1
 }

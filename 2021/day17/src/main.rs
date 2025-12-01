@@ -4,7 +4,7 @@ use nom::{
     bytes::complete::tag,
     character::complete::i32 as nom_i32,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -28,7 +28,7 @@ fn parse(input: &str) -> Input {
             tag(", "),
             preceded(tag("y="), separated_pair(nom_i32, tag(".."), nom_i32)),
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

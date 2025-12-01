@@ -1,6 +1,6 @@
 use common::{digits, nom::usize, to_number};
 
-use nom::{combinator::map, IResult};
+use nom::{combinator::map, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -18,7 +18,7 @@ type Input = Vec<usize>;
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = map(map(usize, digits), |x| {
         x.iter().map(|x| *x as usize).collect()
-    })(input);
+    }).parse(input);
 
     result.unwrap().1
 }

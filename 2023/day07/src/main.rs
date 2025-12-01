@@ -5,7 +5,7 @@ use nom::{
     combinator::map,
     multi::{count, separated_list1},
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -36,7 +36,7 @@ fn parse(input: &str, jokers: bool) -> Input {
             ),
         ),
         |hands| Hands { hands },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

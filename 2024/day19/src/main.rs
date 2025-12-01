@@ -3,7 +3,7 @@ use nom::{
     character::complete::{alpha1, newline},
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 use std::{collections::HashMap, time::Instant};
 
@@ -29,7 +29,7 @@ fn parse(input: &str) -> Input<'_> {
         separated_list1(tag(", "), alpha1),
         tag("\n\n"),
         separated_list1(newline, alpha1),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

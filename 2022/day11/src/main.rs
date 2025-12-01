@@ -4,8 +4,8 @@ use nom::{
     character::complete::{newline, u64 as nom_u64},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, preceded, separated_pair, tuple},
-    IResult,
+    sequence::{delimited, preceded, separated_pair},
+    IResult, Parser,
 };
 
 fn main() {
@@ -61,11 +61,11 @@ fn parse_operation(input: &str) -> IResult<&str, Operation> {
             '*' => Operation::Mul(value),
             _x => panic!("couldn't parse operation {_x}"),
         },
-    )(input)
+    ).parse(input)
 }
 fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
     map(
-        tuple((
+        (
             delimited(tag("Monkey "), nom_u64, tag(":\n")),
             delimited(
                 tag("  Starting items: "),
@@ -76,7 +76,7 @@ fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
             delimited(tag("  Test: divisible by "), nom_u64, newline),
             delimited(tag("    If true: throw to monkey "), nom_u64, newline),
             preceded(tag("    If false: throw to monkey "), nom_u64),
-        )),
+        ),
         |(number, items, operation, divisible_by, if_true, if_false)| {
             let items = items.to_vec();
             Monkey {
@@ -89,10 +89,10 @@ fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
                 inspected: 0,
             }
         },
-    )(input)
+    ).parse(input)
 }
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(tag("\n\n"), parse_monkey)(input);
+    let result: IResult<&str, Input> = separated_list1(tag("\n\n"), parse_monkey).parse(input);
 
     result.unwrap().1
 }

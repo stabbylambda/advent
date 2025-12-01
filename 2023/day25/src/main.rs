@@ -5,7 +5,7 @@ use nom::{
     character::complete::{alpha1, newline},
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 use rustworkx_core::{connectivity::stoer_wagner_min_cut, petgraph::graphmap::UnGraphMap, Result};
 
@@ -25,7 +25,7 @@ fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         separated_pair(alpha1, tag(": "), separated_list1(tag(" "), alpha1)),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

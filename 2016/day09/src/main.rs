@@ -5,7 +5,7 @@ use nom::{
     combinator::map,
     multi::{count, many1},
     sequence::{delimited, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -46,9 +46,9 @@ type Input = Vec<Section>;
 
 fn repeat(input: &str) -> IResult<&str, Section> {
     let (input, (chars, repeat)) =
-        delimited(tag("("), separated_pair(u32, tag("x"), u32), tag(")"))(input)?;
+        delimited(tag("("), separated_pair(u32, tag("x"), u32), tag(")")).parse(input)?;
 
-    let (input, v) = count(anychar, chars as usize)(input)?;
+    let (input, v) = count(anychar, chars as usize).parse(input)?;
 
     Ok((
         input,
@@ -63,7 +63,7 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = many1(alt((
         map(alphanumeric1, |x: &str| Section::Text(x.to_string())),
         repeat,
-    )))(input);
+    ))).parse(input);
 
     result.unwrap().1
 }

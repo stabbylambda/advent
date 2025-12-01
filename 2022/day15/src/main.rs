@@ -4,7 +4,7 @@ use nom::{
     character::complete::{i64 as nom_i64, newline},
     multi::separated_list1,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 use rayon::prelude::*;
 
@@ -42,7 +42,7 @@ fn parse_coord(input: &str) -> IResult<&str, Point> {
         preceded(tag("x="), nom_i64),
         tag(", "),
         preceded(tag("y="), nom_i64),
-    )(input)
+    ).parse(input)
 }
 
 fn parse(input: &str) -> Input {
@@ -52,7 +52,7 @@ fn parse(input: &str) -> Input {
             tag("Sensor at "),
             separated_pair(parse_coord, tag(": closest beacon is at "), parse_coord),
         ),
-    )(input);
+    ).parse(input);
 
     let pairs = result.unwrap().1;
     let sensors = pairs

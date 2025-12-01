@@ -5,7 +5,7 @@ use nom::{
     character::complete::{char, u32 as nom_u32},
     combinator::map,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -23,7 +23,7 @@ fn parse_range(s: &str) -> IResult<&str, RangeInclusive<u32>> {
     map(
         separated_pair(nom_u32, char('-'), nom_u32),
         |(start, end)| start..=end,
-    )(s)
+    ).parse(s)
 }
 #[derive(Debug)]
 struct Assignment {
@@ -43,7 +43,7 @@ impl Assignment {
         map(
             separated_pair(parse_range, char(','), parse_range),
             |(first, second)| Assignment { first, second },
-        )(s)
+        ).parse(s)
     }
 }
 

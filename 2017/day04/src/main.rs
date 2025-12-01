@@ -4,7 +4,7 @@ use nom::{
     bytes::complete::tag,
     character::complete::{alpha1, newline},
     multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -22,7 +22,7 @@ type Input<'a> = Vec<Vec<&'a str>>;
 
 fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> =
-        separated_list1(newline, separated_list1(tag(" "), alpha1))(input);
+        separated_list1(newline, separated_list1(tag(" "), alpha1)).parse(input);
 
     result.unwrap().1
 }

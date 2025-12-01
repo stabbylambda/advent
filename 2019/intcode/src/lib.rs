@@ -1,6 +1,6 @@
 use nom::{
     bytes::complete::tag, character::complete::i64, combinator::map, multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -291,7 +291,7 @@ impl Intcode {
 
     pub fn parse(s: &str) -> Self {
         let result: IResult<&str, Self> =
-            map(separated_list1(tag(","), i64), |x| Intcode::new(&x))(s);
+            map(separated_list1(tag(","), i64), |x| Intcode::new(&x)).parse(s);
         result.unwrap().1
     }
 

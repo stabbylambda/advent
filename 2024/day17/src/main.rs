@@ -4,8 +4,8 @@ use nom::{
     bytes::complete::tag,
     character::complete::{char, newline, u64},
     multi::separated_list1,
-    sequence::{delimited, preceded, separated_pair, tuple},
-    IResult,
+    sequence::{delimited, preceded, separated_pair},
+    IResult, Parser,
 };
 
 fn main() {
@@ -27,14 +27,14 @@ type Input = ((u64, u64, u64), Vec<u64>);
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_pair(
-        tuple((
+        (
             delimited(tag("Register A: "), u64, newline),
             delimited(tag("Register B: "), u64, newline),
             delimited(tag("Register C: "), u64, newline),
-        )),
+        ),
         newline,
         preceded(tag("Program: "), separated_list1(char(','), u64)),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

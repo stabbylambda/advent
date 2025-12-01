@@ -6,7 +6,7 @@ use common::program::{
     Program,
 };
 use nom::{
-    branch::alt, character::complete::newline, combinator::map, multi::separated_list1, IResult,
+    branch::alt, character::complete::newline, combinator::map, multi::separated_list1, IResult, Parser,
 };
 
 fn main() {
@@ -80,7 +80,7 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = map(
         separated_list1(newline, alt((skip, tgl, inc, dec, cpy, jnz, mul))),
         Input::new,
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

@@ -5,7 +5,7 @@ use nom::{
     character::complete::{char, i32, newline},
     multi::separated_list1,
     sequence::preceded,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -23,7 +23,7 @@ type Input = Vec<i32>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        separated_list1(newline, alt((preceded(char('+'), i32), i32)))(input);
+        separated_list1(newline, alt((preceded(char('+'), i32), i32))).parse(input);
 
     result.unwrap().1
 }

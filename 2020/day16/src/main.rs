@@ -9,8 +9,8 @@ use nom::{
     character::complete::{newline, u64},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, preceded, separated_pair, terminated, tuple},
-    IResult,
+    sequence::{delimited, preceded, separated_pair, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -27,9 +27,9 @@ fn main() {
 type Input = Notes;
 
 fn parse(input: &str) -> Input {
-    let ticket = |s| map(separated_list1(tag(","), u64), Ticket)(s);
+    let ticket = |s| map(separated_list1(tag(","), u64), Ticket).parse(s);
 
-    let range = |s| map(separated_pair(u64, tag("-"), u64), |(l, h)| l..=h)(s);
+    let range = |s| map(separated_pair(u64, tag("-"), u64), |(l, h)| l..=h).parse(s);
 
     let rule = |s| {
         map(
@@ -43,21 +43,21 @@ fn parse(input: &str) -> Input {
                 range1,
                 range2,
             },
-        )(s)
+        ).parse(s)
     };
 
     let result: IResult<&str, Input> = map(
-        tuple((
+        (
             terminated(separated_list1(newline, rule), tag("\n\n")),
             delimited(tag("your ticket:\n"), ticket, tag("\n\n")),
             preceded(tag("nearby tickets:\n"), separated_list1(newline, ticket)),
-        )),
+        ),
         |(rules, ticket, nearby)| Notes {
             rules,
             ticket,
             nearby,
         },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

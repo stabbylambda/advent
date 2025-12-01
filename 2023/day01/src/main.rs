@@ -3,7 +3,7 @@ use nom::{
     character::complete::{alpha1, newline, one_of},
     combinator::map,
     multi::{many1, separated_list1},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -48,7 +48,8 @@ fn parse(input: &str, include_words: bool) -> Input {
             ))),
             |nums| nums.iter().filter_map(|x| *x).collect(),
         ),
-    )(&input);
+    )
+    .parse(&input);
 
     result.unwrap().1
 }

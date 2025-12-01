@@ -3,8 +3,8 @@ use nom::{
     character::complete::{newline, u32 as nom_u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, tuple},
-    IResult,
+    sequence::delimited,
+    IResult, Parser,
 };
 use rayon::prelude::*;
 
@@ -126,19 +126,19 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         map(
-            tuple((
+            (
                 (delimited(tag("Blueprint "), nom_u32, tag(": "))),
                 (delimited(tag("Each ore robot costs "), nom_u32, tag(" ore. "))),
                 (delimited(tag("Each clay robot costs "), nom_u32, tag(" ore. "))),
-                (tuple((
+                ((
                     delimited(tag("Each obsidian robot costs "), nom_u32, tag(" ore ")),
                     delimited(tag("and "), nom_u32, tag(" clay. ")),
-                ))),
-                (tuple((
+                )),
+                ((
                     delimited(tag("Each geode robot costs "), nom_u32, tag(" ore ")),
                     delimited(tag("and "), nom_u32, tag(" obsidian.")),
-                ))),
-            )),
+                )),
+            ),
             |(id, ore, clay, (obs_ore, obs_clay), (geode_ore, geode_obs))| {
                 Blueprint::new(
                     id,
@@ -151,7 +151,7 @@ fn parse(input: &str) -> Input {
                 )
             },
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

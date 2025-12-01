@@ -3,8 +3,8 @@ use nom::{
     character::complete::{char, i64, newline},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, terminated, tuple},
-    IResult,
+    sequence::{delimited, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -45,23 +45,24 @@ impl Particle {
 }
 
 fn parse(input: &str) -> Input {
-    let triple = |s| tuple((terminated(i64, char(',')), terminated(i64, char(',')), i64))(s);
+    let triple = |s| (terminated(i64, char(',')), terminated(i64, char(',')), i64).parse(s);
     let particle = |s| {
         map(
-            tuple((
+            (
                 delimited(tag("p=<"), triple, tag(">, ")),
                 delimited(tag("v=<"), triple, tag(">, ")),
                 delimited(tag("a=<"), triple, tag(">")),
-            )),
+            ),
             |(p, v, a)| Particle {
                 position: p,
                 velocity: v,
                 acceleration: a,
             },
-        )(s)
+        )
+        .parse(s)
     };
 
-    let result: IResult<&str, Input> = separated_list1(newline, particle)(input);
+    let result: IResult<&str, Input> = separated_list1(newline, particle).parse(input);
 
     result.unwrap().1
 }

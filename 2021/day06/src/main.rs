@@ -1,5 +1,5 @@
 use common::nom::usize;
-use nom::{bytes::complete::tag, multi::separated_list1, IResult};
+use nom::{bytes::complete::tag, multi::separated_list1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -17,7 +17,7 @@ fn main() {
 }
 
 fn parse(input: &str) -> Vec<usize> {
-    let result: IResult<&str, Vec<usize>> = separated_list1(tag(","), usize)(input);
+    let result: IResult<&str, Vec<usize>> = separated_list1(tag(","), usize).parse(input);
 
     result.unwrap().1
 }

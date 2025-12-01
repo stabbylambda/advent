@@ -3,7 +3,7 @@ use nom::{
     character::complete::{char, i32, newline},
     combinator::map,
     multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -20,7 +20,7 @@ fn main() {
 type Input = Vec<Report>;
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        separated_list1(newline, map(separated_list1(char(' '), i32), Report))(input);
+        separated_list1(newline, map(separated_list1(char(' '), i32), Report)).parse(input);
 
     result.unwrap().1
 }

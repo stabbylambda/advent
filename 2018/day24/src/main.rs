@@ -7,8 +7,8 @@ use nom::{
     character::complete::{newline, u32},
     combinator::{map, opt},
     multi::{many1, separated_list1},
-    sequence::{delimited, preceded, separated_pair, terminated, tuple},
-    IResult,
+    sequence::{delimited, preceded, separated_pair, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -32,7 +32,7 @@ fn parse(input: &str) -> Input {
             map(tag("radiation"), |_| DamageType::Radiation),
             map(tag("bludgeoning"), |_| DamageType::Bludgeoning),
             map(tag("slashing"), |_| DamageType::Slashing),
-        ))(s)
+        )).parse(s)
     };
 
     let damage_modifiers = |s| {
@@ -63,7 +63,7 @@ fn parse(input: &str) -> Input {
                     .flatten()
                     .collect::<Vec<DamageModifier>>()
             },
-        )(s)
+        ).parse(s)
     };
     let attack = |s| {
         map(
@@ -72,18 +72,18 @@ fn parse(input: &str) -> Input {
                 amount,
                 attack_type,
             },
-        )(s)
+        ).parse(s)
     };
     let group = |side: Side| {
         move |s| {
             map(
-                tuple((
+                (
                     terminated(u32, tag(" units each with ")),
                     terminated(u32, tag(" hit points ")),
                     opt(damage_modifiers),
                     delimited(tag("with an attack that does "), attack, tag(" damage")),
                     preceded(tag(" at initiative "), u32),
-                )),
+                ),
                 |(units, hit_points, modifiers, attack, initiative)| Group {
                     side,
                     units,
@@ -92,10 +92,10 @@ fn parse(input: &str) -> Input {
                     attack,
                     initiative,
                 },
-            )(s)
+            ).parse(s)
         }
     };
-    let groups = |side| move |s| separated_list1(newline, group(side))(s);
+    let groups = |side| move |s| separated_list1(newline, group(side)).parse(s);
 
     let result: IResult<&str, Input> = map(
         separated_pair(
@@ -104,7 +104,7 @@ fn parse(input: &str) -> Input {
             preceded(tag("Infection:\n"), groups(Side::Infection)),
         ),
         |(immune, infection)| vec![immune, infection].into_iter().flatten().collect(),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

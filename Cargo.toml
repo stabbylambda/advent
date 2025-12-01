@@ -17,5 +17,5 @@ members = [
 [workspace.dependencies]
 itertools = "0.14"
 petgraph = "0.6.5"
-nom = "7.1.3"
+nom = "8.0.0"
 rayon = "1.10.0"

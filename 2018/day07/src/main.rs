@@ -8,7 +8,7 @@ use nom::{
     character::complete::{anychar, newline},
     multi::separated_list1,
     sequence::{preceded, separated_pair, terminated},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -32,7 +32,7 @@ fn parse(input: &str) -> Input {
             tag(" must be finished before step "),
             terminated(anychar, tag(" can begin.")),
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

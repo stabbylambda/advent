@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use nom::{branch::alt, character::complete::char, combinator::map, multi::many1, IResult};
+use nom::{branch::alt, character::complete::char, combinator::map, multi::many1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -29,7 +29,7 @@ fn parse(input: &str) -> Input {
         map(char('v'), |_| Instruction::South),
         map(char('<'), |_| Instruction::West),
         map(char('>'), |_| Instruction::East),
-    )))(input);
+    ))).parse(input);
 
     result.unwrap().1
 }

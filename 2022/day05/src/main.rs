@@ -5,8 +5,8 @@ use nom::multi::{many0, separated_list0};
 use nom::sequence::{delimited, separated_pair, terminated};
 use nom::{
     combinator::map,
-    sequence::{preceded, tuple},
-    IResult,
+    sequence::preceded,
+    IResult, Parser,
 };
 fn main() {
     let raw = include_str!("../input.txt");
@@ -32,17 +32,17 @@ struct Move {
 impl Move {
     fn parse(s: &str) -> IResult<&str, Move> {
         map(
-            tuple((
+            (
                 preceded(tag("move "), nom_u32),
                 preceded(tag(" from "), nom_u32),
                 preceded(tag(" to "), nom_u32),
-            )),
+            ),
             |(count, from, to)| Move {
                 count: count as usize,
                 from: (from - 1) as usize,
                 to: (to - 1) as usize,
             },
-        )(s)
+        ).parse(s)
     }
 }
 
@@ -57,11 +57,11 @@ impl Input<'_> {
         alt((
             map(delimited(char('['), alpha0, char(']')), Some),
             map(tag("   "), |_| None),
-        ))(s)
+        )).parse(s)
     }
 
     fn parse_row(s: &str) -> IResult<&str, Vec<Option<&str>>> {
-        separated_list0(tag(" "), Input::parse_crate)(s)
+        separated_list0(tag(" "), Input::parse_crate).parse(s)
     }
 
     fn invert_stacks(rows: Vec<Vec<Option<&str>>>) -> Vec<Stack<'_>> {
@@ -75,7 +75,7 @@ impl Input<'_> {
         map(
             many0(terminated(Input::parse_row, newline)),
             Input::invert_stacks,
-        )(s)
+        ).parse(s)
     }
 
     fn parse(raw: &str) -> Input<'_> {
@@ -86,7 +86,7 @@ impl Input<'_> {
                 separated_list0(newline, Move::parse),
             ),
             |(stacks, moves)| Input { stacks, moves },
-        )(raw)
+        ).parse(raw)
         .unwrap()
         .1
     }

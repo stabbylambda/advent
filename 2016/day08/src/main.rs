@@ -6,7 +6,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 const WIDTH: usize = 50;
@@ -58,7 +58,7 @@ fn parse(input: &str) -> Input {
                 },
             ),
         )),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

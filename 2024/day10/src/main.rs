@@ -7,7 +7,7 @@ use common::{
     grid::{Coord, Grid},
     nom::{parse_grid, single_digit},
 };
-use nom::{branch::alt, character::complete::char, combinator::map, IResult};
+use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -28,7 +28,7 @@ type Input = Grid<u32>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        parse_grid(alt((single_digit, map(char('.'), |_| 5))))(input);
+        parse_grid(alt((single_digit, map(char('.'), |_| 5)))).parse(input);
 
     result.unwrap().1
 }

@@ -6,7 +6,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -29,7 +29,7 @@ fn parse(input: &str) -> Input<'_> {
             separated_pair(take_until(")"), tag(")"), take_until("\n")),
         ),
         |input| input.iter().map(|(k, v)| (*v, *k)).collect(),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

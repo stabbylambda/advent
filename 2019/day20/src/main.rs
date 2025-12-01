@@ -9,7 +9,7 @@ use nom::{
     branch::alt,
     character::complete::{char, one_of},
     combinator::map,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -42,7 +42,7 @@ fn parse(input: &str) -> Input {
             map(one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), Tile::Label),
         ))),
         PlutoMap::new,
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

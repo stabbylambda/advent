@@ -5,8 +5,8 @@ use nom::{
     character::complete::{alpha0, newline, u32 as nom_u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, separated_pair, tuple},
-    IResult,
+    sequence::{delimited, separated_pair},
+    IResult, Parser,
 };
 
 fn main() {
@@ -78,7 +78,7 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         map(
-            tuple((
+            (
                 delimited(tag("Sue "), nom_u32, tag(": ")),
                 map(
                     separated_list1(
@@ -87,10 +87,11 @@ fn parse(input: &str) -> Input {
                     ),
                     |things| things.into_iter().collect(),
                 ),
-            )),
+            ),
             |(number, stuff)| Aunt { number, stuff },
         ),
-    )(input);
+    )
+    .parse(input);
 
     result.unwrap().1
 }

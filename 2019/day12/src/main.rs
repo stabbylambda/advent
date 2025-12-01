@@ -7,8 +7,8 @@ use nom::{
     character::complete::{i32, newline},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, preceded, tuple},
-    IResult,
+    sequence::{delimited, preceded},
+    IResult, Parser,
 };
 
 fn main() {
@@ -146,18 +146,18 @@ fn parse(input: &str) -> Input {
             map(
                 delimited(
                     tag("<"),
-                    tuple((
+                    (
                         delimited(tag("x="), i32, tag(", ")),
                         delimited(tag("y="), i32, tag(", ")),
                         preceded(tag("z="), i32),
-                    )),
+                    ),
                     tag(">"),
                 ),
                 Moon::new,
             ),
         ),
         System,
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

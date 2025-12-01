@@ -8,8 +8,8 @@ use nom::{
     character::complete::{alpha1, newline, u32},
     combinator::{map, opt},
     multi::separated_list1,
-    sequence::{delimited, preceded, terminated, tuple},
-    IResult,
+    sequence::{delimited, preceded, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -76,14 +76,14 @@ fn parse(input: &str) -> Input<'_> {
     let result: IResult<&str, Input> = map(
         separated_list1(
             newline,
-            tuple((
+            (
                 terminated(alpha1, tag(" ")),
                 delimited(tag("("), u32, tag(")")),
                 map(
                     opt(preceded(tag(" -> "), separated_list1(tag(", "), alpha1))),
                     |v| v.unwrap_or_default(),
                 ),
-            )),
+            ),
         ),
         |v| {
             let map: HashMap<_, _> = v
@@ -100,7 +100,8 @@ fn parse(input: &str) -> Input<'_> {
 
             build_tree(&map, root)
         },
-    )(input);
+    )
+    .parse(input);
 
     result.unwrap().1
 }

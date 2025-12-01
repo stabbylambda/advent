@@ -5,7 +5,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 use petgraph::{
     algo::toposort,
@@ -55,7 +55,7 @@ impl<'a> Listing<'a> {
                     map(alphanumeric0, |x| Listing::Directory(Data::new(x, 0))),
                 ),
             )),
-        )(s)
+        ).parse(s)
     }
 }
 
@@ -85,11 +85,11 @@ impl<'a> Command<'a> {
                     map(preceded(line_ending, Listing::parse), Command::List),
                 ),
             )),
-        )(s)
+        ).parse(s)
     }
 
     fn parse_all(s: &str) -> Vec<Command<'_>> {
-        separated_list1(line_ending, Command::parse)(s).unwrap().1
+        separated_list1(line_ending, Command::parse).parse(s).unwrap().1
     }
 }
 

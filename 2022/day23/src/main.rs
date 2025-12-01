@@ -4,7 +4,7 @@ use nom::{
     branch::alt,
     character::complete::{char, newline},
     multi::{many1, separated_list1},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -22,7 +22,7 @@ type Input = BTreeSet<(i64, i64)>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Vec<Vec<char>>> =
-        separated_list1(newline, many1(alt((char('#'), char('.')))))(input);
+        separated_list1(newline, many1(alt((char('#'), char('.'))))).parse(input);
 
     result
         .unwrap()

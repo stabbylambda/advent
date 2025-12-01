@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -139,9 +139,9 @@ impl Pattern {
 }
 
 fn parse(input: &str) -> Input {
-    let pattern = |s| map(take_till(|x| x == ' ' || x == '\n'), Pattern::new)(s);
+    let pattern = |s| map(take_till(|x| x == ' ' || x == '\n'), Pattern::new).parse(s);
     let result: IResult<&str, Input> =
-        separated_list1(newline, separated_pair(pattern, tag(" => "), pattern))(input);
+        separated_list1(newline, separated_pair(pattern, tag(" => "), pattern)).parse(input);
 
     result.unwrap().1
 }

@@ -6,7 +6,7 @@ use nom::{
     combinator::map,
     multi::many1,
     sequence::{delimited, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -37,7 +37,7 @@ fn parse(input: &str) -> Input {
         ),
         map(tag("do()"), |_| Instruction::Enable),
         map(tag("don't()"), |_| Instruction::Disable),
-    ))))(input);
+    )))).parse(input);
 
     result.unwrap().1
 }

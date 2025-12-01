@@ -6,8 +6,8 @@ use nom::{
     character::complete::{newline, u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{preceded, tuple},
-    IResult,
+    sequence::preceded,
+    IResult, Parser,
 };
 
 fn main() {
@@ -54,13 +54,13 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
         newline,
         map(
-            tuple((
+            (
                 preceded(tag("#"), u32),
                 preceded(tag(" @ "), u32),
                 preceded(tag(","), u32),
                 preceded(tag(": "), u32),
                 preceded(tag("x"), u32),
-            )),
+            ),
             |(id, x, y, width, height)| Claim {
                 id,
                 x: x as usize,
@@ -69,7 +69,7 @@ fn parse(input: &str) -> Input {
                 height: height as usize,
             },
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

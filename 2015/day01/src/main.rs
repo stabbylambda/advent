@@ -1,6 +1,6 @@
 use nom::character::complete::char;
 use nom::combinator::map;
-use nom::{branch::alt, multi::many1, IResult};
+use nom::{branch::alt, multi::many1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -17,7 +17,7 @@ type Input = Vec<i32>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        many1(alt((map(char('('), |_| 1), map(char(')'), |_| -1))))(input);
+        many1(alt((map(char('('), |_| 1), map(char(')'), |_| -1)))).parse(input);
 
     result.unwrap().1
 }

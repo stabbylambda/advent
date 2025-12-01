@@ -2,7 +2,7 @@ use cavemap::{CaveMap, Tile};
 use common::{grid::Path, nom::coord};
 use nom::{
     bytes::complete::tag, character::complete::newline, combinator::map, multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 
 pub mod cavemap;
@@ -22,7 +22,7 @@ type Input = Vec<Path>;
 
 fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> =
-        separated_list1(newline, map(separated_list1(tag(" -> "), coord), Path::new))(input);
+        separated_list1(newline, map(separated_list1(tag(" -> "), coord), Path::new)).parse(input);
 
     result.unwrap().1
 }

@@ -1,5 +1,5 @@
 use nom::{
-    bytes::complete::tag, character::complete::i32 as nom_i32, multi::separated_list1, IResult,
+    bytes::complete::tag, character::complete::i32 as nom_i32, multi::separated_list1, IResult, Parser,
 };
 fn main() {
     let input = include_str!("../input.txt");
@@ -15,7 +15,7 @@ fn main() {
     println!("second answer {fuel}")
 }
 fn parse(input: &str) -> Vec<i32> {
-    let result: IResult<&str, Vec<i32>> = separated_list1(tag(","), nom_i32)(input);
+    let result: IResult<&str, Vec<i32>> = separated_list1(tag(","), nom_i32).parse(input);
 
     result.unwrap().1
 }

@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::{many1, separated_list1},
     sequence::{delimited, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -47,7 +47,7 @@ fn parse(input: &str) -> Input<'_> {
             directions,
             room_map,
         },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

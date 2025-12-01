@@ -8,7 +8,7 @@ use nom::{
     combinator::map,
     multi::{many1, separated_list1},
     sequence::{delimited, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -38,7 +38,7 @@ fn parse(input: &str) -> Input {
             ),
             |(id, v)| Tile::new(id, v),
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

@@ -8,7 +8,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -39,7 +39,7 @@ fn parse(input: &str) -> Input {
             ),
             |(p, v)| Robot::new(p, v),
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

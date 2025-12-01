@@ -5,7 +5,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 use petgraph::{algo::all_simple_paths, prelude::UnGraphMap};
 
@@ -29,7 +29,7 @@ pub fn parse(input: &str) -> Input<'_> {
             ),
             |((from, to), distance)| Route { from, to, distance },
         ),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

@@ -3,7 +3,7 @@ use common::{
     grid::Grid,
     nom::{parse_grid, single_digit},
 };
-use nom::{combinator::map, IResult};
+use nom::{combinator::map, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -49,7 +49,7 @@ fn get_edges(map: &Grid<usize>) -> Vec<Vec<Edge>> {
 
 fn parse(input: &str) -> Input {
     let weights: IResult<&str, Input> =
-        map(parse_grid(map(single_digit, |x| x as usize)), Input::new)(input);
+        map(parse_grid(map(single_digit, |x| x as usize)), Input::new).parse(input);
 
     weights.unwrap().1
 }

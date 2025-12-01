@@ -1,4 +1,4 @@
-use nom::{branch::alt, character::complete::char, combinator::map, multi::many1, IResult};
+use nom::{branch::alt, character::complete::char, combinator::map, multi::many1, IResult, Parser};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -40,7 +40,7 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = map(
         many1(alt((map(char('.'), |_| 0), map(char('^'), |_| 1)))),
         |v| Row { tiles: v },
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

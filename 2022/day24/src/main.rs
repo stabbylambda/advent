@@ -4,7 +4,7 @@ use nom::{
     character::complete::{char, newline},
     combinator::map,
     multi::{many1, separated_list1},
-    IResult,
+    IResult, Parser,
 };
 use std::{
     cmp::Reverse,
@@ -49,7 +49,7 @@ fn parse(input: &str) -> Input {
             map(char('>'), |_| Tile::Blizzard(Direction::Right)),
             map(char('.'), |_| Tile::Empty),
         ))),
-    )(input);
+    ).parse(input);
     result.unwrap().1
 }
 

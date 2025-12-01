@@ -3,7 +3,7 @@ use nom::{
     character::complete::{alpha1, newline},
     combinator::map,
     multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -23,7 +23,7 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = separated_list1(
         tag("\n\n"),
         separated_list1(newline, map(alpha1, |x: &str| x.to_string())),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }

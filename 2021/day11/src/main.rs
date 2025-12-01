@@ -2,7 +2,7 @@ use common::nom::single_digit;
 use nom::{
     character::complete::newline,
     multi::{many1, separated_list1},
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -16,7 +16,7 @@ fn main() {
     println!("problem 2 answer: {answer}");
 }
 fn parse(input: &str) -> Vec<Vec<u32>> {
-    let result: IResult<&str, Vec<Vec<u32>>> = separated_list1(newline, many1(single_digit))(input);
+    let result: IResult<&str, Vec<Vec<u32>>> = separated_list1(newline, many1(single_digit)).parse(input);
 
     result.unwrap().1
 }

@@ -7,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -24,19 +24,19 @@ fn main() {
 type Input<'a> = HashMap<&'a str, (u64, Vec<(u64, &'a str)>)>;
 
 fn parse(input: &str) -> Input<'_> {
-    let ingredient = |s| separated_pair(u64, tag(" "), alpha1)(s);
+    let ingredient = |s| separated_pair(u64, tag(" "), alpha1).parse(s);
     let rule = |s| {
         separated_pair(
             separated_list1(tag(", "), ingredient),
             tag(" => "),
             ingredient,
-        )(s)
+        ).parse(s)
     };
     let result: IResult<&str, Input> = map(separated_list1(newline, rule), |v| {
         v.into_iter()
             .map(|(components, (amount, production))| (production, (amount, components)))
             .collect()
-    })(input);
+    }).parse(input);
 
     result.unwrap().1
 }

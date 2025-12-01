@@ -5,8 +5,8 @@ use nom::{
     character::complete::{i64, newline, one_of},
     combinator::map,
     multi::separated_list1,
-    sequence::{delimited, preceded, separated_pair, tuple},
-    IResult,
+    sequence::{delimited, preceded, separated_pair},
+    IResult, Parser,
 };
 
 fn main() {
@@ -32,20 +32,22 @@ fn parse(input: &str) -> Input {
             preceded(preceded(tag("X"), one_of("+=")), i64),
             tag(", "),
             preceded(preceded(tag("Y"), one_of("+=")), i64),
-        )(x)
+        )
+        .parse(x)
     };
 
     let result: IResult<&str, Input> = separated_list1(
         tag("\n\n"),
         map(
-            tuple((
+            (
                 delimited(tag("Button A: "), xy_pair, newline),
                 delimited(tag("Button B: "), xy_pair, newline),
                 preceded(tag("Prize: "), xy_pair),
-            )),
+            ),
             |(a, b, prize)| Machine { a, b, prize },
         ),
-    )(input);
+    )
+    .parse(input);
 
     result.unwrap().1
 }

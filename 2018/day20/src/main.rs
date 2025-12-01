@@ -6,7 +6,7 @@ use nom::{
     combinator::{map, opt},
     multi::{many1, separated_list1},
     sequence::delimited,
-    IResult,
+    IResult, Parser,
 };
 
 fn main() {
@@ -54,22 +54,22 @@ fn direction(s: &str) -> IResult<&str, Step> {
             map(char('W'), |_| Direction::West),
         )),
         Step::Dir,
-    )(s)
+    ).parse(s)
 }
 
 fn branches(s: &str) -> IResult<&str, Step> {
     map(
         delimited(char('('), separated_list1(char('|'), opt(path)), char(')')),
         |x| Step::Branch(x.into_iter().flatten().collect()),
-    )(s)
+    ).parse(s)
 }
 
 fn path(s: &str) -> IResult<&str, Vec<Step>> {
-    many1(alt((direction, branches)))(s)
+    many1(alt((direction, branches))).parse(s)
 }
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = delimited(char('^'), path, char('$'))(input);
+    let result: IResult<&str, Input> = delimited(char('^'), path, char('$')).parse(input);
 
     result.unwrap().1
 }

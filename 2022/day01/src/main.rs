@@ -6,7 +6,7 @@ use nom::{
     combinator::eof,
     multi::{fold_many0, separated_list1},
     sequence::terminated,
-    IResult,
+    IResult, Parser,
 };
 fn main() {
     let lines = include_str!("../input.txt");
@@ -27,7 +27,7 @@ fn parse_calorie_groups(s: &str) -> Vec<u32> {
             || 0,
             |x, y| x + y,
         ),
-    )(s);
+    ).parse(s);
 
     let (_, mut v) = parsed.unwrap();
     v.sort_by_key(|x| Reverse(*x));

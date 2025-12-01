@@ -8,8 +8,8 @@ use nom::{
     character::complete::{newline, u32},
     combinator::map,
     multi::separated_list1,
-    sequence::{separated_pair, terminated, tuple},
-    IResult,
+    sequence::{separated_pair, terminated},
+    IResult, Parser,
 };
 
 fn main() {
@@ -30,9 +30,9 @@ fn parse(input: &str) -> Input {
     let mut idx = 0usize;
     let triple = |s| {
         map(
-            tuple((terminated(u32, tag(",")), terminated(u32, tag(",")), u32)),
+            (terminated(u32, tag(",")), terminated(u32, tag(",")), u32),
             |(x, y, z)| Triple::new(z, y, x),
-        )(s)
+        ).parse(s)
     };
     let result: IResult<&str, Input> = map(
         separated_list1(
@@ -43,7 +43,7 @@ fn parse(input: &str) -> Input {
             }),
         ),
         |x| settle(&x),
-    )(input);
+    ).parse(input);
 
     result.unwrap().1
 }
