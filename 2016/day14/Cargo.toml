@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 common = { path = "../../common" }
 nom = { workspace = true }
-rust-crypto = "0.2.36"
+md-5 = "0.10.6"
+base64ct = { version = "1.8.0", features = ["alloc"] }

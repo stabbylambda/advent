@@ -1,4 +1,4 @@
-use crypto::{digest::Digest, md5::Md5};
+use md5::{Digest, Md5};
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -15,19 +15,17 @@ where
     F: Fn(&[u8]) -> i32,
 {
     let input = input.as_bytes();
-    let mut hasher = Md5::new();
 
     for i in 0u32.. {
-        hasher.input(input);
-        hasher.input_str(&i.to_string());
+        let mut hasher = Md5::new();
+        hasher.update(input);
+        hasher.update(&i.to_string());
 
-        let mut output = [0; 16]; // An MD5 is 16 bytes
-        hasher.result(&mut output);
+        let output = hasher.finalize();
 
         if f(&output) == 0 {
             return i;
         }
-        hasher.reset();
     }
 
     unreachable!()

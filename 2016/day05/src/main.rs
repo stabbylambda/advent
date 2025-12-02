@@ -1,4 +1,4 @@
-use crypto::{digest::Digest, md5::Md5};
+use md5::{Digest, Md5};
 use std::fmt::Write;
 
 fn main() {
@@ -13,17 +13,15 @@ fn main() {
 
 fn hash(md5: &Md5, start: u128) -> (u128, [u8; 16]) {
     for i in start.. {
-        let mut hasher = *md5;
-        hasher.input_str(&i.to_string());
+        let mut hasher = md5.clone();
+        hasher.update(i.to_string());
 
-        let mut output = [0; 16]; // An MD5 is 16 bytes
-        hasher.result(&mut output);
+        let output = hasher.finalize();
 
         let valid = (output[0] as i32 + output[1] as i32 + (output[2] >> 4) as i32) == 0;
         if valid {
-            return (i + 1, output);
+            return (i + 1, output.into());
         }
-        hasher.reset();
     }
 
     unreachable!()
@@ -31,7 +29,7 @@ fn hash(md5: &Md5, start: u128) -> (u128, [u8; 16]) {
 
 fn problem1(input: &str) -> String {
     let mut md5 = Md5::new();
-    md5.input_str(input);
+    md5.update(input);
 
     let mut result = vec![];
     let mut i: u128 = 0;
@@ -53,7 +51,7 @@ fn problem1(input: &str) -> String {
 
 fn problem2(input: &str) -> String {
     let mut md5 = Md5::new();
-    md5.input_str(input);
+    md5.update(input);
 
     let mut result = ['_'; 8];
     let mut i: u128 = 0;

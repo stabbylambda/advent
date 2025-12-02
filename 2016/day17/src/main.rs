@@ -1,6 +1,6 @@
 use std::{collections::BinaryHeap, vec};
 
-use crypto::{digest::Digest, md5::Md5};
+use md5::{Digest, Md5};
 
 fn main() {
     let input = "pxxbnzuo";
@@ -35,9 +35,9 @@ impl State {
         let mut output = [0; 16]; // An MD5 is 16 bytes
 
         let mut md5 = Md5::new();
-        md5.input_str(password);
-        md5.input(&b);
-        md5.result(&mut output);
+        md5.update(password);
+        md5.update(&b);
+        let output = md5.finalize();
 
         // figure out which doors are open
         output[0..2]
