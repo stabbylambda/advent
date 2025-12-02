@@ -1,3 +1,5 @@
+use std::hash::RandomState;
+
 use itertools::{Itertools, MinMaxResult};
 use nom::{
     bytes::complete::tag,
@@ -29,7 +31,8 @@ pub fn parse(input: &str) -> Input<'_> {
             ),
             |((from, to), distance)| Route { from, to, distance },
         ),
-    ).parse(input);
+    )
+    .parse(input);
 
     result.unwrap().1
 }
@@ -53,7 +56,13 @@ pub fn problem1(input: &Input) -> (u32, u32) {
         .nodes()
         .tuple_combinations()
         .flat_map(|(start, end)| {
-            all_simple_paths::<Vec<_>, _>(&g, start, end, path_length, Some(path_length))
+            all_simple_paths::<Vec<_>, _, RandomState>(
+                &g,
+                start,
+                end,
+                path_length,
+                Some(path_length),
+            )
         })
         .map(|path| {
             path.iter()

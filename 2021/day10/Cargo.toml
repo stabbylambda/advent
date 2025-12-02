@@ -7,6 +7,4 @@ edition = "2021"
 
 [dependencies]
 common = { path = "../../common" }
-ansi_term = "0.12.1"
 nom = { workspace = true }
-nom_locate = "4"
