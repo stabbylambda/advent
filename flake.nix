@@ -36,7 +36,9 @@
                   packages = [
                     pkgs.aoc-cli
                     pkgs.cargo-watch
+                    pkgs.cargo-outdated
                     pkgs.hyperfine
+                    pkgs.z3
                   ];
                 }
               ];
