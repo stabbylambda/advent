@@ -35,6 +35,7 @@
                   languages.rust.enable = true;
                   packages = [
                     pkgs.aoc-cli
+                    pkgs.cargo-generate
                     pkgs.cargo-watch
                     pkgs.cargo-outdated
                     pkgs.hyperfine

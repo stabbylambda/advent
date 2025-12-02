@@ -1,9 +1,10 @@
 #!/usr/bin/env zsh
-year=2024
+year=2025
+mkdir -p "$year"
 cd "$year"
-for i in {01..25}
+for i in {01..12}
 do
     name="advent_${year}_${i}"
-    cargo generate --path ../../adventtemplate --name $name
-    mv ${name:gs/_/-} "day$i"
+    mkdir -p "day$i"
+    cargo generate --path ../template --name $name --destination "day$i" --init
 done

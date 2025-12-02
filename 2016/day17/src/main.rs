@@ -32,8 +32,6 @@ impl State {
     fn get_open_doors(&self, password: &str) -> Vec<bool> {
         let b: Vec<u8> = self.steps.iter().map(|&c| c as u8).collect();
 
-        let mut output = [0; 16]; // An MD5 is 16 bytes
-
         let mut md5 = Md5::new();
         md5.update(password);
         md5.update(&b);
