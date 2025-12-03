@@ -38,6 +38,7 @@
                     pkgs.cargo-generate
                     pkgs.cargo-watch
                     pkgs.cargo-outdated
+                    pkgs.git-crypt
                     pkgs.hyperfine
                     pkgs.z3
                   ];
