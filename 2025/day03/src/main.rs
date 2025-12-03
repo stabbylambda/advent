@@ -1,6 +1,6 @@
-use common::nom::single_digit;
+use common::nom::single_digit_u64;
 use nom::{
-    character::complete::{i32, newline},
+    character::complete::newline,
     multi::{many1, separated_list1},
     IResult, Parser,
 };
@@ -16,39 +16,41 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Vec<Vec<u32>>;
+type Input = Vec<Vec<u64>>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(newline, many1(single_digit)).parse(input);
+    let result: IResult<&str, Input> =
+        separated_list1(newline, many1(single_digit_u64)).parse(input);
 
     result.unwrap().1
 }
 
-fn problem1(x: &Input) -> u32 {
-    x.iter()
-        .map(|batteries| {
-            let mut max = 0;
-            for n in 0..batteries.len() {
-                let tens = batteries[n];
-                if tens * 10 < max {
-                    continue;
-                }
-                let rest = &batteries[n + 1..];
-                for ones in rest {
-                    let c = tens * 10 + ones;
-                    if c >= max {
-                        max = c;
-                    }
-                }
-            }
+fn find_max(count: usize, remaining: &[u64]) -> u64 {
+    fn _find_max(current: u64, count: usize, remaining: &[u64]) -> u64 {
+        if remaining.is_empty() || count == 0 {
+            return current;
+        }
 
-            max
-        })
-        .sum()
+        let tail_count = remaining.len() - count + 1;
+        let next = &remaining[..tail_count];
+
+        let max = next.iter().max().unwrap();
+        let next_idx = next.iter().position(|x| x == max).unwrap();
+
+        let rest = &remaining[next_idx + 1..];
+
+        _find_max(10 * current + max, count - 1, rest)
+    }
+
+    _find_max(0, count, remaining)
 }
 
-fn problem2(x: &Input) -> u32 {
-    todo!()
+fn problem1(x: &Input) -> u64 {
+    x.iter().map(|x| find_max(2, x)).sum()
+}
+
+fn problem2(x: &Input) -> u64 {
+    x.iter().map(|x| find_max(12, x)).sum()
 }
 
 #[cfg(test)]
@@ -67,6 +69,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 3121910778619)
     }
 }

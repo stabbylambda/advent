@@ -33,6 +33,10 @@ pub fn single_digit(s: &str) -> IResult<&str, u32> {
     map_opt(anychar, |c| c.to_digit(10)).parse(s)
 }
 
+pub fn single_digit_u64(s: &str) -> IResult<&str, u64> {
+    map_opt(anychar, |c| c.to_digit(10).map(|x| x.into())).parse(s)
+}
+
 pub fn coord(s: &str) -> IResult<&str, Coord> {
     map(separated_pair(u32, tag(","), u32), |(x, y)| {
         (x as usize, y as usize)
