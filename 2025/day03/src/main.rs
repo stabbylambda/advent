@@ -1,6 +1,7 @@
+use common::nom::single_digit;
 use nom::{
     character::complete::{i32, newline},
-    multi::separated_list1,
+    multi::{many1, separated_list1},
     IResult, Parser,
 };
 
@@ -15,16 +16,35 @@ fn main() {
     println!("problem 2 score: {score}");
 }
 
-type Input = Vec<i32>;
+type Input = Vec<Vec<u32>>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(newline, i32).parse(input);
+    let result: IResult<&str, Input> = separated_list1(newline, many1(single_digit)).parse(input);
 
     result.unwrap().1
 }
 
 fn problem1(x: &Input) -> u32 {
-    todo!()
+    x.iter()
+        .map(|batteries| {
+            let mut max = 0;
+            for n in 0..batteries.len() {
+                let tens = batteries[n];
+                if tens * 10 < max {
+                    continue;
+                }
+                let rest = &batteries[n + 1..];
+                for ones in rest {
+                    let c = tens * 10 + ones;
+                    if c >= max {
+                        max = c;
+                    }
+                }
+            }
+
+            max
+        })
+        .sum()
 }
 
 fn problem2(x: &Input) -> u32 {
@@ -39,7 +59,7 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, 0);
+        assert_eq!(result, 357);
     }
 
     #[test]
