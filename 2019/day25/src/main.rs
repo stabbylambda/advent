@@ -182,6 +182,7 @@ mod test {
 
     use crate::problem1;
     #[test]
+    #[ignore = "input files aren't available in CI"]
     fn first() {
         let input = common::read_input!();
         let input = Intcode::parse(input);

@@ -67,7 +67,8 @@ fn parse(input: &str) -> Input {
             input_a: x[1] as usize,
             input_b: x[2] as usize,
             output: x[3] as usize,
-        }).parse(s)
+        })
+        .parse(s)
     };
 
     let result: IResult<&str, Input> = separated_pair(
@@ -96,7 +97,8 @@ fn parse(input: &str) -> Input {
         ),
         tag("\n\n\n"),
         separated_list1(newline, instruction),
-    ).parse(input);
+    )
+    .parse(input);
 
     result.unwrap().1
 }
@@ -169,6 +171,7 @@ mod test {
     }
 
     #[test]
+    #[ignore = "input files aren't available in CI"]
     fn second() {
         let input = common::read_input!();
         let input = parse(input);

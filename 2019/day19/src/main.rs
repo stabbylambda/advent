@@ -56,6 +56,7 @@ mod test {
 
     use crate::{problem1, problem2};
     #[test]
+    #[ignore = "input files aren't available in CI"]
     fn first() {
         let input = common::read_input!();
         let input = Intcode::parse(input);
@@ -64,6 +65,7 @@ mod test {
     }
 
     #[test]
+    #[ignore = "input files aren't available in CI"]
     fn second() {
         let input = common::read_input!();
         let input = Intcode::parse(input);

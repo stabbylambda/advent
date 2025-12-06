@@ -56,7 +56,8 @@ fn output_to_map(output: &[i64]) -> Grid<Tile> {
         map(char('<'), |_| Tile::Robot(Direction::Left)),
         map(char('>'), |_| Tile::Robot(Direction::Right)),
         map(char('v'), |_| Tile::Robot(Direction::Down)),
-    ))).parse(&s);
+    )))
+    .parse(&s);
     g.unwrap().1
 }
 
@@ -123,6 +124,7 @@ mod test {
 
     use crate::{problem1, problem2};
     #[test]
+    #[ignore = "input files aren't available in CI"]
     fn first() {
         let input = common::read_input!();
         let input = Intcode::parse(input);
@@ -131,6 +133,7 @@ mod test {
     }
 
     #[test]
+    #[ignore = "input files aren't available in CI"]
     fn second() {
         let input = common::read_input!();
         let input = Intcode::parse(input);

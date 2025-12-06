@@ -43,7 +43,8 @@ fn parse(input: &str) -> Input {
                 range1,
                 range2,
             },
-        ).parse(s)
+        )
+        .parse(s)
     };
 
     let result: IResult<&str, Input> = map(
@@ -57,7 +58,8 @@ fn parse(input: &str) -> Input {
             ticket,
             nearby,
         },
-    ).parse(input);
+    )
+    .parse(input);
 
     result.unwrap().1
 }
@@ -165,6 +167,7 @@ mod test {
     }
 
     #[test]
+    #[ignore = "input files aren't available in CI"]
     fn second() {
         let input = common::read_input!();
         let input = parse(input);

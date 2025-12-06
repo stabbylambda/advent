@@ -72,9 +72,7 @@ impl Screen {
 
     fn update(&mut self, output: &[i64]) {
         for triple in output.chunks(3) {
-            let &[x, y, id] = triple else {
-                panic!()
-            };
+            let &[x, y, id] = triple else { panic!() };
 
             if x == -1 && y == 0 {
                 self.score = id;
@@ -88,8 +86,12 @@ impl Screen {
 
 impl Display for Screen {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let MinMaxResult::MinMax(min_x, max_x) = self.pixels.keys().map(|x| x.0).minmax() else { panic!()};
-        let MinMaxResult::MinMax(min_y, max_y) = self.pixels.keys().map(|x| x.1).minmax() else { panic!()};
+        let MinMaxResult::MinMax(min_x, max_x) = self.pixels.keys().map(|x| x.0).minmax() else {
+            panic!()
+        };
+        let MinMaxResult::MinMax(min_y, max_y) = self.pixels.keys().map(|x| x.1).minmax() else {
+            panic!()
+        };
 
         writeln!(f, "Score: {}", self.score)?;
 
@@ -203,6 +205,7 @@ mod test {
 
     use crate::{problem1, problem2};
     #[test]
+    #[ignore = "input files aren't available in CI"]
     fn first() {
         let input = common::read_input!();
         let input = Intcode::parse(input);
@@ -211,6 +214,7 @@ mod test {
     }
 
     #[test]
+    #[ignore = "input files aren't available in CI"]
     fn second() {
         let input = common::read_input!();
         let input = Intcode::parse(input);
