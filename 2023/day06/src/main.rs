@@ -8,7 +8,7 @@ use nom::{
 };
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
 
     let score = problem1(&parse_races(input));
     println!("problem 1 score: {score}");

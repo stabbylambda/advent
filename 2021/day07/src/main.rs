@@ -2,7 +2,7 @@ use nom::{
     bytes::complete::tag, character::complete::i32 as nom_i32, multi::separated_list1, IResult, Parser,
 };
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let crabs = parse(input);
     let fleet = CrabFleet {
         crabs: crabs.clone(),

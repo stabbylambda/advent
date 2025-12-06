@@ -1,5 +1,5 @@
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input: Vec<i32> = input.lines().map(|x| x.parse::<i32>().unwrap()).collect();
 
     let first = first_problem(&input);

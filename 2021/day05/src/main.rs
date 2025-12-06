@@ -9,7 +9,7 @@ use nom::{
 };
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input: Vec<_> = input.lines().collect();
     let mut map = Map::new(input);
     let result = map.clone().orthogonal_overlaps();

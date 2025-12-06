@@ -7,7 +7,7 @@ use nom::{
     IResult, Parser,
 };
 fn main() {
-    let lines = include_str!("../input.txt");
+    let lines = common::read_input!();
     let input = parse(lines);
 
     let answer = problem1(&input);

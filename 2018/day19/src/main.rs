@@ -1,7 +1,7 @@
 use advent_2018_19::ElfCode;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = ElfCode::parse(input);
 
     let answer = problem1(&input);

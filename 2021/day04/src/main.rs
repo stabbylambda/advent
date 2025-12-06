@@ -3,7 +3,7 @@ use ansi_term::Colour::Green;
 use std::fmt::Display;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let mut bingo = Bingo::new(input);
     let first = bingo.play();
     println!("first result: {first}");

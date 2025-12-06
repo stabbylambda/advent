@@ -14,7 +14,7 @@ use nom::{
 };
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
 
     let answer = problem1(&input);
@@ -166,7 +166,7 @@ mod test {
 
     #[test]
     fn second() {
-        let input = include_str!("../input.txt");
+        let input = common::read_input!();
         let input = parse(input);
         let result = problem2(&input);
         assert_eq!(result, 4381476149273)

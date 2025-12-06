@@ -7,7 +7,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::FromPrimitive;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = Intcode::parse(input);
 
     let (answer, map) = problem1(&input);
@@ -205,7 +205,7 @@ mod test {
     use crate::{problem1, problem2};
     #[test]
     fn first() {
-        let input = include_str!("../input.txt");
+        let input = common::read_input!();
         let input = Intcode::parse(input);
         let (result, map) = problem1(&input);
         assert_eq!(result, 214);

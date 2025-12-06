@@ -5,7 +5,7 @@ use intcode::Intcode;
 use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = Intcode::parse(input);
 
     let answer = problem1(&input);
@@ -124,7 +124,7 @@ mod test {
     use crate::{problem1, problem2};
     #[test]
     fn first() {
-        let input = include_str!("../input.txt");
+        let input = common::read_input!();
         let input = Intcode::parse(input);
         let result = problem1(&input);
         assert_eq!(result, 7404);
@@ -132,7 +132,7 @@ mod test {
 
     #[test]
     fn second() {
-        let input = include_str!("../input.txt");
+        let input = common::read_input!();
         let input = Intcode::parse(input);
         let result = problem2(&input);
         assert_eq!(result, 929045)

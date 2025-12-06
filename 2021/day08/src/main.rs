@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let displays = input.lines().map(get_display).collect();
     let displays = Displays { displays };
     let total = displays.count_easy_numbers();

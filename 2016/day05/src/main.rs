@@ -2,7 +2,7 @@ use md5::{Digest, Md5};
 use std::fmt::Write;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
 
     let answer = problem1(input);
     println!("problem 1 answer: {answer}");

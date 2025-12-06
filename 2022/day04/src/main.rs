@@ -9,7 +9,7 @@ use nom::{
 };
 
 fn main() {
-    let lines = include_str!("../input.txt");
+    let lines = common::read_input!();
     let assignments = parse_assignments(lines);
 
     let answer = problem1(&assignments);

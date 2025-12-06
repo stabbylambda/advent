@@ -2,7 +2,7 @@ use common::nom::usize;
 use nom::{bytes::complete::tag, multi::separated_list1, IResult, Parser};
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
 
     let mut school = School::new(&input);

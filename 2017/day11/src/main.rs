@@ -1,7 +1,7 @@
 use nom::{branch::alt, bytes::complete::tag, combinator::map, multi::separated_list1, IResult, Parser};
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
 
     let (answer1, answer2) = problem(&input);

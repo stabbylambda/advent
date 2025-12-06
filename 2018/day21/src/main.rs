@@ -3,7 +3,7 @@ use std::collections::BTreeSet;
 use advent_2018_19::{ElfCode, Opcode};
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = ElfCode::parse(input);
 
     let (answer1, answer2) = problem(&input);
@@ -52,7 +52,7 @@ mod test {
     #[test]
     #[ignore = "way too slow, takes 1m11s in release mode on my machine"]
     fn first() {
-        let input = include_str!("../input.txt");
+        let input = common::read_input!();
         let input = ElfCode::parse(input);
         let (answer1, _answer2) = problem(&input);
         assert_eq!(answer1, 3941014);

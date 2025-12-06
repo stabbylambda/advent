@@ -1,7 +1,7 @@
 use std::str::Lines;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let data = Data::new(input.lines());
 
     let first = first_problem(&data);

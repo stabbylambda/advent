@@ -3,7 +3,7 @@ use std::collections::BinaryHeap;
 use advent_2015_22::{Boss, Spell};
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = Boss::parse(input);
 
     let answer = problem1(&input);

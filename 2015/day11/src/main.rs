@@ -1,7 +1,7 @@
 use itertools::Itertools;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
 
     let answer1 = problem(input);
     println!("problem 1 answer: {answer1}");

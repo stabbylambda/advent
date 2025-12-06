@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input: Vec<&str> = input.lines().collect();
 
     let answer = problem1(&input[..]);

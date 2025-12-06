@@ -1,5 +1,5 @@
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let orders: Vec<_> = input.lines().map(parse_order).collect();
 
     let first = first_problem(&orders);

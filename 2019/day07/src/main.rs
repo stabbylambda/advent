@@ -2,7 +2,7 @@ use intcode::Intcode;
 use itertools::Itertools;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = Intcode::parse(input);
 
     let answer = problem1(&input);

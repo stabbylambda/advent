@@ -1,5 +1,5 @@
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
 
     let (answer, trash_chars) = problem(input);
     println!("problem 1 answer: {answer}");

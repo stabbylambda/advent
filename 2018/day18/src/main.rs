@@ -10,7 +10,7 @@ use common::{
 use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
 
     let (answer1, answer2) = problem(&input);

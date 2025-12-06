@@ -2,7 +2,7 @@ use advent_2017_10::{hash, SparseHash};
 use nom::{bytes::complete::tag, character::complete::u8, multi::separated_list1, IResult, Parser};
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
 
     let answer = problem1(input, 256);
     println!("problem 1 answer: {answer}");

@@ -22,7 +22,7 @@ fn main() {
     let keypads = include_str!("../keypads.txt");
     let keypads = parse_keypads(keypads);
 
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
 
     let i = Instant::now();

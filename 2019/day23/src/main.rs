@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use intcode::Intcode;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = Intcode::parse(input);
 
     let answer = problem1(&input);
@@ -164,7 +164,7 @@ mod test {
     use crate::{problem1, problem2};
     #[test]
     fn first() {
-        let input = include_str!("../input.txt");
+        let input = common::read_input!();
         let input = Intcode::parse(input);
         let result = problem1(&input);
         assert_eq!(result, 17740)
@@ -172,7 +172,7 @@ mod test {
 
     #[test]
     fn second() {
-        let input = include_str!("../input.txt");
+        let input = common::read_input!();
         let input = Intcode::parse(input);
         let result = problem2(&input);
         assert_eq!(result, 12567)

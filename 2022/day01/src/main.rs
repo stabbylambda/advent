@@ -9,7 +9,7 @@ use nom::{
     IResult, Parser,
 };
 fn main() {
-    let lines = include_str!("../input.txt");
+    let lines = common::read_input!();
     let calories = parse_calorie_groups(lines);
 
     let max = problem1(&calories);

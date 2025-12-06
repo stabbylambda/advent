@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 
 fn main() {
-    let lines = include_str!("../input.txt");
+    let lines = common::read_input!();
 
     let answer = problem1(lines);
     println!("problem 1 answer: {answer}");

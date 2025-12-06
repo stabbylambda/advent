@@ -15,7 +15,7 @@ use std::{
 };
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
 
     let i = Instant::now();

@@ -12,7 +12,7 @@ use common::{
 use nom::{character::complete::anychar, combinator::map_opt, IResult, Parser};
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
     let answer = problem(&input);
     println!("problem 1 answer: {answer}");
@@ -261,7 +261,7 @@ mod test {
     #[test]
     #[ignore]
     fn input() {
-        let input = include_str!("../input.txt");
+        let input = common::read_input!();
         let input = parse(input);
         let result = problem(&input);
         assert_eq!(result, 5198)

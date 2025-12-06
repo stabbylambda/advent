@@ -4,7 +4,7 @@ use std::collections::BTreeSet;
 pub mod parser;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parser::parse(input);
 
     let answer = problem1(&input);

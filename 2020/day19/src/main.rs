@@ -11,13 +11,13 @@ use nom::{
 };
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
 
     let answer = problem1(&input);
     println!("problem 1 answer: {answer}");
 
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = input
         .replace("8: 42", "8: 42 | 42 8")
         .replace("11: 42 31", "11: 42 31 | 42 11 31");

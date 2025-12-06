@@ -14,7 +14,7 @@ use petgraph::{
     Graph,
 };
 fn main() {
-    let lines = include_str!("../input.txt");
+    let lines = common::read_input!();
     let input = Command::parse_all(lines);
 
     let answer = problem1(&input);

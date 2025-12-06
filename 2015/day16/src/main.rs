@@ -10,7 +10,7 @@ use nom::{
 };
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
     let reference: HashMap<Thing, u32> = REFERENCE.into_iter().collect();
 

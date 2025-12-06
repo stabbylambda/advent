@@ -5,7 +5,7 @@ use common::{
 };
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
 
     let answer = problem1(input);
     println!("problem 1 answer: {answer}");

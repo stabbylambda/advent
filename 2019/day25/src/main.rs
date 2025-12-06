@@ -9,7 +9,7 @@ use itertools::Itertools;
 use intcode::Intcode;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = Intcode::parse(input);
 
     let answer = problem1(&input);
@@ -183,7 +183,7 @@ mod test {
     use crate::problem1;
     #[test]
     fn first() {
-        let input = include_str!("../input.txt");
+        let input = common::read_input!();
         let input = Intcode::parse(input);
         let result = problem1(&input);
         assert_eq!(result, 278664)

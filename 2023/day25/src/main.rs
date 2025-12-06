@@ -10,7 +10,7 @@ use nom::{
 use rustworkx_core::{connectivity::stoer_wagner_min_cut, petgraph::graphmap::UnGraphMap, Result};
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
 
     let score = problem1(&input);

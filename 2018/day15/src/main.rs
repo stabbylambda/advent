@@ -6,7 +6,7 @@ use std::{
 use advent_2018_15::{reading_neighbors, Point, Unit, UnitType};
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
 
     let answer = problem1(&input);
@@ -379,7 +379,7 @@ mod test {
 
     #[test]
     fn actual_input() {
-        let input = include_str!("../input.txt");
+        let input = common::read_input!();
         let input = parse(input);
         let result = problem2(&input);
         assert_eq!(result, 48034);

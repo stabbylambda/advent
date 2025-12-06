@@ -10,7 +10,7 @@ use nom::{
 use common::nom::usize;
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
 
     let answer = problem1(&input);

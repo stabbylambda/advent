@@ -9,7 +9,7 @@ use nom::{
     IResult, Parser,
 };
 fn main() {
-    let raw = include_str!("../input.txt");
+    let raw = common::read_input!();
     let mut input = Input::parse(raw);
     let mut input2 = input.clone();
 

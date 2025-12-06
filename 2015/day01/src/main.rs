@@ -3,7 +3,7 @@ use nom::combinator::map;
 use nom::{branch::alt, multi::many1, IResult, Parser};
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = parse(input);
 
     let answer = problem1(&input);

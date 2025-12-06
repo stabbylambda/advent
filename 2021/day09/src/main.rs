@@ -5,7 +5,7 @@ use std::{
 
 use ansi_term::Colour::{Green, Red};
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input = input
         .lines()
         .map(|s| s.chars().map(|x| x.to_digit(10).unwrap()).collect())

@@ -11,7 +11,7 @@ use nom::{
 };
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = common::read_input!();
     let input1 = parse_part1(input);
     let input2 = parse_part2(input);
 
