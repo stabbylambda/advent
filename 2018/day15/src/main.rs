@@ -378,6 +378,7 @@ mod test {
     }
 
     #[test]
+    #[ignore = "the input file isn't available in CI"]
     fn actual_input() {
         let input = common::read_input!();
         let input = parse(input);
