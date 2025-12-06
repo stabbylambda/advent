@@ -18,10 +18,14 @@ impl<T: PartialOrd> RangeExt<T> for RangeInclusive<T> {
     }
 
     fn partially_contains(&self, other: &dyn RangeExt<T>) -> bool {
-        let other_start_in_range = self.start() <= other.start() && other.start() <= self.end();
-        let other_end_in_range = self.start() <= other.end() && other.end() <= self.end();
+        fn inner<U: PartialOrd>(a: &dyn RangeExt<U>, b: &dyn RangeExt<U>) -> bool {
+            let other_start_in_range = a.start() <= b.start() && b.start() <= a.end();
+            let other_end_in_range = a.start() <= b.end() && b.end() <= a.end();
 
-        other_start_in_range || other_end_in_range
+            other_start_in_range || other_end_in_range
+        }
+
+        inner(self, other) || inner(other, self)
     }
 
     fn start(&self) -> &T {

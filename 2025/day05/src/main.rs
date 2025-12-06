@@ -1,9 +1,10 @@
+use common::extensions::RangeExt;
 use std::ops::RangeInclusive;
 
 use nom::{
     bytes::complete::tag,
     character::{
-        complete::{char, i32, newline},
+        complete::{char, newline},
         streaming::u64,
     },
     combinator::map,
@@ -53,8 +54,37 @@ fn problem1(x: &Input) -> usize {
         .count()
 }
 
-fn problem2(x: &Input) -> u32 {
-    todo!()
+fn reduce_ranges(x: &[RangeInclusive<u64>]) -> Option<Vec<RangeInclusive<u64>>> {
+    let (updated, result) = x.iter().fold((false, vec![]), |(updated, mut acc), r| {
+        if let Some(overlap) = acc
+            .iter()
+            .position(|existing: &RangeInclusive<u64>| existing.partially_contains(r))
+        {
+            let overlap = acc.get_mut(overlap).unwrap();
+
+            let start = overlap.start().min(r.start());
+            let end = overlap.end().max(r.end());
+            let merged = *start..=*end;
+
+            *overlap = merged;
+            (true, acc)
+        } else {
+            acc.push(r.clone());
+            (updated, acc)
+        }
+    });
+
+    updated.then_some(result)
+}
+
+fn problem2(x: &Input) -> usize {
+    let mut r = x.ranges.clone();
+
+    while let Some(new_r) = reduce_ranges(&r) {
+        r = new_r;
+    }
+
+    r.into_iter().map(|x| x.count()).sum()
 }
 
 #[cfg(test)]
@@ -73,6 +103,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 14)
     }
 }
