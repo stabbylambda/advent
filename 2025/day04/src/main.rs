@@ -1,14 +1,8 @@
 use std::fmt::Debug;
 
-use nom::{
-    branch::alt,
-    character::complete::{char, i32, newline},
-    combinator::map,
-    multi::separated_list1,
-    IResult, Parser,
-};
+use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
-use common::grid::{Grid, GridSquare, HasNeighbors};
+use common::grid::{Grid, GridSquare};
 use common::nom::parse_grid;
 
 fn main() {
@@ -79,23 +73,23 @@ fn problem1(x: &Input) -> usize {
     removable(x).len()
 }
 
-fn problem2(x: &Input) -> usize {
-    let mut grid = x.clone();
-    let mut removed = 0;
-    loop {
-        let r = removable(&grid);
-        let count = r.len();
-        if count == 0 {
-            return removed;
-        }
-
-        let mut new_grid = grid.clone();
-        for x in r {
-            grid.get(x.coords).data = &Tile::Empty;
-        }
-
-        removed += count;
+fn remove_rolls(count: usize, grid: &Grid<Tile>) -> usize {
+    let r = removable(grid);
+    let new_count = r.len();
+    if new_count == 0 {
+        return count;
     }
+
+    let mut new_grid = grid.clone();
+    for x in r {
+        new_grid.set(x.coords, Tile::Empty);
+    }
+
+    remove_rolls(count + new_count, &new_grid)
+}
+
+fn problem2(x: &Input) -> usize {
+    remove_rolls(0, x)
 }
 
 #[cfg(test)]
@@ -114,6 +108,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 43)
     }
 }
