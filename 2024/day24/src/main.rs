@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use itertools::Itertools;
 use nom::{
     branch::alt,
@@ -8,25 +9,14 @@ use nom::{
     sequence::{separated_pair, terminated},
     IResult, Parser,
 };
-use std::{
-    collections::{HashMap, HashSet, VecDeque},
-    fmt::Display,
-    time::Instant,
-};
+use std::{collections::{HashMap, HashSet, VecDeque}, fmt::Display};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let i = Instant::now();
-    let score = problem1(&input);
-    let d = i.elapsed();
-    println!("problem 1 score: {score} in {d:?}");
-
-    let i = Instant::now();
-    let score = problem2(&input);
-    let d = i.elapsed();
-    println!("problem 2 score: {score} in {d:?}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input<'a> = (HashMap<&'a str, u64>, Vec<Gate<'a>>);

@@ -1,6 +1,5 @@
+use common::{answer, read_input};
 use itertools::Itertools;
-use std::{cmp::Ordering, collections::HashMap};
-
 use nom::{
     bytes::complete::tag,
     character::complete::{newline, u32},
@@ -9,16 +8,14 @@ use nom::{
     sequence::separated_pair,
     IResult, Parser,
 };
+use std::{cmp::Ordering, collections::HashMap};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = (Rules, Vec<Manual>);

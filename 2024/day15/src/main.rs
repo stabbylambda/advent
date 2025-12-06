@@ -1,15 +1,10 @@
-use itertools::Itertools;
-use std::{
-    cmp::Reverse,
-    collections::{BTreeMap, BTreeSet, VecDeque},
-    fmt::Display,
-    time::Instant,
-};
-
 use common::{
+    answer,
     grid::{CardinalDirection, Coord, Grid},
     nom::parse_grid,
+    read_input,
 };
+use itertools::Itertools;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -19,20 +14,18 @@ use nom::{
     sequence::separated_pair,
     IResult, Parser,
 };
+use std::{
+    cmp::Reverse,
+    collections::{BTreeMap, BTreeSet, VecDeque},
+    fmt::Display,
+};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let i = Instant::now();
-    let score = problem1(&input);
-    let d = i.elapsed();
-    println!("problem 1 score: {score} in {d:?}");
-
-    let i = Instant::now();
-    let score = problem2(&input);
-    let d = i.elapsed();
-    println!("problem 2 score: {score} in {d:?}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = (Grid<Tile>, Vec<CardinalDirection>);

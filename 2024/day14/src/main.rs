@@ -1,7 +1,5 @@
-use common::grid::Grid;
+use common::{answer, grid::Grid, read_input};
 use itertools::Itertools;
-use std::time::Instant;
-
 use nom::{
     bytes::complete::tag,
     character::complete::{i32, newline},
@@ -12,18 +10,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let i = Instant::now();
-    let score = problem1(&input);
-    let d = i.elapsed();
-    println!("problem 1 score: {score} in {d:?}");
-
-    let i = Instant::now();
-    let score = problem2(&input);
-    let d = i.elapsed();
-    println!("problem 2 score: {score} in {d:?}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = Vec<Robot>;

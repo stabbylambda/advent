@@ -1,7 +1,9 @@
 use common::{
+    answer,
     extensions::PointExt,
     grid::{CardinalDirection, Coord, Grid},
     nom::{parse_grid, single_digit},
+    read_input,
 };
 use nom::{
     branch::alt,
@@ -12,28 +14,17 @@ use nom::{
     sequence::separated_pair,
     IResult, Parser,
 };
-use std::{
-    collections::{BinaryHeap, HashMap},
-    hash::Hash,
-    time::Instant,
-};
+use std::{collections::{BinaryHeap, HashMap}, hash::Hash};
 
 fn main() {
     let keypads = include_str!("../keypads.txt");
     let keypads = parse_keypads(keypads);
 
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let i = Instant::now();
-    let score = problem1(&keypads, &input);
-    let d = i.elapsed();
-    println!("problem 1 score: {score} in {d:?}");
-
-    let i = Instant::now();
-    let score = problem2(&keypads, &input);
-    let d = i.elapsed();
-    println!("problem 2 score: {score} in {d:?}");
+    answer!(problem1(&keypads, &input));
+    answer!(problem2(&keypads, &input));
 }
 
 type Input = Vec<Vec<NumericKeypad>>;

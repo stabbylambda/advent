@@ -1,27 +1,15 @@
-use common::extensions::PointExt;
 use common::{
-    grid::{Coord, Grid},
-    nom::parse_grid,
+    answer, extensions::PointExt, grid::{Coord, Grid}, nom::parse_grid, read_input,
 };
 use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
-use std::{
-    collections::{BTreeMap, VecDeque},
-    time::Instant,
-};
+use std::collections::{BTreeMap, VecDeque};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let i = Instant::now();
-    let score = problem1(&input);
-    let d = i.elapsed();
-    println!("problem 1 score: {score} in {d:?}");
-
-    let i = Instant::now();
-    let score = problem2(&input);
-    let d = i.elapsed();
-    println!("problem 2 score: {score} in {d:?}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = Grid<Tile>;

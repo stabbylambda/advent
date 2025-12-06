@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use itertools::Itertools;
 use nom::{
     bytes::complete::tag,
@@ -9,14 +10,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = (Vec<u32>, Vec<u32>);
@@ -25,7 +23,8 @@ fn parse(input: &str) -> Input {
     let result: IResult<&str, Input> = map(
         separated_list1(newline, separated_pair(u32, tag("   "), u32)),
         |x| x.into_iter().unzip(),
-    ).parse(input);
+    )
+    .parse(input);
 
     result.unwrap().1
 }

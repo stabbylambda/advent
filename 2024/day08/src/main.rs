@@ -1,28 +1,19 @@
-use std::{ops::RangeInclusive, time::Instant};
-
+use common::{answer, grid::Grid, nom::parse_grid, read_input};
 use itertools::Itertools;
-
-use common::{grid::Grid, nom::parse_grid};
 use nom::{
     branch::alt,
     character::complete::{anychar, char},
     combinator::{map, verify},
     AsChar, IResult, Parser,
 };
+use std::ops::RangeInclusive;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let i = Instant::now();
-    let score = problem1(&input);
-    let d = i.elapsed();
-    println!("problem 1 score: {score} in {d:?}");
-
-    let i = Instant::now();
-    let score = problem2(&input);
-    let d = i.elapsed();
-    println!("problem 2 score: {score} in {d:?}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = Grid<Option<char>>;

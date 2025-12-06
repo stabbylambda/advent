@@ -1,5 +1,4 @@
-use std::{cmp::Reverse, collections::BinaryHeap, time::Instant};
-
+use common::{answer, read_input};
 use nom::{
     bytes::complete::tag,
     character::complete::{char, newline, u64},
@@ -7,20 +6,14 @@ use nom::{
     sequence::{delimited, preceded, separated_pair},
     IResult, Parser,
 };
+use std::{cmp::Reverse, collections::BinaryHeap};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let i = Instant::now();
-    let score = problem1(&input);
-    let d = i.elapsed();
-    println!("problem 1 score: {score} in {d:?}");
-
-    let i = Instant::now();
-    let score = problem2(&input);
-    let d = i.elapsed();
-    println!("problem 2 score: {score} in {d:?}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = ((u64, u64, u64), Vec<u64>);

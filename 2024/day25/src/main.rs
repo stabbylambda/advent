@@ -1,17 +1,13 @@
-use common::{grid::Grid, nom::parse_grid};
+use common::{answer, grid::Grid, nom::parse_grid, read_input};
 use nom::{
     branch::alt, bytes::complete::tag, character::complete::char, multi::separated_list1, IResult, Parser,
 };
-use std::time::Instant;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let i = Instant::now();
-    let score = problem1(&input);
-    let d = i.elapsed();
-    println!("problem 1 score: {score} in {d:?}");
+    answer!(problem1(&input));
 }
 
 type Input = Vec<Grid<char>>;

@@ -1,7 +1,9 @@
 use common::{
+    answer,
     dijkstra::{shortest_path, Edge},
     grid::{Coord, Grid},
     nom::usize,
+    read_input,
 };
 use nom::{
     character::complete::{char, newline},
@@ -9,21 +11,13 @@ use nom::{
     sequence::separated_pair,
     IResult, Parser,
 };
-use std::time::Instant;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let i = Instant::now();
-    let score = problem1(&input, 70, 1024);
-    let d = i.elapsed();
-    println!("problem 1 score: {score} in {d:?}");
-
-    let i = Instant::now();
-    let score = problem2(&input, 70);
-    let d = i.elapsed();
-    println!("problem 2 score: {score} in {d:?}");
+    answer!(problem1(&input, 70, 1024));
+    answer!(problem2(&input, 70));
 }
 
 type Input = Vec<Coord>;
