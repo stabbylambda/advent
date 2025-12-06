@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use nom::{
     branch::alt,
     character::{
@@ -11,15 +12,13 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
+
     let input1 = parse_part1(input);
+    answer!(problem1(&input1));
+
     let input2 = parse_part2(input);
-
-    let score = problem1(&input1);
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&input2);
-    println!("problem 2 score: {score}");
+    answer!(problem2(&input2));
 }
 
 type Input = Vec<Column>;

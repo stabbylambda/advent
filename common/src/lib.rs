@@ -18,6 +18,16 @@ macro_rules! read_input {
     }};
 }
 
+#[macro_export]
+macro_rules! answer {
+    ($func:ident($($args:expr),*)) => {{
+        let start = std::time::Instant::now();
+        let result = $func($($args),*);
+        let elapsed = start.elapsed();
+        println!("[{:>6.2?}] {}: {}", elapsed, stringify!($func), result);
+    }};
+}
+
 pub fn to_number(value: &[u32]) -> u32 {
     value.iter().fold(0, |acc, x| (acc * 10) + x)
 }

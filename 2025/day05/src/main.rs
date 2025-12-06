@@ -1,4 +1,4 @@
-use common::extensions::RangeExt;
+use common::{answer, extensions::RangeExt, read_input};
 use std::ops::RangeInclusive;
 
 use nom::{
@@ -14,14 +14,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = Inventory;
