@@ -1,0 +1,77 @@
+#!/usr/bin/env zsh
+
+# Setup Advent of Code project structure
+# Usage: ./setup [DAY] [--year YEAR]
+# Examples:
+#   ./setup              # Sets up all days (01-12) for current year
+#   ./setup 05           # Sets up day 05 for current year
+#   ./setup 05 --year 2024  # Sets up day 05 for 2024
+
+# Default to current year
+year=$(date +%Y)
+day=""
+inputs_dir="${INPUTS_DIR:-../advent-inputs}"
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --year)
+      year="$2"
+      shift 2
+      ;;
+    *)
+      day="$1"
+      shift
+      ;;
+  esac
+done
+
+# Validate and format day if provided
+if [[ -n "$day" ]]; then
+  # Ensure day is zero-padded
+  day=$(printf "%02d" "$day")
+  days=("$day")
+else
+  # No day specified, set up all days
+  days=({01..12})
+fi
+
+echo "Setting up Advent of Code $year"
+echo "Days: ${days[@]}"
+echo ""
+
+# Create year directory
+mkdir -p "$year"
+
+# Get the absolute path to the template (relative to this script)
+script_dir="${0:a:h}"
+template_path="$script_dir/template"
+
+for i in "${days[@]}"; do
+  name="advent_${year}_${i}"
+  day_dir="$year/day$i"
+
+  echo "Setting up $day_dir..."
+
+  # Create day directory and generate from template
+  mkdir -p "$day_dir"
+  cargo generate --path "$template_path" --name "$name" --destination "$day_dir" --init
+
+  # Create corresponding input directory structure
+  input_dir="$inputs_dir/$year/day$i"
+  mkdir -p "$input_dir"
+
+  # Create empty input.txt if it doesn't exist
+  if [[ ! -f "$input_dir/input.txt" ]]; then
+    touch "$input_dir/input.txt"
+    echo "  Created $input_dir/input.txt"
+  fi
+
+  # Create symlink to input.txt
+  abs_input_path="${input_dir:a}/input.txt"
+  ln -sf "$abs_input_path" "$day_dir/input.txt"
+  echo "  Linked input.txt"
+done
+
+echo ""
+echo "Setup complete!"
