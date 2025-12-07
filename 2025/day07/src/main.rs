@@ -5,8 +5,9 @@ use common::{
     grid::{CardinalDirection, Grid},
     nom::parse_grid,
     read_input,
+    GridTile,
 };
-use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
+use nom::{IResult, Parser};
 
 fn main() {
     let input = read_input!();
@@ -18,21 +19,18 @@ fn main() {
 
 type Input = Grid<Tile>;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Ord, GridTile)]
 enum Tile {
+    #[tile('S')]
     Start,
+    #[tile('^')]
     Splitter,
+    #[tile('.')]
     Empty,
 }
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = parse_grid(alt((
-        map(char('S'), |_| Tile::Start),
-        map(char('.'), |_| Tile::Empty),
-        map(char('^'), |_| Tile::Splitter),
-    )))
-    .parse(input);
-
+    let result: IResult<&str, Input> = parse_grid(Tile::parser()).parse(input);
     result.unwrap().1
 }
 
