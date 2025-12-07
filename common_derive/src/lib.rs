@@ -12,9 +12,9 @@ use syn::{parse_macro_input, Data, DeriveInput, Fields, Lit, Meta};
 // }
 
 /// Extract the character from a #[tile('c')] attribute
-fn extract_tile_char(attrs: &[syn::Attribute]) -> Result<char, syn::Error> {
+fn extract_tile_char(variant: &syn::Variant) -> Result<char, syn::Error> {
     // Find the #[tile(...)] attribute
-    for attr in attrs {
+    for attr in &variant.attrs {
         if attr.path().is_ident("tile") {
             // Parse the attribute as Meta::List
             let meta = &attr.meta;
@@ -37,8 +37,8 @@ fn extract_tile_char(attrs: &[syn::Attribute]) -> Result<char, syn::Error> {
         }
     }
 
-    Err(syn::Error::new(
-        proc_macro2::Span::call_site(),
+    Err(syn::Error::new_spanned(
+        variant,
         "missing #[tile('c')] attribute"
     ))
 }
@@ -47,7 +47,7 @@ fn extract_tile_char(attrs: &[syn::Attribute]) -> Result<char, syn::Error> {
 pub fn derive_grid_tile(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let enum_name = &input.ident;
+    let _enum_name = &input.ident;
 
     // Ensure input is an enum
     let data_enum = match &input.data {
@@ -80,7 +80,7 @@ pub fn derive_grid_tile(input: TokenStream) -> TokenStream {
         }
 
         // Extract the tile character
-        let tile_char = match extract_tile_char(&variant.attrs) {
+        let tile_char = match extract_tile_char(variant) {
             Ok(c) => c,
             Err(e) => return e.to_compile_error().into(),
         };
