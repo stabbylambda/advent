@@ -1,14 +1,13 @@
 use std::fmt::Display;
 
-use common::nom::single_digit;
+use common::{answer, nom::single_digit, read_input};
 use nom::{multi::many1, IResult, Parser};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&input));
 
     let answer = problem2(&input);
     println!("problem 2 answer:\n\n{answer}");

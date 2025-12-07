@@ -1,8 +1,8 @@
+use common::answer;
 use std::collections::VecDeque;
 
 fn main() {
-    let answer = problem1();
-    println!("problem 1 answer: {answer}");
+    answer!(problem1());
 }
 
 #[derive(PartialEq, Eq)]

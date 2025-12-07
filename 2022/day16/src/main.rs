@@ -1,17 +1,16 @@
 use ndarray::prelude::*;
 use std::collections::BTreeSet;
 
+use common::{answer, read_input};
+
 pub mod parser;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parser::parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = Caves;

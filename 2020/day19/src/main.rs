@@ -1,5 +1,6 @@
 use std::{collections::BTreeMap, fmt::Debug};
 
+use common::{answer, read_input};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
@@ -11,20 +12,18 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&input));
 
-    let input = common::read_input!();
+    let input = read_input!();
     let input = input
         .replace("8: 42", "8: 42 | 42 8")
         .replace("11: 42 31", "11: 42 31 | 42 11 31");
     let input = parse(&input);
 
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem2(&input));
 }
 
 type Input = (BTreeMap<u32, Rule>, Vec<String>);

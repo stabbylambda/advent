@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use itertools::Itertools;
 use nom::{
     bytes::complete::tag,
@@ -9,15 +10,10 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
 
-    let input1 = parse(input, false);
-    let score = problem1(&input1);
-    println!("problem 1 score: {score}");
-
-    let input2 = parse(input, true);
-    let score = problem2(&input2);
-    println!("problem 2 score: {score}");
+    answer!(problem1(&parse(input, false)));
+    answer!(problem2(&parse(input, true)));
 }
 
 type Input = Hands;

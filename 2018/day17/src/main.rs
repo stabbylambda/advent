@@ -1,4 +1,4 @@
-use common::grid::{Coord, Grid, Path};
+use common::{answer, grid::{Coord, Grid, Path}, read_input};
 use nom::{
     bytes::complete::tag,
     character::complete::{anychar, newline, u32},
@@ -10,12 +10,12 @@ use nom::{
 use std::fmt::Debug;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
     let (answer1, answer2) = problem(&input);
-    println!("problem 1 answer: {answer1}");
-    println!("problem 2 answer: {answer2}");
+    answer!(answer1);
+    answer!(answer2);
 }
 
 type Input = Vec<Path>;

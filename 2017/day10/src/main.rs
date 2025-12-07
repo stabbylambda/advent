@@ -1,14 +1,12 @@
 use advent_2017_10::{hash, SparseHash};
+use common::{answer, read_input};
 use nom::{bytes::complete::tag, character::complete::u8, multi::separated_list1, IResult, Parser};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
 
-    let answer = problem1(input, 256);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(input, 256);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(input, 256));
+    answer!(problem2(input, 256));
 }
 
 fn parse(input: &str) -> Vec<u8> {

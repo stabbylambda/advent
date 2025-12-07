@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use itertools::Itertools;
 use nom::{
     character::complete::{newline, u32 as nom_u32},
@@ -6,14 +7,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input, 150);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input, 150);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input, 150));
+    answer!(problem2(&input, 150));
 }
 
 type Input = Vec<u32>;

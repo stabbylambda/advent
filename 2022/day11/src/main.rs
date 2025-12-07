@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use nom::branch::alt;
 use nom::{
     bytes::complete::tag,
@@ -9,15 +10,13 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let mut monkeys = parse(input);
 
-    let answer = problem1(&mut monkeys);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&mut monkeys));
 
     let mut monkeys = parse(input);
-    let answer = problem2(&mut monkeys);
-    println!("problem 2 answer: {answer}");
+    answer!(problem2(&mut monkeys));
 }
 
 type Input = Vec<Monkey>;

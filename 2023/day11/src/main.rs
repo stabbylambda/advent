@@ -1,22 +1,21 @@
 use std::fmt::Debug;
 
 use common::{
+    answer,
     extensions::PointExt,
     grid::{Coord, Grid},
     nom::parse_grid,
+    read_input,
 };
 use itertools::Itertools;
 use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = Grid<Tile>;

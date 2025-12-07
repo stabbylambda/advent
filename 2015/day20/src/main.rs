@@ -1,11 +1,10 @@
 use std::ops::Div;
 
-fn main() {
-    let answer = problem1(HOUSES);
-    println!("problem 1 answer: {answer}");
+use common::answer;
 
-    let answer = problem2(HOUSES);
-    println!("problem 2 answer: {answer}");
+fn main() {
+    answer!(problem1(HOUSES));
+    answer!(problem2(HOUSES));
 }
 
 const HOUSES: u64 = 33_100_000;

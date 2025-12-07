@@ -1,4 +1,4 @@
-use common::union_find::UnionFind;
+use common::{answer, read_input, union_find::UnionFind};
 use nom::{
     bytes::complete::tag,
     character::complete::{i32, newline},
@@ -8,11 +8,10 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&input));
 }
 
 type Input = Vec<Point>;

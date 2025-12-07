@@ -1,15 +1,15 @@
 use std::collections::{BTreeSet, HashMap};
 
 use petgraph::{graph::NodeIndex, prelude::UnGraph, Graph};
+
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let graph = GraphData::parse(input);
 
-    let answer = problem1(&graph);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&graph);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&graph));
+    answer!(problem2(&graph));
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Default, Clone, Copy)]

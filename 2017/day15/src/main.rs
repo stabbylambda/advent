@@ -1,12 +1,11 @@
+use common::answer;
+
 fn main() {
     let generator_a = Generator::basic(873, FACTOR_A);
     let generator_b = Generator::basic(583, FACTOR_B);
 
-    let answer = problem1(generator_a, generator_b);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(generator_a, generator_b);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(generator_a, generator_b));
+    answer!(problem2(generator_a, generator_b));
 }
 
 const FACTOR_A: u64 = 16807;

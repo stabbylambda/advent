@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use common::{answer, read_input};
 use nom::{
     branch::alt,
     character::complete::{char, newline},
@@ -9,14 +10,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let mut input = parse(input);
 
-    let answer = problem1(&mut input.clone());
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&mut input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&mut input.clone()));
+    answer!(problem2(&mut input));
 }
 
 type Input = InfectedNodes;

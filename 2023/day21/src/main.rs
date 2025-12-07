@@ -1,20 +1,19 @@
 use std::collections::{BTreeSet, VecDeque};
 
 use common::{
+    answer,
     grid::{Coord, Grid, HasNeighbors},
     nom::parse_grid,
+    read_input,
 };
 use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let score = problem1(&input, 64);
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&input, 26501365);
-    println!("problem 2 score: {score}");
+    answer!(problem1(&input, 64));
+    answer!(problem2(&input, 26501365));
 }
 
 type Input = Grid<Tile>;

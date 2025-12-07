@@ -1,7 +1,9 @@
+use common::answer;
+
 fn main() {
     let input = 3_012_210;
-    println!("Solution 1: {}", problem1(input));
-    println!("Solution 2: {}", problem2(input as u32));
+    answer!(problem1(input));
+    answer!(problem2(input as u32));
 }
 
 // return a number with only the most significant bit set

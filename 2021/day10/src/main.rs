@@ -1,12 +1,11 @@
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input: Vec<_> = input.lines().collect();
 
-    let result = problem1(&input);
-    println!("problem 1 result: {result}");
-
-    let result = problem2(&input);
-    println!("problem 2 result: {result}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 #[derive(Debug)]

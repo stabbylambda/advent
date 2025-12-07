@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use common::{answer, read_input};
 use nom::{
     bytes::complete::tag,
     character::complete::{alpha0, newline, u32 as nom_u32},
@@ -10,15 +11,12 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
     let reference: HashMap<Thing, u32> = REFERENCE.into_iter().collect();
 
-    let answer = problem1(&input, &reference);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input, &reference);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input, &reference));
+    answer!(problem2(&input, &reference));
 }
 
 const REFERENCE: [(Thing, u32); 10] = [

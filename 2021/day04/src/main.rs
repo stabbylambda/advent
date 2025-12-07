@@ -2,14 +2,14 @@ use ansi_term::Colour::Green;
 
 use std::fmt::Display;
 
-fn main() {
-    let input = common::read_input!();
-    let mut bingo = Bingo::new(input);
-    let first = bingo.play();
-    println!("first result: {first}");
+use common::{answer, read_input};
 
-    let second = bingo.determine_last_winner();
-    println!("second result: {second}");
+fn main() {
+    let input = read_input!();
+    let mut bingo = Bingo::new(input);
+
+    answer!(bingo.play());
+    answer!(bingo.determine_last_winner());
 }
 
 #[derive(Clone, Debug)]

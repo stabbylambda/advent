@@ -1,14 +1,13 @@
 use std::str::Lines;
 
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let data = Data::new(input.lines());
 
-    let first = first_problem(&data);
-    println!("first result: {first}");
-
-    let second = second_problem(&data);
-    println!("second result: {second}");
+    answer!(first_problem(&data));
+    answer!(second_problem(&data));
 }
 
 fn get_frequencies(length: usize, numbers: &[i32]) -> (Vec<i32>, Vec<i32>) {

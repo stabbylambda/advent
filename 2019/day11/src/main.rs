@@ -1,13 +1,13 @@
 use std::collections::BTreeMap;
 
+use common::{answer, read_input};
 use intcode::{ExecutionResult, Intcode};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = Intcode::parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&input));
 
     let answer = problem2(&input);
     println!("problem 2 answer:\n{answer}");

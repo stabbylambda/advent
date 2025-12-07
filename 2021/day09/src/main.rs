@@ -4,8 +4,11 @@ use std::{
 };
 
 use ansi_term::Colour::{Green, Red};
+
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = input
         .lines()
         .map(|s| s.chars().map(|x| x.to_digit(10).unwrap()).collect())
@@ -13,11 +16,8 @@ fn main() {
 
     let map = Map::new(input);
 
-    let risk = map.risk();
-    println!("risk {risk}");
-
-    let basins = map.all_basins();
-    println!("basins {basins}")
+    answer!(map.risk());
+    answer!(map.all_basins());
 }
 
 struct Map {

@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use common::extensions::PointExt;
 use nom::{
     bytes::complete::tag,
@@ -9,14 +10,11 @@ use nom::{
 use rayon::prelude::*;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input, 2_000_000);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input, 4_000_000);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input, 2_000_000));
+    answer!(problem2(&input, 4_000_000));
 }
 
 #[derive(Debug)]

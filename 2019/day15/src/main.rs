@@ -1,20 +1,18 @@
 use std::collections::{BinaryHeap, HashMap, HashSet};
 
-use common::grid::Grid;
+use common::{answer, grid::Grid, read_input};
 use intcode::Intcode;
 use itertools::{Itertools, MinMaxResult};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::FromPrimitive;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = Intcode::parse(input);
 
-    let (answer, map) = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(map);
-    println!("problem 2 answer: {answer}");
+    let (result1, map) = problem1(&input);
+    answer!(result1);
+    answer!(problem2(map));
 }
 
 type Input = Intcode;

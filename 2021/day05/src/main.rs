@@ -8,14 +8,15 @@ use nom::{
     IResult, Parser,
 };
 
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input: Vec<_> = input.lines().collect();
     let mut map = Map::new(input);
-    let result = map.clone().orthogonal_overlaps();
-    println!("first answer: {result}");
-    let result = map.all_overlaps();
-    println!("second answer: {result}");
+
+    answer!(map.clone().orthogonal_overlaps());
+    answer!(map.all_overlaps());
 }
 
 #[derive(Clone, Copy)]

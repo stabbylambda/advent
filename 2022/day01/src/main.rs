@@ -1,5 +1,6 @@
 use std::cmp::Reverse;
 
+use common::{answer, read_input};
 use nom::{
     branch::alt,
     character::complete::{line_ending, u32 as nom_u32},
@@ -8,15 +9,13 @@ use nom::{
     sequence::terminated,
     IResult, Parser,
 };
+
 fn main() {
-    let lines = common::read_input!();
+    let lines = read_input!();
     let calories = parse_calorie_groups(lines);
 
-    let max = problem1(&calories);
-    println!("single highest: {max}");
-
-    let three = problem2(&calories);
-    println!("three highest: {three}");
+    answer!(problem1(&calories));
+    answer!(problem2(&calories));
 }
 
 fn parse_calorie_groups(s: &str) -> Vec<u32> {

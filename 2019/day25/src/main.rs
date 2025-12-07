@@ -4,16 +4,16 @@ use std::{
 };
 
 use advent_2019_25::{parse_output, Door, Output, PressureSensorResult};
+use common::{answer, read_input};
 use itertools::Itertools;
 
 use intcode::Intcode;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = Intcode::parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&input));
 }
 
 type Input = Intcode;

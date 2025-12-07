@@ -1,3 +1,4 @@
+use common::answer;
 use std::{collections::BinaryHeap, vec};
 
 use md5::{Digest, Md5};
@@ -6,9 +7,8 @@ fn main() {
     let input = "pxxbnzuo";
 
     let (min_path, max_len) = problem(input);
-    println!("problem 1 score: {min_path}");
-
-    println!("problem 2 score: {max_len}");
+    answer!(min_path);
+    answer!(max_len);
 }
 
 #[derive(Debug, PartialEq, Eq)]

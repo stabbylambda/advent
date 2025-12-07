@@ -4,20 +4,19 @@ use std::{
 };
 
 use common::{
+    answer,
     grid::{CardinalDirection, Coord, Grid, GridSquare},
     nom::{parse_grid, single_digit},
+    read_input,
 };
 use nom::{IResult, Parser};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = Grid<u32>;

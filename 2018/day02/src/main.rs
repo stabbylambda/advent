@@ -1,13 +1,12 @@
 use std::collections::HashSet;
 
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
 
-    let answer = problem1(input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(input));
+    answer!(problem2(input));
 }
 
 fn exactly(input: &str, count: usize) -> bool {

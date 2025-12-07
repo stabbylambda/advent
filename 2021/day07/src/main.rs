@@ -1,18 +1,20 @@
 use nom::{
     bytes::complete::tag, character::complete::i32 as nom_i32, multi::separated_list1, IResult, Parser,
 };
+
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let crabs = parse(input);
     let fleet = CrabFleet {
         crabs: crabs.clone(),
     };
-    let fuel = fleet.align1();
-    println!("first answer {fuel}");
+
+    answer!(fleet.align1());
 
     let fleet = CrabFleet { crabs };
-    let fuel = fleet.align2();
-    println!("second answer {fuel}")
+    answer!(fleet.align2());
 }
 fn parse(input: &str) -> Vec<i32> {
     let result: IResult<&str, Vec<i32>> = separated_list1(tag(","), nom_i32).parse(input);

@@ -1,19 +1,19 @@
+use common::answer;
+
 fn main() {
     let input = Disc {
         length: 272,
         initial: "01000100010010111",
     };
 
-    let answer = problem(&input);
-    println!("problem 1 answer: {answer}");
+    answer!(problem(&input));
 
     let input = Disc {
         length: 35651584,
         initial: "01000100010010111",
     };
 
-    let answer = problem(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem(&input));
 }
 
 type Input<'a> = Disc<'a>;

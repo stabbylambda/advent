@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use common::{answer, read_input};
 use nom::{
     bytes::complete::{tag, take_until},
     character::complete::newline,
@@ -10,14 +11,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input<'a> = HashMap<&'a str, &'a str>;

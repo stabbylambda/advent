@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use common::math::lcm;
+use common::{answer, math::lcm, read_input};
 use itertools::Itertools;
 use nom::{
     bytes::complete::tag,
@@ -12,14 +12,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input, 1000);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input, 1000));
+    answer!(problem2(&input));
 }
 
 #[derive(Clone, Copy, Debug)]

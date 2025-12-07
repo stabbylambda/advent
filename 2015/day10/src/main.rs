@@ -1,15 +1,16 @@
 use std::fmt::Display;
 
+use common::{answer, read_input};
 use itertools::Itertools;
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 score: {}", answer.len());
+    let ans1 = problem1(&input);
+    answer!(ans1.len());
 
-    let answer = problem2(&answer);
-    println!("problem 2 score: {}", answer.len());
+    let ans2 = problem2(&ans1);
+    answer!(ans2.len());
 }
 
 #[derive(Debug)]

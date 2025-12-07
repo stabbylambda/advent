@@ -25,6 +25,11 @@ macro_rules! answer {
         let result = $func($($args),*);
         let elapsed = start.elapsed();
         println!("[{:>6.2?}] {}: {}", elapsed, stringify!($func), result);
+        result
+    }};
+    ($expr:expr) => {{
+        println!("{}", $expr);
+        $expr
     }};
 }
 

@@ -1,14 +1,12 @@
 use advent_2018_19::ElfCode;
+use common::{answer, read_input};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = ElfCode::parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = ElfCode;

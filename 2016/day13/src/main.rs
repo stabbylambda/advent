@@ -1,3 +1,4 @@
+use common::answer;
 use std::collections::HashSet;
 
 use common::{
@@ -8,11 +9,8 @@ use common::{
 fn main() {
     let input = Input::new(1364, (31, 39));
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 struct Input {

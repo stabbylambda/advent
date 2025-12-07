@@ -1,4 +1,4 @@
-use common::extensions::PointExt;
+use common::{answer, extensions::PointExt, read_input};
 use std::collections::{BTreeMap, BTreeSet};
 
 use nom::{
@@ -14,14 +14,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 enum Direction {

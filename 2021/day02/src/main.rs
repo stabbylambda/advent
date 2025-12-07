@@ -1,12 +1,11 @@
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let orders: Vec<_> = input.lines().map(parse_order).collect();
 
-    let first = first_problem(&orders);
-    println!("first: {first}");
-
-    let second = second_problem(&orders);
-    println!("second: {second}");
+    answer!(first_problem(&orders));
+    answer!(second_problem(&orders));
 }
 
 #[derive(Debug)]

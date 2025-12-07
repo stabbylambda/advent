@@ -1,10 +1,10 @@
+use common::answer;
+
 fn main() {
     let input = 324;
-    let answer = problem1(input);
-    println!("problem 1 answer: {answer}");
 
-    let answer = problem2(input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(input));
+    answer!(problem2(input));
 }
 
 fn problem1(input: usize) -> u32 {

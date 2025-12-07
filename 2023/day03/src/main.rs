@@ -1,8 +1,10 @@
 use std::collections::{HashMap, HashSet};
 
 use common::{
+    answer,
     grid::{Coord, Grid, GridSquare},
     nom::{parse_grid, single_digit},
+    read_input,
 };
 use nom::{
     branch::alt,
@@ -12,14 +14,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 #[derive(Clone, Copy, Debug)]
