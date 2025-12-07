@@ -122,9 +122,35 @@ pub fn derive_grid_tile(input: TokenStream) -> TokenStream {
         }
     };
 
+    // Generate parser branches
+    let parser_branches = variant_chars.iter().map(|(variant_name, tile_char)| {
+        quote! {
+            nom::combinator::map(
+                nom::character::complete::char(#tile_char),
+                |_| #enum_name::#variant_name
+            )
+        }
+    });
+
+    let parser_impl = quote! {
+        impl #enum_name {
+            pub fn parser<I, E>() -> impl nom::Parser<I, Output = Self, Error = E>
+            where
+                I: Clone + nom::Input,
+                E: nom::error::ParseError<I>,
+                <I as nom::Input>::Item: nom::AsChar,
+            {
+                nom::branch::alt((
+                    #(#parser_branches),*
+                ))
+            }
+        }
+    };
+
     let expanded = quote! {
         #debug_impl
         #display_impl
+        #parser_impl
     };
 
     TokenStream::from(expanded)
