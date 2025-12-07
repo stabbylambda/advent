@@ -71,8 +71,47 @@ fn problem1(x: &Input) -> usize {
     splits.len()
 }
 
-fn problem2(x: &Input) -> u32 {
-    todo!()
+fn problem2(grid: &Input) -> usize {
+    let mut cache: BTreeMap<(usize, usize), usize> = BTreeMap::from_iter(grid.iter().map(|x| {
+        (
+            x.coords,
+            match x.data {
+                Tile::Start => 1,
+                _ => 0,
+            },
+        )
+    }));
+
+    for x in grid.iter() {
+        let &count = cache.get(&x.coords).unwrap_or(&0);
+        if count == 0 {
+            continue;
+        }
+
+        let Some(south) = x.get_neighbor(CardinalDirection::South) else {
+            continue;
+        };
+
+        match south.data {
+            Tile::Splitter => {
+                if let Some(east) = south.get_neighbor(CardinalDirection::East) {
+                    cache.entry(east.coords).and_modify(|x| *x += count);
+                }
+
+                if let Some(west) = south.get_neighbor(CardinalDirection::West) {
+                    cache.entry(west.coords).and_modify(|x| *x += count);
+                }
+            }
+            _ => {
+                cache.entry(south.coords).and_modify(|x| *x += count);
+            }
+        }
+    }
+
+    cache
+        .iter()
+        .filter_map(|(&(_, y), &c)| (y == grid.height - 1).then_some(c))
+        .sum()
 }
 
 #[cfg(test)]
@@ -91,6 +130,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 40)
     }
 }
