@@ -1,3 +1,5 @@
+pub use common_derive::GridTile;
+
 pub mod dijkstra;
 pub mod extensions;
 pub mod grid;

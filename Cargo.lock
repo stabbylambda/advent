@@ -2436,6 +2436,7 @@ dependencies = [
 name = "common"
 version = "0.1.0"
 dependencies = [
+ "common_derive",
  "nom 8.0.0",
 ]
 
