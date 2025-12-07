@@ -47,7 +47,7 @@ fn extract_tile_char(variant: &syn::Variant) -> Result<char, syn::Error> {
 pub fn derive_grid_tile(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let _enum_name = &input.ident;
+    let enum_name = &input.ident;
 
     // Ensure input is an enum
     let data_enum = match &input.data {
@@ -88,5 +88,26 @@ pub fn derive_grid_tile(input: TokenStream) -> TokenStream {
         variant_chars.push((&variant.ident, tile_char));
     }
 
-    TokenStream::new()
+    // Generate Debug implementation
+    let debug_arms = variant_chars.iter().map(|(variant_name, tile_char)| {
+        quote! {
+            Self::#variant_name => write!(f, #tile_char),
+        }
+    });
+
+    let debug_impl = quote! {
+        impl std::fmt::Debug for #enum_name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                match self {
+                    #(#debug_arms)*
+                }
+            }
+        }
+    };
+
+    let expanded = quote! {
+        #debug_impl
+    };
+
+    TokenStream::from(expanded)
 }
