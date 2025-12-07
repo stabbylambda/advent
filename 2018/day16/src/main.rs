@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use advent_2018_16::{Instruction, Opcode};
-use common::nom::usize;
+use common::{answer, nom::usize, read_input};
 use nom::{
     bytes::complete::tag,
     character::complete::{newline, u32},
@@ -12,14 +12,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = (Vec<InstructionSample>, Vec<Instruction<usize>>);

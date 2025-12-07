@@ -1,16 +1,14 @@
 use std::collections::BinaryHeap;
 
 use advent_2015_22::{Boss, Spell};
+use common::{answer, read_input};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = Boss::parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 const SPELLS: [Spell; 5] = [

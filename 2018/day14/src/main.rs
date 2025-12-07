@@ -1,13 +1,10 @@
-use common::digits;
+use common::{answer, digits};
 
 fn main() {
     let input = 440231;
 
-    let answer = problem1(input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(input));
+    answer!(problem2(input));
 }
 
 fn problem1(input: usize) -> u64 {

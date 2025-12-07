@@ -1,5 +1,6 @@
 use std::fmt::{Debug, Display};
 
+use common::{answer, read_input};
 use nom::{
     branch::alt,
     character::complete::{char, newline},
@@ -9,11 +10,10 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = Snafu::parse_all(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&input));
 }
 
 type Input = Vec<Snafu>;

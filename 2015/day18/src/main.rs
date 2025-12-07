@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use ndarray::{Array3, Axis};
 use nom::{
     branch::alt,
@@ -8,16 +9,14 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input, 100);
 
     let mut lights = input.clone();
-    let answer = problem1(&mut lights, 100);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&mut lights, 100));
 
     let mut lights = input;
-    let answer = problem2(&mut lights, 100);
-    println!("problem 2 answer: {answer}");
+    answer!(problem2(&mut lights, 100));
 }
 
 type Input = Array3<bool>;

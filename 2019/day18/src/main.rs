@@ -5,22 +5,22 @@ use std::{
 };
 
 use common::{
+    answer,
     dijkstra::{shortest_path, Edge},
     grid::{Grid, GridSquare},
     nom::parse_grid,
+    read_input,
 };
 use nom::{character::complete::anychar, combinator::map_opt, IResult, Parser};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
-    let answer = problem(&input);
-    println!("problem 1 answer: {answer}");
+    answer!(problem(&input));
 
     let input = include_str!("../input2.txt");
     let input = parse(input);
-    let answer = problem(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem(&input));
 }
 
 type Input = Grid<Tile>;

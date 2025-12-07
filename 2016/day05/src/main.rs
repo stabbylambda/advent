@@ -1,14 +1,12 @@
+use common::{answer, read_input};
 use md5::{Digest, Md5};
 use std::fmt::Write;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
 
-    let answer = problem1(input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(input));
+    answer!(problem2(input));
 }
 
 fn hash(md5: &Md5, start: u128) -> (u128, [u8; 16]) {

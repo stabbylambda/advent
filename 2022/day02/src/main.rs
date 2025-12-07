@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use nom::{
     branch::alt,
     character::complete::{char, space1},
@@ -5,14 +6,12 @@ use nom::{
     sequence::separated_pair,
     IResult, Parser,
 };
+
 fn main() {
-    let lines = common::read_input!();
+    let lines = read_input!();
 
-    let answer = problem1(lines);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(lines);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(lines));
+    answer!(problem2(lines));
 }
 
 fn problem1(lines: &str) -> u32 {

@@ -1,8 +1,9 @@
+use common::answer;
+
 fn main() {
     let row = 2981;
     let column = 3075;
-    let answer = problem1(row, column);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(row, column));
 }
 
 fn triangle(row: u64, col: u64) -> u64 {

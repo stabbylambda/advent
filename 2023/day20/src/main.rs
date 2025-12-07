@@ -5,7 +5,7 @@ use advent_2023_20::conjunction::Conjunction;
 use advent_2023_20::flip_flop::FlipFlop;
 use advent_2023_20::{ModuleKind, Pulse};
 
-use common::math::lcm;
+use common::{answer, math::lcm, read_input};
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -17,14 +17,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input<'a> = BTreeMap<&'a str, (ModuleIdentifier, Vec<&'a str>)>;

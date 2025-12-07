@@ -5,15 +5,14 @@ use nom::{
     IResult, Parser,
 };
 
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(input.clone());
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(input.clone()));
+    answer!(problem2(input));
 }
 fn parse(input: &str) -> Vec<Vec<u32>> {
     let result: IResult<&str, Vec<Vec<u32>>> = separated_list1(newline, many1(single_digit)).parse(input);

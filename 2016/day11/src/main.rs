@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use std::collections::{BinaryHeap, HashSet};
 
 use itertools::Itertools;
@@ -12,11 +13,10 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&input));
 
     let mut input = input;
 
@@ -26,8 +26,7 @@ fn main() {
         input.floors[0].items.extend([chip, generator]);
     }
 
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem2(&input));
 }
 
 type Input = Elevator;

@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use nom::{
     character::complete::{newline, u64},
     multi::separated_list1,
@@ -5,14 +6,12 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input, answer);
-    println!("problem 2 answer: {answer}");
+    let answer1 = problem1(&input);
+    answer!(answer1);
+    answer!(problem2(&input, answer1));
 }
 
 type Input = Vec<u64>;

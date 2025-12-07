@@ -1,5 +1,6 @@
 use common::extensions::PointExt;
 use common::heading::Heading;
+use common::{answer, read_input};
 use std::collections::HashSet;
 
 use nom::{
@@ -13,14 +14,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 #[derive(Debug)]

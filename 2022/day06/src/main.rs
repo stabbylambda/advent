@@ -1,13 +1,12 @@
 use std::collections::BTreeSet;
 
+use common::{answer, read_input};
+
 fn main() {
-    let lines = common::read_input!();
+    let lines = read_input!();
 
-    let answer = problem1(lines);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(lines);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(lines));
+    answer!(problem2(lines));
 }
 
 fn unique_string(count: usize, line: &str) -> u32 {

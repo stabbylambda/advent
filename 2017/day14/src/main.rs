@@ -1,17 +1,15 @@
 use advent_2017_10::hash_str;
 use common::{
+    answer, read_input,
     dijkstra::{connected_components, Edge},
     grid::Grid,
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
 
-    let answer = problem1(input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(input));
+    answer!(problem2(input));
 }
 
 fn problem1(input: &str) -> u32 {

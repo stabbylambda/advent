@@ -5,16 +5,14 @@ use common::program::{
     registers::{Register, Value},
     Program,
 };
+use common::{answer, read_input};
 use nom::{branch::alt, character::complete::newline, multi::separated_list1, IResult, Parser};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
 
-    let answer = problem1(input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(input));
+    answer!(problem2(input));
 }
 
 type Input = Vec<Instruction>;

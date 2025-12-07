@@ -1,19 +1,19 @@
 use common::nom::usize;
 use nom::{bytes::complete::tag, multi::separated_list1, IResult, Parser};
 
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
     let mut school = School::new(&input);
     school.simulate(80);
-    let first = school.size();
-    println!("first answer: {first}");
+    answer!(school.size());
 
     let mut school = School::new(&input);
     school.simulate(256);
-    let answer = school.size();
-    println!("second answer: {answer}");
+    answer!(school.size());
 }
 
 fn parse(input: &str) -> Vec<usize> {

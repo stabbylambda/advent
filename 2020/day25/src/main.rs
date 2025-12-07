@@ -1,4 +1,4 @@
-use common::math::mod_pow;
+use common::{answer, math::mod_pow, read_input};
 use nom::{
     character::complete::{newline, u64},
     sequence::separated_pair,
@@ -6,11 +6,10 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&input));
 }
 
 type Input = (u64, u64);

@@ -1,3 +1,4 @@
+use common::answer;
 use std::collections::HashMap;
 
 use base64ct::{Base64, Encoding};
@@ -6,11 +7,8 @@ use md5::{Digest, Md5};
 fn main() {
     let input = "cuanljph";
 
-    let answer = problem1(input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(input));
+    answer!(problem2(input));
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

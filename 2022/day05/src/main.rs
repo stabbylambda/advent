@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{alpha0, char, newline, not_line_ending, u32 as nom_u32};
@@ -8,16 +9,14 @@ use nom::{
     sequence::preceded,
     IResult, Parser,
 };
+
 fn main() {
-    let raw = common::read_input!();
+    let raw = read_input!();
     let mut input = Input::parse(raw);
     let mut input2 = input.clone();
 
-    let answer = problem1(&mut input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&mut input2);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&mut input));
+    answer!(problem2(&mut input2));
 }
 
 type Stack<'a> = Vec<&'a str>;

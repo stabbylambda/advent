@@ -12,15 +12,14 @@ use nom::{
     IResult, Parser,
 };
 
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let root = problem1(&input);
-    println!("problem 1 score: {root}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input<'a> = Program<'a>;

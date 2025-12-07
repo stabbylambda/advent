@@ -4,18 +4,20 @@ use std::{
 };
 
 use common::{
+    answer,
     grid::{Grid, HasNeighbors},
     nom::parse_grid,
+    read_input,
 };
 use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
     let (answer1, answer2) = problem(&input);
-    println!("problem 1 answer: {answer1}");
-    println!("problem 2 answer: {answer2}");
+    answer!(answer1);
+    answer!(answer2);
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]

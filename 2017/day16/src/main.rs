@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use common::{answer, read_input};
 use nom::{
     branch::alt,
     character::complete::{anychar, char, u32},
@@ -10,16 +11,13 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
     let programs = "abcdefghijklmnop";
 
-    let answer = problem1(programs, &input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(programs, &input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(programs, &input));
+    answer!(problem2(programs, &input));
 }
 
 type Input = Vec<Instruction>;

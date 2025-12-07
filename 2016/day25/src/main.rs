@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use std::fmt::Display;
 
 use common::program::{
@@ -15,11 +16,10 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&input));
 }
 
 type Input = Program<Instruction>;

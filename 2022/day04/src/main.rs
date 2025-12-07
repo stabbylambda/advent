@@ -1,6 +1,7 @@
-use common::extensions::RangeExt;
 use std::ops::RangeInclusive;
 
+use common::{answer, read_input};
+use common::extensions::RangeExt;
 use nom::{
     character::complete::{char, u32 as nom_u32},
     combinator::map,
@@ -9,14 +10,11 @@ use nom::{
 };
 
 fn main() {
-    let lines = common::read_input!();
+    let lines = read_input!();
     let assignments = parse_assignments(lines);
 
-    let answer = problem1(&assignments);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&assignments);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&assignments));
+    answer!(problem2(&assignments));
 }
 
 fn parse_range(s: &str) -> IResult<&str, RangeInclusive<u32>> {

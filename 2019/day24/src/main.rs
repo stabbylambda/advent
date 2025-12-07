@@ -1,17 +1,14 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use common::{grid::Grid, nom::parse_grid};
+use common::{answer, grid::Grid, nom::parse_grid, read_input};
 use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input, 200);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input, 200));
 }
 
 type Input = Grid<Tile>;

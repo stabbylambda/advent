@@ -1,18 +1,16 @@
 use common::{
+    answer, read_input,
     grid::{orthogonal::Orthogonal, Grid, GridSquare},
     nom::{parse_grid, single_digit},
 };
 use nom::{IResult, Parser};
 
 fn main() {
-    let lines = include_str!("../test.txt");
+    let lines = read_input!();
     let input = parse(lines);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Tree = u32;

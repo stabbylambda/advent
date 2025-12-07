@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use ndarray::{s, Array2};
 use nom::{
     branch::alt,
@@ -13,11 +14,10 @@ const WIDTH: usize = 50;
 const HEIGHT: usize = 6;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input, WIDTH, HEIGHT);
-    println!("problem 1 answer: {answer}");
+    answer!(problem1(&input, WIDTH, HEIGHT));
 }
 
 type Input = Vec<Instruction>;

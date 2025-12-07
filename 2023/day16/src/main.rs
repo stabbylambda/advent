@@ -1,19 +1,16 @@
 use std::collections::{BTreeSet, VecDeque};
 
-use common::{grid::Grid, nom::parse_grid};
+use common::{answer, grid::Grid, nom::parse_grid, read_input};
 use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
 use Direction::*;
 use Tile::*;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = Grid<Tile>;

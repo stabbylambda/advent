@@ -1,12 +1,14 @@
 use std::collections::HashSet;
+
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let displays = input.lines().map(get_display).collect();
     let displays = Displays { displays };
-    let total = displays.count_easy_numbers();
-    println!("first answer {total}");
-    let total = displays.decode();
-    println!("second answer {total}");
+
+    answer!(displays.count_easy_numbers());
+    answer!(displays.decode());
 }
 
 fn get_display(s: &str) -> Display {

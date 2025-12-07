@@ -11,14 +11,14 @@ use nom::{
     sequence::{preceded, separated_pair},
     IResult, Parser,
 };
+
+use common::{answer, read_input};
+
 fn main() {
-    let lines = common::read_input!();
+    let lines = read_input!();
 
-    let answer = problem1(lines);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(lines);
-    println!("problem 2 score:\n{answer}");
+    answer!(problem1(lines));
+    answer!(problem2(lines));
 }
 
 #[derive(Debug)]

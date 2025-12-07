@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use nom::{
     bytes::complete::tag,
     character::complete::{newline, space0, space1, u32},
@@ -8,13 +9,10 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
 
-    let score = problem1(&parse_races(input));
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&parse_single_race(input));
-    println!("problem 2 score: {score}");
+    answer!(problem1(&parse_races(input)));
+    answer!(problem2(&parse_single_race(input)));
 }
 
 type Input = Vec<Race>;

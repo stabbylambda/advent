@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use nom::{
     character::complete::{newline, not_line_ending},
     combinator::map,
@@ -6,14 +7,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let (x, y) = problem1(&input);
-    println!("problem 1 answer: {x},{y}");
-
-    let (x, y) = problem2(&input);
-    println!("problem 2 answer: {x},{y}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = Vec<Vec<char>>;
@@ -187,12 +185,14 @@ fn simulate(input: &Input, bail_on_first_crash: bool) -> (usize, usize) {
     }
 }
 
-fn problem1(input: &Input) -> (usize, usize) {
-    simulate(input, true)
+fn problem1(input: &Input) -> String {
+    let (x, y) = simulate(input, true);
+    format!("{x},{y}")
 }
 
-fn problem2(input: &Input) -> (usize, usize) {
-    simulate(input, false)
+fn problem2(input: &Input) -> String {
+    let (x, y) = simulate(input, false);
+    format!("{x},{y}")
 }
 
 #[cfg(test)]
@@ -203,7 +203,7 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, (7, 3))
+        assert_eq!(result, "7,3")
     }
 
     #[test]
@@ -211,6 +211,6 @@ mod test {
         let input = include_str!("../test2.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, (6, 4))
+        assert_eq!(result, "6,4")
     }
 }

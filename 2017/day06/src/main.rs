@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use common::{answer, read_input};
 use nom::{
     character::complete::{space1, u32},
     multi::separated_list1,
@@ -7,13 +8,12 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
     let (total, cycles) = problem(&input);
-    println!("problem 1 score: {total}");
-
-    println!("problem 2 score: {cycles}");
+    answer!(total);
+    answer!(cycles);
 }
 
 type Input = Vec<u32>;

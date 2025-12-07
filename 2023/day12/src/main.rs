@@ -1,6 +1,6 @@
 use cached::{Cached, UnboundCache};
 
-use common::nom::usize;
+use common::{answer, nom::usize, read_input};
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -12,14 +12,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
-
-    let score = problem2(&input);
-    println!("problem 2 score: {score}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = Vec<SpringRecord>;

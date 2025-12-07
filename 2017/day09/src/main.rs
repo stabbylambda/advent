@@ -1,9 +1,11 @@
-fn main() {
-    let input = common::read_input!();
+use common::{answer, read_input};
 
-    let (answer, trash_chars) = problem(input);
-    println!("problem 1 answer: {answer}");
-    println!("problem 2 score: {trash_chars}");
+fn main() {
+    let input = read_input!();
+
+    let (ans1, ans2) = problem(input);
+    answer!(ans1);
+    answer!(ans2);
 }
 
 fn problem(input: &str) -> (u32, u32) {

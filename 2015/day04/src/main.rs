@@ -1,13 +1,11 @@
+use common::{answer, read_input};
 use md5::{Digest, Md5};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
 
-    let answer = problem1(input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(input));
+    answer!(problem2(input));
 }
 
 fn hash<F>(input: &str, f: F) -> u32

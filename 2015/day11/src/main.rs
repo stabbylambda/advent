@@ -1,13 +1,11 @@
+use common::{answer, read_input};
 use itertools::Itertools;
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
 
-    let answer1 = problem(input);
-    println!("problem 1 answer: {answer1}");
-
-    let answer2 = problem(&answer1);
-    println!("problem 2 answer: {answer2}");
+    let ans1 = answer!(problem(input));
+    answer!(problem(&ans1));
 }
 
 const ALLOWED_LETTERS: [char; 23] = [

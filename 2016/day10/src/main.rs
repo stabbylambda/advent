@@ -1,3 +1,4 @@
+use common::{answer, read_input};
 use std::collections::HashMap;
 
 use nom::{
@@ -11,12 +12,12 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let mut input = parse(input);
 
-    let (score1, score2) = problem(&mut input, 17, 61);
-    println!("problem 1 score: {score1}");
-    println!("problem 2 score: {score2}");
+    let (ans1, ans2) = problem(&mut input, 17, 61);
+    answer!(ans1);
+    answer!(ans2);
 }
 
 type Input = HashMap<u32, Bot>;

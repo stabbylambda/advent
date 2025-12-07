@@ -1,14 +1,13 @@
 use std::collections::HashSet;
 
+use common::{answer, read_input};
+
 fn main() {
-    let lines = common::read_input!();
+    let lines = read_input!();
     let rucksacks = get_rucksacks(lines);
 
-    let answer = problem1(&rucksacks);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&rucksacks);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&rucksacks));
+    answer!(problem2(&rucksacks));
 }
 
 #[derive(Debug)]

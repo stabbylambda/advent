@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 
+use common::{answer, read_input};
 use nom::{
     bytes::complete::tag,
     character::complete::{alpha1, newline},
@@ -10,11 +11,10 @@ use nom::{
 use rustworkx_core::{connectivity::stoer_wagner_min_cut, petgraph::graphmap::UnGraphMap, Result};
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let score = problem1(&input);
-    println!("problem 1 score: {score}");
+    answer!(problem1(&input));
 
     println!("Merry Christmas!");
 }

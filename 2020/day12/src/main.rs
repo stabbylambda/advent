@@ -1,8 +1,6 @@
 use std::ops::Neg;
 
-use common::extensions::PointExt;
-use common::heading::Heading;
-
+use common::{answer, extensions::PointExt, heading::Heading, read_input};
 use nom::{
     branch::alt,
     character::complete::{char, i32, newline},
@@ -13,14 +11,11 @@ use nom::{
 };
 
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input = parse(input);
 
-    let answer = problem1(&input);
-    println!("problem 1 answer: {answer}");
-
-    let answer = problem2(&input);
-    println!("problem 2 answer: {answer}");
+    answer!(problem1(&input));
+    answer!(problem2(&input));
 }
 
 type Input = Vec<Action>;

@@ -1,12 +1,11 @@
+use common::{answer, read_input};
+
 fn main() {
-    let input = common::read_input!();
+    let input = read_input!();
     let input: Vec<i32> = input.lines().map(|x| x.parse::<i32>().unwrap()).collect();
 
-    let first = first_problem(&input);
-    println!("first result: {first}");
-
-    let second = second_problem(&input);
-    println!("second result: {second}");
+    answer!(first_problem(&input));
+    answer!(second_problem(&input));
 }
 
 fn first_problem(measurements: &[i32]) -> usize {

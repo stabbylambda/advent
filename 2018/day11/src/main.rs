@@ -1,13 +1,12 @@
 use std::ops::Range;
 
+use common::answer;
+
 fn main() {
     let input = 8979;
 
-    let (x, y) = problem1(input);
-    println!("problem 1 answer: {x},{y}");
-
-    let (x, y, size) = problem2(input);
-    println!("problem 2 answer: {x},{y},{size}");
+    answer!(problem1(input));
+    answer!(problem2(input));
 }
 
 fn power_level(serial_number: i32, (x, y): (usize, usize)) -> i32 {
@@ -70,13 +69,14 @@ fn find_best_subgrid(serial_number: i32, size: Range<usize>) -> (usize, usize, u
     coords
 }
 
-fn problem1(serial_number: i32) -> (usize, usize) {
+fn problem1(serial_number: i32) -> String {
     let (x, y, _) = find_best_subgrid(serial_number, 3..4);
-    (x, y)
+    format!("{x},{y}")
 }
 
-fn problem2(serial_number: i32) -> (usize, usize, usize) {
-    find_best_subgrid(serial_number, 1..300)
+fn problem2(serial_number: i32) -> String {
+    let (x, y, s) = find_best_subgrid(serial_number, 1..300);
+    format!("{x},{y},{s}")
 }
 
 #[cfg(test)]
@@ -99,16 +99,16 @@ mod test {
     #[test]
     fn first() {
         let result = problem1(18);
-        assert_eq!(result, (33, 45));
+        assert_eq!(result, "33,45");
         let result = problem1(42);
-        assert_eq!(result, (21, 61));
+        assert_eq!(result, "21,61");
     }
 
     #[test]
     fn second() {
         let result = problem2(18);
-        assert_eq!(result, (90, 269, 16));
+        assert_eq!(result, "90,269,16");
         let result = problem2(42);
-        assert_eq!(result, (232, 251, 12));
+        assert_eq!(result, "232,251,12");
     }
 }
