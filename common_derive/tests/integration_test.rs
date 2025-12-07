@@ -1,0 +1,28 @@
+use common_derive::GridTile;
+
+#[derive(GridTile)]
+enum Tile {
+    #[tile('@')]
+    Roll,
+    #[tile('.')]
+    Empty,
+}
+
+#[test]
+fn test_compiles() {
+    // If this compiles, our macro is working correctly
+    // In future tasks, we'll test the generated functionality
+}
+
+// Test that the macro works with more variants
+#[derive(GridTile)]
+enum ComplexTile {
+    #[tile('#')]
+    Wall,
+    #[tile('.')]
+    Empty,
+    #[tile('@')]
+    Player,
+    #[tile('O')]
+    Box,
+}

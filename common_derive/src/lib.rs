@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Data, DeriveInput, Fields};
+use syn::{parse_macro_input, Data, DeriveInput, Fields, Lit, Meta};
 
 // Test case we're targeting:
 // #[derive(GridTile)]
@@ -10,6 +10,38 @@ use syn::{parse_macro_input, Data, DeriveInput, Fields};
 //     #[tile('.')]
 //     Empty,
 // }
+
+/// Extract the character from a #[tile('c')] attribute
+fn extract_tile_char(attrs: &[syn::Attribute]) -> Result<char, syn::Error> {
+    // Find the #[tile(...)] attribute
+    for attr in attrs {
+        if attr.path().is_ident("tile") {
+            // Parse the attribute as Meta::List
+            let meta = &attr.meta;
+
+            // Handle #[tile('c')] format
+            if let Meta::List(meta_list) = meta {
+                // Parse the tokens inside the parentheses
+                let tokens = &meta_list.tokens;
+                let lit: Lit = syn::parse2(tokens.clone())?;
+
+                if let Lit::Char(lit_char) = lit {
+                    return Ok(lit_char.value());
+                } else {
+                    return Err(syn::Error::new_spanned(
+                        lit,
+                        "tile attribute must contain a character literal"
+                    ));
+                }
+            }
+        }
+    }
+
+    Err(syn::Error::new(
+        proc_macro2::Span::call_site(),
+        "missing #[tile('c')] attribute"
+    ))
+}
 
 #[proc_macro_derive(GridTile, attributes(tile))]
 pub fn derive_grid_tile(input: TokenStream) -> TokenStream {
@@ -29,6 +61,32 @@ pub fn derive_grid_tile(input: TokenStream) -> TokenStream {
             .into();
         }
     };
+
+    // Collect (variant_name, character) pairs
+    let mut variant_chars = Vec::new();
+
+    for variant in &data_enum.variants {
+        // Ensure variant has no fields (only unit variants supported)
+        match &variant.fields {
+            Fields::Unit => {}
+            _ => {
+                return syn::Error::new_spanned(
+                    variant,
+                    "GridTile only supports unit variants (no fields)"
+                )
+                .to_compile_error()
+                .into();
+            }
+        }
+
+        // Extract the tile character
+        let tile_char = match extract_tile_char(&variant.attrs) {
+            Ok(c) => c,
+            Err(e) => return e.to_compile_error().into(),
+        };
+
+        variant_chars.push((&variant.ident, tile_char));
+    }
 
     TokenStream::new()
 }
