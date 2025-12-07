@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet, VecDeque};
+use std::collections::{BTreeSet, VecDeque};
 
 use common::{
     answer,
@@ -71,8 +71,36 @@ fn problem1(x: &Input) -> usize {
     splits.len()
 }
 
-fn problem2(x: &Input) -> u32 {
-    todo!()
+fn problem2(grid: &Input) -> usize {
+    let mut beams: Vec<usize> = grid.points[0]
+        .iter()
+        .map(|x| (x == &Tile::Start).into())
+        .collect();
+    let mut next_beams = beams.clone();
+
+    for y in 0..grid.height {
+        next_beams.fill(0);
+
+        for (x, &count) in beams.iter().enumerate().filter(|(_, c)| **c != 0) {
+            let Some(south) = grid.get_neighbor((x, y), CardinalDirection::South) else {
+                continue;
+            };
+
+            match south.data {
+                Tile::Splitter => {
+                    next_beams[x - 1] += count;
+                    next_beams[x + 1] += count;
+                }
+                _ => {
+                    next_beams[x] += count;
+                }
+            }
+        }
+
+        std::mem::swap(&mut beams, &mut next_beams);
+    }
+
+    next_beams.iter().sum()
 }
 
 #[cfg(test)]
@@ -91,6 +119,6 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem2(&input);
-        assert_eq!(result, 0)
+        assert_eq!(result, 40)
     }
 }
