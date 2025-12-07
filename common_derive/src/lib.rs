@@ -105,8 +105,26 @@ pub fn derive_grid_tile(input: TokenStream) -> TokenStream {
         }
     };
 
+    // Generate Display implementation
+    let display_arms = variant_chars.iter().map(|(variant_name, tile_char)| {
+        quote! {
+            Self::#variant_name => write!(f, "{}", #tile_char),
+        }
+    });
+
+    let display_impl = quote! {
+        impl std::fmt::Display for #enum_name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                match self {
+                    #(#display_arms)*
+                }
+            }
+        }
+    };
+
     let expanded = quote! {
         #debug_impl
+        #display_impl
     };
 
     TokenStream::from(expanded)
