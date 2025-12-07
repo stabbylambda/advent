@@ -1,10 +1,8 @@
-use std::fmt::Debug;
-
-use nom::{branch::alt, character::complete::char, combinator::map, IResult, Parser};
+use nom::{IResult, Parser};
 
 use common::grid::{Grid, GridSquare};
 use common::nom::parse_grid;
-use common::{answer, read_input};
+use common::{answer, read_input, GridTile};
 
 fn main() {
     let input = read_input!();
@@ -14,39 +12,18 @@ fn main() {
     answer!(problem2(&input));
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, GridTile)]
 enum Tile {
+    #[tile('@')]
     Roll,
+    #[tile('.')]
     Empty,
-}
-
-impl Debug for Tile {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Roll => write!(f, "@"),
-            Self::Empty => write!(f, "."),
-        }
-    }
-}
-
-impl std::fmt::Display for Tile {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Tile::Roll => write!(f, "@"),
-            Tile::Empty => write!(f, "."),
-        }
-    }
 }
 
 type Input = Grid<Tile>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = parse_grid(alt((
-        map(char('@'), |_| Tile::Roll),
-        map(char('.'), |_| Tile::Empty),
-    )))
-    .parse(input);
-
+    let result: IResult<&str, Input> = parse_grid(Tile::parser()).parse(input);
     result.unwrap().1
 }
 
