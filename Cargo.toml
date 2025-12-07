@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
   "common",
+  "common_derive",
   "2015/day*",
   "2016/day*",
   "2017/day*",
