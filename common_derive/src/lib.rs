@@ -91,7 +91,7 @@ pub fn derive_grid_tile(input: TokenStream) -> TokenStream {
     // Generate Debug implementation
     let debug_arms = variant_chars.iter().map(|(variant_name, tile_char)| {
         quote! {
-            Self::#variant_name => write!(f, #tile_char),
+            Self::#variant_name => write!(f, "{}", #tile_char),
         }
     });
 

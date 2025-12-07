@@ -14,6 +14,16 @@ fn test_compiles() {
     // In future tasks, we'll test the generated functionality
 }
 
+#[test]
+fn test_debug_implementation() {
+    // Test that Debug trait is implemented and formats correctly
+    let roll = Tile::Roll;
+    let empty = Tile::Empty;
+
+    assert_eq!(format!("{:?}", roll), "@");
+    assert_eq!(format!("{:?}", empty), ".");
+}
+
 // Test that the macro works with more variants
 #[derive(GridTile)]
 enum ComplexTile {
