@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BinaryHeap};
 
 use common::{answer, read_input};
 use itertools::Itertools;
@@ -19,36 +19,56 @@ fn main() {
 }
 
 type JunctionBox = (i64, i64, i64);
-type Input = Vec<JunctionBox>;
+type Input = BTreeMap<JunctionBox, usize>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(
-        newline,
-        map(separated_list1(tag(","), i64), |x| (x[0], x[1], x[2])),
+    let result: IResult<&str, Input> = map(
+        separated_list1(
+            newline,
+            map(separated_list1(tag(","), i64), |x| (x[0], x[1], x[2])),
+        ),
+        |x| BTreeMap::from_iter(x.iter().enumerate().map(|(id, x)| (*x, id))),
     )
     .parse(input);
 
     result.unwrap().1
 }
 
-fn distance((ax, ay, az): JunctionBox, (bx, by, bz): JunctionBox) -> i64 {
-    ((ax - bx).pow(2) + (ay - by).pow(2) + (az - bz).pow(2)).isqrt()
+#[derive(Eq, PartialEq)]
+struct Pair(JunctionBox, JunctionBox);
+impl Pair {
+    fn distance(&self) -> i64 {
+        let (ax, ay, az) = self.0;
+        let (bx, by, bz) = self.1;
+        ((ax - bx).pow(2) + (ay - by).pow(2) + (az - bz).pow(2)).isqrt()
+    }
+}
+
+impl PartialOrd for Pair {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Pair {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        other.distance().cmp(&self.distance())
+    }
 }
 
 fn problem1(x: &Input, pairs: usize) -> u64 {
-    let mut circuits: BTreeMap<JunctionBox, usize> =
-        BTreeMap::from_iter(x.iter().enumerate().map(|(id, x)| (*x, id)));
+    let mut circuits = x.clone();
+    let mut queue =
+        BinaryHeap::from_iter(circuits.keys().combinations(2).map(|x| Pair(*x[0], *x[1])));
 
-    let combos = x
-        .iter()
-        .combinations(2)
-        .map(|x| (*x[0], *x[1]))
-        .sorted_by_key(|(a, b)| distance(*a, *b))
-        .take(pairs);
+    let mut count = 0;
+    while let Some(Pair(a, b)) = queue.pop() {
+        count += 1;
+        if count > pairs {
+            break;
+        }
 
-    for (a, b) in combos {
-        let ids = (circuits.get(&a).cloned(), circuits.get(&b).cloned());
-        match ids {
+        match (circuits.get(&a).cloned(), circuits.get(&b).cloned()) {
             (Some(a_id), Some(b_id)) if a_id != b_id => {
                 circuits
                     .values_mut()
@@ -72,16 +92,11 @@ fn problem1(x: &Input, pairs: usize) -> u64 {
 }
 
 fn problem2(x: &Input) -> u64 {
-    let mut circuits: BTreeMap<JunctionBox, usize> =
-        BTreeMap::from_iter(x.iter().enumerate().map(|(id, x)| (*x, id)));
+    let mut circuits = x.clone();
+    let mut queue =
+        BinaryHeap::from_iter(circuits.keys().combinations(2).map(|x| Pair(*x[0], *x[1])));
 
-    let combos = x
-        .iter()
-        .combinations(2)
-        .map(|x| (*x[0], *x[1]))
-        .sorted_by_key(|(a, b)| distance(*a, *b));
-
-    for (a, b) in combos {
+    while let Some(Pair(a, b)) = queue.pop() {
         match (circuits.get(&a).cloned(), circuits.get(&b).cloned()) {
             (Some(a_id), Some(b_id)) if a_id != b_id => {
                 circuits
@@ -96,17 +111,7 @@ fn problem2(x: &Input) -> u64 {
             _ => {}
         }
     }
-
-    let grouped = circuits.values().counts();
-    let largest: u64 = grouped
-        .values()
-        .sorted()
-        .rev()
-        .take(3)
-        .map(|x| *x as u64)
-        .product();
-
-    largest
+    unreachable!()
 }
 
 #[cfg(test)]
