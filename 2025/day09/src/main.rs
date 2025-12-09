@@ -1,7 +1,10 @@
-use common::{answer, read_input};
+use common::{answer, grid::Grid, read_input};
+use itertools::Itertools;
 use nom::{
-    character::complete::{i32, newline},
+    bytes::tag,
+    character::complete::{newline, usize},
     multi::separated_list1,
+    sequence::separated_pair,
     IResult, Parser,
 };
 
@@ -13,16 +16,29 @@ fn main() {
     answer!(problem2(&input));
 }
 
-type Input = Vec<i32>;
+type Input = Vec<(usize, usize)>;
 
 fn parse(input: &str) -> Input {
-    let result: IResult<&str, Input> = separated_list1(newline, i32).parse(input);
+    let result: IResult<&str, Input> =
+        separated_list1(newline, separated_pair(usize, tag(","), usize)).parse(input);
 
     result.unwrap().1
 }
 
-fn problem1(x: &Input) -> u32 {
-    todo!()
+fn problem1(x: &Input) -> usize {
+    x.iter()
+        .combinations(2)
+        .map(|x| {
+            let (ax, ay) = *x[0];
+            let (bx, by) = *x[1];
+
+            let x = ax.abs_diff(bx) + 1;
+            let y = ay.abs_diff(by) + 1;
+
+            x * y
+        })
+        .max()
+        .unwrap()
 }
 
 fn problem2(x: &Input) -> u32 {
@@ -37,7 +53,7 @@ mod test {
         let input = include_str!("../test.txt");
         let input = parse(input);
         let result = problem1(&input);
-        assert_eq!(result, 0);
+        assert_eq!(result, 50);
     }
 
     #[test]
