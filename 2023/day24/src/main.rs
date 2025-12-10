@@ -9,11 +9,7 @@ use nom::{
     sequence::{preceded, separated_pair},
     IResult, Parser,
 };
-#[cfg(feature = "z3")]
-use z3::{
-    ast::{Ast, Int, Real},
-    Config, Context, Optimize, SatResult, Solver,
-};
+use z3::{ast::Int, SatResult};
 
 fn main() {
     let input = read_input!();
@@ -40,7 +36,8 @@ fn parse(input: &str) -> Input {
             ),
             |(position, velocity)| Hailstone { position, velocity },
         ),
-    ).parse(input);
+    )
+    .parse(input);
 
     result.unwrap().1
 }
@@ -118,38 +115,27 @@ fn problem1(input: &Input) -> usize {
     count_future_xy_intersections(input, 200000000000000..=400000000000000)
 }
 
-fn problem2(_input: &Input) -> i64 {
-    #[cfg(feature = "z3")]
-    {
-        let ctx = z3::Context::new(&z3::Config::new());
-        let s = z3::Solver::new(&ctx);
-        let [fx, fy, fz, fdx, fdy, fdz] = ["fx", "fy", "fz", "fdx", "fdy", "fdz"]
-            .map(|v| Real::from_int(&Int::new_const(&ctx, v)));
+fn problem2(input: &Input) -> i64 {
+    let s = z3::Solver::new();
+    let [fx, fy, fz, fdx, fdy, fdz] = ["fx", "fy", "fz", "fdx", "fdy", "fdz"].map(Int::new_const);
 
-        let zero = Real::from_int(&Int::from_i64(&ctx, 0));
-        for (i, hailstone) in input.iter().enumerate().take(3) {
-            let (x, y, z) = hailstone.position;
-            let (dx, dy, dz) = hailstone.velocity;
+    for (i, hailstone) in input.iter().enumerate().take(3) {
+        let (x, y, z) = hailstone.position;
+        let (dx, dy, dz) = hailstone.velocity;
+        let [x, y, z, dx, dy, dz] = [x, y, z, dx, dy, dz].map(|v| Int::from_i64(v as _));
+        let t = Int::new_const(format!("t{i}"));
 
-            let [x, y, z, dx, dy, dz] =
-                [x, y, z, dx, dy, dz].map(|v| Real::from_int(&Int::from_i64(&ctx, v as _)));
-            let t = Real::new_const(&ctx, format!("t{i}"));
-            s.assert(&t.ge(&zero));
-            s.assert(&((&x + &dx * &t)._eq(&(&fx + &fdx * &t))));
-            s.assert(&((&y + &dy * &t)._eq(&(&fy + &fdy * &t))));
-            s.assert(&((&z + &dz * &t)._eq(&(&fz + &fdz * &t))));
-        }
-
-        assert_eq!(s.check(), z3::SatResult::Sat);
-        let model = s.get_model().unwrap();
-        let res = model.eval(&(&fx + &fy + &fz), true).unwrap();
-        res.as_real().unwrap().0
+        s.assert(t.ge(0));
+        s.assert((x + dx * &t).eq(&fx + &fdx * &t));
+        s.assert((y + dy * &t).eq(&fy + &fdy * &t));
+        s.assert((z + dz * &t).eq(&fz + &fdz * &t));
     }
 
-    #[cfg(not(feature = "z3"))]
-    {
-        unimplemented!()
-    }
+    assert_eq!(s.check(), SatResult::Sat);
+    s.get_model()
+        .and_then(|m| m.eval(&(&fx + &fy + &fz), true))
+        .and_then(|x| x.as_i64())
+        .unwrap()
 }
 
 #[cfg(test)]
@@ -164,7 +150,6 @@ mod test {
     }
 
     #[test]
-    #[cfg(feature = "z3")]
     fn second() {
         let input = include_str!("../test.txt");
         let input = parse(input);

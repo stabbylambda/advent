@@ -8,7 +8,4 @@ edition = "2021"
 [dependencies]
 common = { path = "../../common" }
 nom = { workspace = true }
-z3 = { version = "0.19.5", optional = true }
-
-[features]
-z3 = ["dep:z3"]
+z3 = "0.19"

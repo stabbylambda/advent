@@ -98,9 +98,7 @@ impl MachineSpec {
         solution.assert(&total.eq(Int::add(&button_presses)));
         solution.minimize(&total);
 
-        if solution.check(&[]) != SatResult::Sat {
-            panic!("No solution")
-        }
+        assert_eq!(solution.check(&[]), SatResult::Sat);
 
         solution
             .get_model()
