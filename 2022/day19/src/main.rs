@@ -128,14 +128,14 @@ fn parse(input: &str) -> Input {
                 (delimited(tag("Blueprint "), nom_u32, tag(": "))),
                 (delimited(tag("Each ore robot costs "), nom_u32, tag(" ore. "))),
                 (delimited(tag("Each clay robot costs "), nom_u32, tag(" ore. "))),
-                ((
+                (
                     delimited(tag("Each obsidian robot costs "), nom_u32, tag(" ore ")),
                     delimited(tag("and "), nom_u32, tag(" clay. ")),
-                )),
-                ((
+                ),
+                (
                     delimited(tag("Each geode robot costs "), nom_u32, tag(" ore ")),
                     delimited(tag("and "), nom_u32, tag(" obsidian.")),
-                )),
+                ),
             ),
             |(id, ore, clay, (obs_ore, obs_clay), (geode_ore, geode_obs))| {
                 Blueprint::new(
@@ -149,7 +149,8 @@ fn parse(input: &str) -> Input {
                 )
             },
         ),
-    ).parse(input);
+    )
+    .parse(input);
 
     result.unwrap().1
 }

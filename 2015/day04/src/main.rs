@@ -17,7 +17,7 @@ where
     for i in 0u32.. {
         let mut hasher = Md5::new();
         hasher.update(input);
-        hasher.update(&i.to_string());
+        hasher.update(i.to_string());
 
         let output = hasher.finalize();
 

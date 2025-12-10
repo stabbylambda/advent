@@ -1,4 +1,3 @@
-use core::panic;
 use std::collections::BinaryHeap;
 
 use common::{answer, read_input};

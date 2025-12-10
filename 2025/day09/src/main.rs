@@ -93,7 +93,8 @@ fn problem2(x: &Input) -> usize {
 
     let result = tiles
         .iter()
-        .filter_map(|t| t.enclosed_in(&edges).then(|| t.area()))
+        .filter(|t| t.enclosed_in(&edges))
+        .map(|t| t.area())
         .max()
         .unwrap();
 
