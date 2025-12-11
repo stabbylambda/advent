@@ -58,35 +58,43 @@ impl<'a> State<'a> {
     }
 }
 
-fn paths<'a, F>(state: State<'a>, x: &'a Input, cache: &mut HashMap<State<'a>, u64>, f: F) -> u64
+fn paths<'a, F>(
+    state: State<'a>,
+    to: &'a str,
+    x: &'a Input,
+    cache: &mut HashMap<State<'a>, u64>,
+    f: F,
+) -> u64
 where
     F: Copy + Clone + Fn(&State) -> bool,
 {
-    if let Some(result) = cache.get(&state) {
-        return *result;
-    }
-
-    if state.node == "out" {
+    if *state.node == *to {
         return f(&state).into();
     }
 
-    x[state.node]
-        .iter()
-        .map(|n| {
-            let state = state.move_to(n);
-            let result = paths(state.clone(), x, cache, f);
+    let result = match cache.get(&state) {
+        Some(x) => *x,
+        None => {
+            let result = x
+                .get(state.node)
+                .unwrap_or(&vec![])
+                .iter()
+                .map(|n| paths(state.move_to(n), to, x, cache, f))
+                .sum();
             cache.insert(state, result);
             result
-        })
-        .sum()
+        }
+    };
+
+    result
 }
 
 fn problem1(x: &Input) -> u64 {
-    paths(State::new("you"), x, &mut HashMap::new(), |_| true)
+    paths(State::new("you"), "out", x, &mut HashMap::new(), |_| true)
 }
 
 fn problem2(x: &Input) -> u64 {
-    paths(State::new("svr"), x, &mut HashMap::new(), |s| {
+    paths(State::new("svr"), "out", x, &mut HashMap::new(), |s| {
         s.dac && s.fft
     })
 }
