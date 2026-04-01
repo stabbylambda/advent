@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 common = { path = "../../common" }
 nom = { workspace = true }
-z3 = "0.19"
+z3 = "0.20"
